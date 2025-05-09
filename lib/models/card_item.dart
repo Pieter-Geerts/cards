@@ -3,17 +3,25 @@ class CardItem {
   final String title;
   final String description;
   final String name;
+  final String cardType; // Added cardType property
 
   CardItem({
     this.id,
     required this.title,
     required this.description,
     required this.name,
+    this.cardType = 'QR_CODE', // Default to QR_CODE
   });
 
   // Convert a CardItem to a Map for database storage
   Map<String, dynamic> toMap() {
-    return {'id': id, 'title': title, 'description': description, 'name': name};
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'name': name,
+      'cardType': cardType,
+    };
   }
 
   // Create a CardItem from a Map retrieved from the database
@@ -23,6 +31,7 @@ class CardItem {
       title: map['title'],
       description: map['description'],
       name: map['name'],
+      cardType: map['cardType'] ?? 'QR_CODE', // Handle null for older records
     );
   }
 }

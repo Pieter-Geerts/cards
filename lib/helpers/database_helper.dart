@@ -23,16 +23,25 @@ class DatabaseHelper {
 
     return openDatabase(
       path,
-      version: 1,
+      version: 2, // Increment version
       onCreate: (db, version) {
         return db.execute('''
           CREATE TABLE cards (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT,
             description TEXT,
-            name TEXT
+            name TEXT,
+            cardType TEXT
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          // Add cardType column to existing database
+          await db.execute(
+            'ALTER TABLE cards ADD COLUMN cardType TEXT DEFAULT "QR_CODE"',
+          );
+        }
       },
     );
   }
