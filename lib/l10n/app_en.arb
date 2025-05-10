@@ -1,0 +1,40 @@
+{
+  "appTitle": "Cards - QR Scanner",
+  "myCards": "My Cards",
+  "addCard": "Add Card",
+  "scanBarcode": "Scan Barcode",
+  "manualEntry": "Manual Entry",
+  "noCardsYet": "No cards yet. Add your first card!",
+  "deleteCard": "Delete Card",
+  "deleteConfirmation": "Are you sure you want to delete this card?",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "cardType": "Type: {type}",
+  "@cardType": {
+    "placeholders": {
+      "type": {}
+    }
+  },
+  "title": "Title",
+  "titleHint": "Enter a title for this card",
+  "description": "Description",
+  "descriptionHint": "Enter a description",
+  "barcode": "Barcode",
+  "qrCode": "QR Code",
+  "barcodeValue": "Barcode Value",
+  "qrCodeValue": "QR Code Value",
+  "enterBarcodeValue": "Enter the barcode value",
+  "enterQrCodeValue": "Enter the QR code value",
+  "detectedFormat": "Detected: {format}",
+  "@detectedFormat": {
+    "placeholders": {
+      "format": {}
+    }
+  },
+  "noDataScanned": "No data scanned",
+  "settings": "Settings",
+  "language": "Language",
+  "selectLanguage": "Select Language",
+  "english": "English",
+  "spanish": "Spanish"
+}
