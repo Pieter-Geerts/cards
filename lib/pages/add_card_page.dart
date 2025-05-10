@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../models/card_item.dart';
@@ -12,7 +13,8 @@ class AddCardPage extends StatefulWidget {
   State<AddCardPage> createState() => _AddCardPageState();
 }
 
-class _AddCardPageState extends State<AddCardPage> {
+class _AddCardPageState extends State<AddCardPage>
+    with SingleTickerProviderStateMixin {
   String? _scannedData;
   bool _isManualEntry = false;
   CardType _selectedCardType = CardType.QR_CODE;
@@ -26,8 +28,24 @@ class _AddCardPageState extends State<AddCardPage> {
   // Form key for validation
   final _formKey = GlobalKey<FormState>();
 
+  // Add controller for animations
+  late AnimationController _animationController;
+  final ScrollController _scrollController = ScrollController();
+  bool _isScanning = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+  }
+
   @override
   void dispose() {
+    _animationController.dispose();
+    _scrollController.dispose();
     _barcodeController.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
@@ -74,6 +92,40 @@ class _AddCardPageState extends State<AddCardPage> {
       return 'Description should be at least 5 characters';
     }
     return null;
+  }
+
+  // Show success feedback to user
+  void _showScanSuccessUI(BuildContext context, String format) {
+    // Play haptic feedback
+    HapticFeedback.mediumImpact();
+
+    // Show snackbar with scan success message
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$format detected successfully!'),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+    // Animate and scroll to form
+    setState(() {
+      _isScanning = false;
+    });
+    _animationController.forward();
+
+    // Scroll to form after a short delay
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          300, // Approximate position to scroll to form
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   @override
@@ -123,129 +175,175 @@ class _AddCardPageState extends State<AddCardPage> {
         if (_scannedData != null && _detectedFormat.isNotEmpty)
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Detected: $_detectedFormat',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green),
+                const SizedBox(width: 8),
+                Text(
+                  'Detected: $_detectedFormat',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
           ),
 
         Expanded(
-          child: MobileScanner(
-            onDetect: (capture) {
-              final List<Barcode> barcodes = capture.barcodes;
-              if (barcodes.isNotEmpty) {
-                final barcode = barcodes.first;
-                // Check if rawValue is not null
-                if (barcode.rawValue != null) {
-                  setState(() {
-                    _scannedData = barcode.rawValue;
-                    _barcodeController.text = _scannedData ?? '';
-
-                    // Safely check the format to avoid null errors
-                    final format = barcode.format?.toString() ?? '';
-                    if (format.toLowerCase().contains("qr")) {
-                      _detectedFormat = 'QR Code';
-                      _selectedCardType = CardType.QR_CODE;
-                    } else {
-                      _detectedFormat = 'Barcode';
-                      _selectedCardType = CardType.BARCODE;
-                    }
-                  });
-                }
-              }
-            },
-          ),
-        ),
-        if (_scannedData != null)
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  // Let user override the detected type
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            child: Column(
+              children: [
+                // Scanner area with visual indicator
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  height: _isScanning ? 300 : 200,
+                  child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      const Text('Type: '),
-                      SegmentedButton<CardType>(
-                        segments: const [
-                          ButtonSegment<CardType>(
-                            value: CardType.BARCODE,
-                            label: Text('Barcode'),
-                            icon: Icon(Icons.barcode_reader),
-                          ),
-                          ButtonSegment<CardType>(
-                            value: CardType.QR_CODE,
-                            label: Text('QR Code'),
-                            icon: Icon(Icons.qr_code),
-                          ),
-                        ],
-                        selected: {_selectedCardType},
-                        onSelectionChanged: (Set<CardType> selection) {
-                          setState(() {
-                            _selectedCardType = selection.first;
-                          });
+                      // Scanner widget
+                      MobileScanner(
+                        onDetect: (capture) {
+                          final List<Barcode> barcodes = capture.barcodes;
+                          if (barcodes.isNotEmpty && _isScanning) {
+                            final barcode = barcodes.first;
+                            // Check if rawValue is not null
+                            if (barcode.rawValue != null) {
+                              setState(() {
+                                _scannedData = barcode.rawValue;
+                                _barcodeController.text = _scannedData ?? '';
+
+                                // Safely check the format to avoid null errors
+                                final format = barcode.format?.toString() ?? '';
+                                if (format.toLowerCase().contains("qr")) {
+                                  _detectedFormat = 'QR Code';
+                                  _selectedCardType = CardType.QR_CODE;
+                                } else {
+                                  _detectedFormat = 'Barcode';
+                                  _selectedCardType = CardType.BARCODE;
+                                }
+
+                                // Show success UI
+                                _showScanSuccessUI(context, _detectedFormat);
+                              });
+                            }
+                          }
                         },
                       ),
+
+                      // Scanner overlay animation
+                      if (_isScanning)
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Theme.of(context).primaryColor,
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          width: 250,
+                          height: 250,
+                        ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  // Add validation for title
-                  TextFormField(
-                    controller: _titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Title',
-                      hintText: 'Enter a title for this card',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: _validateTitle,
-                  ),
-                  const SizedBox(height: 10),
-                  // Add validation for description
-                  TextFormField(
-                    controller: _descriptionController,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Description',
-                      hintText: 'Enter a description',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: _validateDescription,
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Ensure _scannedData is not null before proceeding
-                      if (_scannedData != null &&
-                          _formKey.currentState!.validate()) {
-                        Navigator.pop(
-                          context,
-                          CardItem(
-                            title:
-                                _titleController.text.isNotEmpty
-                                    ? _titleController.text
-                                    : 'New Card',
-                            description:
-                                _descriptionController.text.isNotEmpty
-                                    ? _descriptionController.text
-                                    : 'Scanned Description',
-                            name: _scannedData!,
-                            cardType: _selectedCardType.name,
+                ),
+
+                // Form section below scanner
+                if (_scannedData != null)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          // Let user override the detected type
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text('Type: '),
+                              SegmentedButton<CardType>(
+                                segments: const [
+                                  ButtonSegment<CardType>(
+                                    value: CardType.BARCODE,
+                                    label: Text('Barcode'),
+                                    icon: Icon(Icons.barcode_reader),
+                                  ),
+                                  ButtonSegment<CardType>(
+                                    value: CardType.QR_CODE,
+                                    label: Text('QR Code'),
+                                    icon: Icon(Icons.qr_code),
+                                  ),
+                                ],
+                                selected: {_selectedCardType},
+                                onSelectionChanged: (Set<CardType> selection) {
+                                  setState(() {
+                                    _selectedCardType = selection.first;
+                                  });
+                                },
+                              ),
+                            ],
                           ),
-                        );
-                      } else if (_scannedData == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('No data scanned')),
-                        );
-                      }
-                    },
-                    child: const Text('Add Card'),
+                          const SizedBox(height: 10),
+                          // Add validation for title
+                          TextFormField(
+                            controller: _titleController,
+                            decoration: const InputDecoration(
+                              labelText: 'Title',
+                              hintText: 'Enter a title for this card',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: _validateTitle,
+                          ),
+                          const SizedBox(height: 10),
+                          // Add validation for description
+                          TextFormField(
+                            controller: _descriptionController,
+                            maxLines: 3,
+                            decoration: const InputDecoration(
+                              labelText: 'Description',
+                              hintText: 'Enter a description',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: _validateDescription,
+                          ),
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed: () {
+                              // Ensure _scannedData is not null before proceeding
+                              if (_scannedData != null &&
+                                  _formKey.currentState!.validate()) {
+                                Navigator.pop(
+                                  context,
+                                  CardItem(
+                                    title:
+                                        _titleController.text.isNotEmpty
+                                            ? _titleController.text
+                                            : 'New Card',
+                                    description:
+                                        _descriptionController.text.isNotEmpty
+                                            ? _descriptionController.text
+                                            : 'Scanned Description',
+                                    name: _scannedData!,
+                                    cardType: _selectedCardType.name,
+                                  ),
+                                );
+                              } else if (_scannedData == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('No data scanned'),
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text('Add Card'),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ],
-              ),
+              ],
             ),
           ),
+        ),
       ],
     );
   }
@@ -253,101 +351,108 @@ class _AddCardPageState extends State<AddCardPage> {
   Widget _buildManualEntryForm() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Card type selection for manual entry
-            Row(
-              children: [
-                const Text('Card Type: '),
-                Expanded(
-                  child: SegmentedButton<CardType>(
-                    segments: const [
-                      ButtonSegment<CardType>(
-                        value: CardType.BARCODE,
-                        label: Text('Barcode'),
-                        icon: Icon(Icons.barcode_reader),
-                      ),
-                      ButtonSegment<CardType>(
-                        value: CardType.QR_CODE,
-                        label: Text('QR Code'),
-                        icon: Icon(Icons.qr_code),
-                      ),
-                    ],
-                    selected: {_selectedCardType},
-                    onSelectionChanged: (Set<CardType> selection) {
-                      setState(() {
-                        _selectedCardType = selection.first;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _barcodeController,
-              decoration: InputDecoration(
-                labelText:
-                    _selectedCardType == CardType.BARCODE
-                        ? 'Barcode Value'
-                        : 'QR Code Value',
-                hintText:
-                    _selectedCardType == CardType.BARCODE
-                        ? 'Enter the barcode value'
-                        : 'Enter the QR code value',
-                border: const OutlineInputBorder(),
-              ),
-              validator: _validateBarcode,
-            ),
-            const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                hintText: 'Enter a title for this card',
-                border: OutlineInputBorder(),
-              ),
-              validator: _validateTitle,
-            ),
-            const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _descriptionController,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                hintText: 'Enter a description',
-                border: OutlineInputBorder(),
-              ),
-              validator: _validateDescription,
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  Navigator.pop(
-                    context,
-                    CardItem(
-                      title:
-                          _titleController.text.isNotEmpty
-                              ? _titleController.text
-                              : 'New Card',
-                      description:
-                          _descriptionController.text.isNotEmpty
-                              ? _descriptionController.text
-                              : 'Manual Entry',
-                      name: _barcodeController.text,
-                      cardType: _selectedCardType.name,
+      child: SingleChildScrollView(
+        // Wrap in SingleChildScrollView for keyboard scrolling
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Card type selection for manual entry
+              Row(
+                children: [
+                  const Text('Card Type: '),
+                  Expanded(
+                    child: SegmentedButton<CardType>(
+                      segments: const [
+                        ButtonSegment<CardType>(
+                          value: CardType.BARCODE,
+                          label: Text('Barcode'),
+                          icon: Icon(Icons.barcode_reader),
+                        ),
+                        ButtonSegment<CardType>(
+                          value: CardType.QR_CODE,
+                          label: Text('QR Code'),
+                          icon: Icon(Icons.qr_code),
+                        ),
+                      ],
+                      selected: {_selectedCardType},
+                      onSelectionChanged: (Set<CardType> selection) {
+                        setState(() {
+                          _selectedCardType = selection.first;
+                        });
+                      },
                     ),
-                  );
-                }
-              },
-              child: const Text('Add Card'),
-            ),
-          ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: _barcodeController,
+                decoration: InputDecoration(
+                  labelText:
+                      _selectedCardType == CardType.BARCODE
+                          ? 'Barcode Value'
+                          : 'QR Code Value',
+                  hintText:
+                      _selectedCardType == CardType.BARCODE
+                          ? 'Enter the barcode value'
+                          : 'Enter the QR code value',
+                  border: const OutlineInputBorder(),
+                ),
+                validator: _validateBarcode,
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: _titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Title',
+                  hintText: 'Enter a title for this card',
+                  border: OutlineInputBorder(),
+                ),
+                validator: _validateTitle,
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: _descriptionController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  hintText: 'Enter a description',
+                  border: OutlineInputBorder(),
+                ),
+                validator: _validateDescription,
+              ),
+              // Remove the Spacer here
+              const SizedBox(height: 32.0), // Add padding instead
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    Navigator.pop(
+                      context,
+                      CardItem(
+                        title:
+                            _titleController.text.isNotEmpty
+                                ? _titleController.text
+                                : 'New Card',
+                        description:
+                            _descriptionController.text.isNotEmpty
+                                ? _descriptionController.text
+                                : 'Manual Entry',
+                        name: _barcodeController.text,
+                        cardType: _selectedCardType.name,
+                      ),
+                    );
+                  }
+                },
+                child: const Text('Add Card'),
+              ),
+              const SizedBox(
+                height: 20.0,
+              ), // Add bottom padding for better visibility
+            ],
+          ),
         ),
       ),
     );

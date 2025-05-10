@@ -6,13 +6,61 @@ import '../models/card_item.dart';
 
 class CardDetailPage extends StatelessWidget {
   final CardItem card;
+  final Function(CardItem)? onDelete; // This is correctly defined as nullable
 
-  const CardDetailPage({super.key, required this.card});
+  const CardDetailPage({
+    super.key,
+    required this.card,
+    this.onDelete, // This remains optional
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Add debug print to verify callback is received
+    print('onDelete is ${onDelete != null ? "provided" : "null"}');
+
     return Scaffold(
-      appBar: AppBar(title: Text(card.title)),
+      appBar: AppBar(
+        title: Text(card.title),
+        actions: [
+          // The conditional check is correct, but let's ensure it works
+          if (onDelete != null)
+            IconButton(
+              icon: const Icon(Icons.delete),
+              tooltip: 'Delete card',
+              onPressed: () {
+                // Show confirmation dialog
+                showDialog(
+                  context: context,
+                  builder:
+                      (ctx) => AlertDialog(
+                        title: const Text('Delete Card'),
+                        content: const Text(
+                          'Are you sure you want to delete this card?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(ctx).pop(),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(ctx).pop();
+                              onDelete!(card);
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
+                );
+              },
+            ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
