@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../helpers/database_helper.dart';
 import '../models/card_item.dart';
@@ -17,6 +22,21 @@ class CardDetailPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(card.title),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            tooltip: 'Share as JSON',
+            onPressed: () async {
+              final jsonString = jsonEncode(card.toMap());
+              final tempDir = await getTemporaryDirectory();
+              final file = File(
+                '${tempDir.path}/${card.title.replaceAll(' ', '_')}.json',
+              );
+              await file.writeAsString(jsonString);
+              await Share.shareXFiles([
+                XFile(file.path),
+              ], text: 'Card: ${card.title}');
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.edit),
             tooltip: 'Edit card',

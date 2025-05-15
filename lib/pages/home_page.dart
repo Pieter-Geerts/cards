@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -143,9 +146,48 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<Widget> _buildAppBarActions(AppLocalizations l10n) {
-    List<Widget> actions = [];
-    if (_isSearchActive) {
-      actions.add(
+    return [
+      IconButton(
+        icon: const Icon(Icons.upload_file),
+        tooltip: 'Import cards from JSON',
+        onPressed: () async {
+          final typeGroup = XTypeGroup(label: 'json', extensions: ['json']);
+          final file = await openFile(acceptedTypeGroups: [typeGroup]);
+          if (file != null) {
+            final content = await file.readAsString();
+            try {
+              final data = jsonDecode(content);
+              if (data is Map<String, dynamic>) {
+                // Single card
+                final card = CardItem.fromMap(data);
+                final nextOrder = await _dbHelper.getNextSortOrder();
+                final newCard = card.copyWith(sortOrder: nextOrder);
+                await _dbHelper.insertCard(newCard);
+                widget.onAddCard(newCard);
+              } else if (data is List) {
+                // Multiple cards
+                for (final item in data) {
+                  if (item is Map<String, dynamic>) {
+                    final card = CardItem.fromMap(item);
+                    final nextOrder = await _dbHelper.getNextSortOrder();
+                    final newCard = card.copyWith(sortOrder: nextOrder);
+                    await _dbHelper.insertCard(newCard);
+                    widget.onAddCard(newCard);
+                  }
+                }
+              }
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Import successful!')));
+            } catch (e) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Invalid JSON file.')));
+            }
+          }
+        },
+      ),
+      if (_isSearchActive)
         IconButton(
           icon: const Icon(Icons.clear),
           onPressed: () {
@@ -157,9 +199,7 @@ class _HomePageState extends State<HomePage> {
             });
           },
         ),
-      );
-    } else {
-      actions.add(
+      if (!_isSearchActive)
         IconButton(
           icon: const Icon(Icons.search),
           onPressed: () {
@@ -168,10 +208,6 @@ class _HomePageState extends State<HomePage> {
             });
           },
         ),
-      );
-      // Remove PopupMenuButton for sorting
-    }
-    actions.add(
       IconButton(
         icon: const Icon(Icons.settings),
         onPressed: () {
@@ -181,8 +217,7 @@ class _HomePageState extends State<HomePage> {
           );
         },
       ),
-    );
-    return actions;
+    ];
   }
 
   void _onReorder(int oldIndex, int newIndex) {
