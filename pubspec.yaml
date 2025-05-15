@@ -23,6 +23,8 @@ dependencies:
   path: ^1.8.3
   barcode_widget: ^2.0.4
   shared_preferences: ^2.2.2
+  image_picker: ^1.0.7
+  fl_mlkit_scanning: ^5.2.2
   share_plus: ^7.2.1
   file_selector: ^1.0.3
 
