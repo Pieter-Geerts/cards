@@ -18,14 +18,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+
+  
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.29.3"
           channel: "stable"
-
+  
+      - name: Create key.properties
+        run: |
+          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
+  
       - name: Install dependencies
         run: flutter pub get
+  
+
 
       # - name: Format code
       #   run: flutter format --set-exit-if-changed .

@@ -41,17 +41,31 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
+            val hasAllProps =
+                keystoreProperties["keyAlias"] != null &&
+                keystoreProperties["keyPassword"] != null &&
+                keystoreProperties["storeFile"] != null &&
+                keystoreProperties["storePassword"] != null
+            if (hasAllProps) {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
         }
     }
 
     buildTypes {
         release {
-            // Replace the existing signing config code
-            signingConfig = signingConfigs.getByName("release")
+            // Only set signingConfig if all properties are present
+            val hasAllProps =
+                keystoreProperties["keyAlias"] != null &&
+                keystoreProperties["keyPassword"] != null &&
+                keystoreProperties["storeFile"] != null &&
+                keystoreProperties["storePassword"] != null
+            if (hasAllProps) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 }
