@@ -268,6 +268,10 @@ class _HomePageState extends State<HomePage> {
                       elevation: 6.0,
                       borderRadius: BorderRadius.circular(18.0),
                       color: Theme.of(context).cardColor,
+                      shadowColor:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white24
+                              : null, // Use a light shadow in dark mode
                       child: InkWell(
                         borderRadius: BorderRadius.circular(18.0),
                         onTap: () => _onCardTap(card),
