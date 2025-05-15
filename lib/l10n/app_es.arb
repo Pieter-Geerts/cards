@@ -48,5 +48,6 @@
   "textBarcode": "Código de Barras",
   "textQrCode": "Código QR",
   "search": "Buscar",
-  "noResultsFound": "No se encontraron resultados para"
+  "noResultsFound": "No se encontraron resultados para",
+  "editCard": "Editar Tarjeta"
 }

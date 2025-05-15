@@ -2,6 +2,7 @@ import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../helpers/database_helper.dart';
 import '../models/card_item.dart';
 
 class CardDetailPage extends StatelessWidget {
@@ -16,6 +17,21 @@ class CardDetailPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(card.title),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            tooltip: 'Edit card',
+            onPressed: () async {
+              final updated = await showDialog<CardItem>(
+                context: context,
+                builder: (ctx) => _EditCardDialog(card: card),
+              );
+              if (updated != null) {
+                await DatabaseHelper().updateCardSortOrders([updated]);
+                // Pop this page to force refresh on parent (or use a callback)
+                Navigator.of(context).pop();
+              }
+            },
+          ),
           if (onDelete != null)
             IconButton(
               icon: const Icon(Icons.delete),
@@ -25,14 +41,14 @@ class CardDetailPage extends StatelessWidget {
                   context: context,
                   builder:
                       (ctx) => AlertDialog(
-                        title: const Text('Delete Card'), // Consider localizing
+                        title: const Text('Delete Card'),
                         content: const Text(
-                          'Are you sure you want to delete this card?', // Consider localizing
+                          'Are you sure you want to delete this card?',
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(ctx).pop(),
-                            child: const Text('Cancel'), // Consider localizing
+                            child: const Text('Cancel'),
                           ),
                           TextButton(
                             onPressed: () {
@@ -41,7 +57,7 @@ class CardDetailPage extends StatelessWidget {
                               Navigator.of(context).pop();
                             },
                             child: const Text(
-                              'Delete', // Consider localizing
+                              'Delete',
                               style: TextStyle(color: Colors.red),
                             ),
                           ),
@@ -53,28 +69,25 @@ class CardDetailPage extends StatelessWidget {
         ],
       ),
       body: SingleChildScrollView(
-        // Make the body scrollable
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.center, // Center content horizontally
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (card.description.isNotEmpty) ...[
                 Text(
                   card.description,
-                  textAlign: TextAlign.center, // Center text
+                  textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 12),
               ],
-              Text(
-                'Type: ${card.cardType}', // Consider localizing 'Type:'
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10), // Consistent spacing
-              // Use LayoutBuilder to get available width for the code widget
+              // Text(
+              //   'Type: ${card.cardType}',
+              //   style: Theme.of(context).textTheme.bodyMedium,
+              //   textAlign: TextAlign.center,
+              // ),
+              // const SizedBox(height: 10),
               LayoutBuilder(
                 builder: (context, constraints) {
                   return _buildCodeWidget(constraints.maxWidth);
@@ -89,12 +102,8 @@ class CardDetailPage extends StatelessWidget {
 
   Widget _buildCodeWidget(double availableWidth) {
     Widget codeInstance;
-    // Determine size based on availableWidth
-    // For QR codes, aim for a large square, e.g., 80-85% of screen width.
-    // For Barcodes, aim for width of ~90-95%, height proportional.
     double qrSize = availableWidth * 0.85;
     double barcodeWidth = availableWidth * 0.95;
-    // Adjust barcode height for a typical aspect ratio, e.g., 1:3 or 1:2.5
     double barcodeHeight = barcodeWidth * 0.3;
 
     if (card.cardType == 'BARCODE') {
@@ -103,13 +112,11 @@ class CardDetailPage extends StatelessWidget {
         data: card.name,
         drawText: false,
         color: Colors.black,
-        backgroundColor:
-            Colors.transparent, // BarcodeWidget itself is transparent
+        backgroundColor: Colors.transparent,
         width: barcodeWidth,
         height: barcodeHeight,
       );
     } else {
-      // Default to QR code (for 'QR_CODE' or any other value)
       codeInstance = QrImageView(
         data: card.name,
         version: QrVersions.auto,
@@ -119,15 +126,78 @@ class CardDetailPage extends StatelessWidget {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(
-        vertical: 20.0,
-      ), // Margin around the code's container
-      color:
-          Colors.white, // Set the background color for the code area to white
-      padding: const EdgeInsets.all(
-        16.0,
-      ), // Padding inside the white box, around the code
+      margin: const EdgeInsets.symmetric(vertical: 20.0),
+      color: Colors.white,
+      padding: const EdgeInsets.all(16.0),
       child: codeInstance,
+    );
+  }
+}
+
+class _EditCardDialog extends StatefulWidget {
+  final CardItem card;
+  const _EditCardDialog({required this.card});
+
+  @override
+  State<_EditCardDialog> createState() => _EditCardDialogState();
+}
+
+class _EditCardDialogState extends State<_EditCardDialog> {
+  late TextEditingController _titleController;
+  late TextEditingController _descController;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.card.title);
+    _descController = TextEditingController(text: widget.card.description);
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Edit Card'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _titleController,
+            decoration: const InputDecoration(labelText: 'Title'),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _descController,
+            decoration: const InputDecoration(labelText: 'Description'),
+            maxLines: 3,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            final updated = widget.card.copyWith(
+              title: _titleController.text.trim(),
+              description: _descController.text.trim(),
+            );
+            // Update in DB
+            final db = DatabaseHelper();
+            await db.updateCardSortOrders([updated]);
+            Navigator.pop(context, updated);
+          },
+          child: const Text('Save'),
+        ),
+      ],
     );
   }
 }

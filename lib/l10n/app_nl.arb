@@ -58,5 +58,6 @@
   "textBarcode": "Barcode",
   "textQrCode": "QR Code",
   "search": "Zoeken",
-  "noResultsFound": "Geen resultaten gevonden voor"
+  "noResultsFound": "Geen resultaten gevonden voor",
+  "editCard": "Kaart Bewerken"
 }

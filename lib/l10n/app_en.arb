@@ -58,5 +58,6 @@
   "textBarcode": "Barcode",
   "textQrCode": "QR Code",
   "search": "Search",
-  "noResultsFound": "No results found for"
+  "noResultsFound": "No results found for",
+  "editCard": "Edit Card"
 }
