@@ -1,9 +1,9 @@
+import 'package:fl_mlkit_scanning/fl_mlkit_scanning.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Import AppLocalizations
 import 'package:image_picker/image_picker.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:qr_code_tools/qr_code_tools.dart';
+import 'package:mobile_scanner/mobile_scanner.dart' as mobile;
 
 import '../models/card_item.dart';
 
@@ -36,6 +36,9 @@ class _AddCardPageState extends State<AddCardPage>
   late AnimationController _animationController;
   final ScrollController _scrollController = ScrollController();
   bool _isScanning = true;
+
+  final FlMlKitScanningController _mlkitController =
+      FlMlKitScanningController();
 
   @override
   void initState() {
@@ -130,31 +133,56 @@ class _AddCardPageState extends State<AddCardPage>
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) return;
-    String? qrData;
+
     try {
-      qrData = await QrCodeToolsPlugin.decodeFrom(pickedFile.path);
+      final bytes = await pickedFile.readAsBytes();
+      final AnalysisImageModel? result = await _mlkitController
+          .scanningImageByte(bytes);
+      if (!mounted) return;
+      final barcodes = result?.barcodes;
+      if (barcodes != null && barcodes.isNotEmpty) {
+        final barcode = barcodes.first;
+        final typeString = barcode.type.toString().toLowerCase();
+        setState(() {
+          _scannedData = barcode.value;
+          _barcodeController.text = barcode.value ?? '';
+          if (typeString.contains('qr')) {
+            _selectedCardType = CardType.QR_CODE;
+          } else {
+            _selectedCardType = CardType.BARCODE;
+          }
+          _isManualEntry = false;
+          _isScanning = false;
+        });
+        _showScanSuccessUI(
+          context,
+          typeString.contains('qr') ? 'QR Code' : 'Barcode',
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: Text('Import from Photo'),
+                content: Text(
+                  'No QR code or barcode could be detected in the selected image.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+        );
+      }
     } catch (e) {
-      qrData = null;
-    }
-    if (!mounted) return;
-    if (qrData != null && qrData.isNotEmpty) {
-      setState(() {
-        _scannedData = qrData;
-        _barcodeController.text = qrData ?? '';
-        _selectedCardType = CardType.QR_CODE;
-        _isManualEntry = false;
-        _isScanning = false;
-      });
-      _showScanSuccessUI(context, 'QR Code');
-    } else {
       showDialog(
         context: context,
         builder:
             (context) => AlertDialog(
               title: Text('Import from Photo'),
-              content: Text(
-                'No QR code could be detected in the selected image.',
-              ),
+              content: Text('Failed to process the image.'),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
@@ -255,9 +283,10 @@ class _AddCardPageState extends State<AddCardPage>
                     alignment: Alignment.center,
                     children: [
                       // Scanner widget
-                      MobileScanner(
+                      mobile.MobileScanner(
                         onDetect: (capture) {
-                          final List<Barcode> barcodes = capture.barcodes;
+                          final List<mobile.Barcode> barcodes =
+                              capture.barcodes;
                           if (barcodes.isNotEmpty && _isScanning) {
                             final barcode = barcodes.first;
                             // Check if rawValue is not null

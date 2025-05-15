@@ -129,6 +129,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.9.3+4"
+  fl_camera:
+    dependency: transitive
+    description:
+      name: fl_camera
+      sha256: "4084a18d628f88133a4c4baadd048082310af9b525b827143978480a23c45802"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.3.1"
+  fl_channel:
+    dependency: transitive
+    description:
+      name: fl_channel
+      sha256: a4ee97351812a69ee79b80e9abf1060295e179e68a15113c5d90c81b43327edf
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.3"
+  fl_mlkit_scanning:
+    dependency: "direct main"
+    description:
+      name: fl_mlkit_scanning
+      sha256: "64b984fca2bfa65a3a60bc438ed2603a47cd5c142eed2861c81d18ed1efba5d4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.2.2"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -381,14 +405,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
-  qr_code_tools:
-    dependency: "direct main"
-    description:
-      name: qr_code_tools
-      sha256: b468fcd215c77cca87306dccb509f02cbee03d82173369d5f2048be082943eac
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.0"
   qr_flutter:
     dependency: "direct main"
     description:
