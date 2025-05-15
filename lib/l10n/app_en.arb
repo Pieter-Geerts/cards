@@ -36,5 +36,27 @@
   "language": "Language",
   "selectLanguage": "Select Language",
   "english": "English",
-  "spanish": "Spanish"
+  "spanish": "Spanish",
+  "dutch": "Dutch",
+  "theme": "Theme",
+  "selectTheme": "Select Theme",
+  "light": "Light",
+  "dark": "Dark",
+  "system": "System",
+  "scanSuccessMessage": "{format} detected successfully!",
+  "@scanSuccessMessage": {
+    "placeholders": {
+      "format": {}
+    }
+  },
+  "validationPleaseEnterValue": "Please enter a value",
+  "validationBarcodeOnlyAlphanumeric": "Barcode can only contain numbers and letters",
+  "validationBarcodeMinLength": "Barcode should be at least 3 characters",
+  "validationTitleRequired": "Please enter a title",
+  "validationTitleMinLength": "Title should be at least 3 characters",
+  "validationDescriptionMinLength": "Description should be at least 5 characters",
+  "textBarcode": "Barcode",
+  "textQrCode": "QR Code",
+  "search": "Search",
+  "noResultsFound": "No results found for"
 }

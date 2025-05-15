@@ -12,27 +12,29 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   late String _currentLanguage;
+  late String _currentThemeMode; // Add state for current theme mode
 
   @override
   void initState() {
     super.initState();
     _currentLanguage = AppSettings.getLanguageCode();
+    _currentThemeMode = AppSettings.getThemeMode(); // Initialize theme mode
     AppSettings.addStaticListener(
-      _onLanguageChanged,
-    ); // Listen for language changes
+      _onSettingsChanged, // Combined listener for both language and theme
+    );
   }
 
   @override
   void dispose() {
-    AppSettings.removeStaticListener(_onLanguageChanged); // Clean up listener
+    AppSettings.removeStaticListener(_onSettingsChanged);
     super.dispose();
   }
 
-  void _onLanguageChanged() {
+  void _onSettingsChanged() {
     if (mounted) {
-      // Ensure the widget is still in the tree
       setState(() {
         _currentLanguage = AppSettings.getLanguageCode();
+        _currentThemeMode = AppSettings.getThemeMode(); // Update theme mode
       });
     }
   }
@@ -51,7 +53,13 @@ class _SettingsPageState extends State<SettingsPage> {
             trailing: const Icon(Icons.language),
             onTap: () => _showLanguageSelector(context),
           ),
-          // Add more settings here
+          ListTile(
+            // Add ListTile for Theme selection
+            title: Text(l10n.theme),
+            subtitle: Text(_getThemeModeName(_currentThemeMode, l10n)),
+            trailing: _getThemeModeIcon(_currentThemeMode),
+            onTap: () => _showThemeModeSelector(context),
+          ),
         ],
       ),
     );
@@ -63,8 +71,34 @@ class _SettingsPageState extends State<SettingsPage> {
         return l10n.english;
       case 'es':
         return l10n.spanish;
+      case 'nl':
+        return l10n.dutch;
       default:
         return l10n.english;
+    }
+  }
+
+  String _getThemeModeName(String themeMode, AppLocalizations l10n) {
+    switch (themeMode) {
+      case 'light':
+        return l10n.light;
+      case 'dark':
+        return l10n.dark;
+      case 'system':
+      default:
+        return l10n.system;
+    }
+  }
+
+  Icon _getThemeModeIcon(String themeMode) {
+    switch (themeMode) {
+      case 'light':
+        return const Icon(Icons.wb_sunny);
+      case 'dark':
+        return const Icon(Icons.nightlight_round);
+      case 'system':
+      default:
+        return const Icon(Icons.settings_brightness);
     }
   }
 
@@ -81,6 +115,43 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               _buildLanguageOption(context, 'en', l10n.english),
               _buildLanguageOption(context, 'es', l10n.spanish),
+              _buildLanguageOption(context, 'nl', l10n.dutch), // Add this line
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showThemeModeSelector(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.selectTheme),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildThemeModeOption(
+                context,
+                'light',
+                l10n.light,
+                Icons.wb_sunny,
+              ),
+              _buildThemeModeOption(
+                context,
+                'dark',
+                l10n.dark,
+                Icons.nightlight_round,
+              ),
+              _buildThemeModeOption(
+                context,
+                'system',
+                l10n.system,
+                Icons.settings_brightness,
+              ),
             ],
           ),
         );
@@ -100,14 +171,7 @@ class _SettingsPageState extends State<SettingsPage> {
         groupValue: _currentLanguage,
         onChanged: (value) async {
           if (value != null) {
-            await AppSettings.setLanguageCodeAndNotify(
-              value,
-            ); // Use the static method
-            // The listener _onLanguageChanged will update _currentLanguage and call setState.
-            // For immediate UI update of the radio button itself before dialog pop:
-            // setState(() {
-            //   _currentLanguage = value;
-            // });
+            await AppSettings.setLanguageCodeAndNotify(value);
             if (context.mounted) {
               Navigator.pop(context);
             }
@@ -115,14 +179,37 @@ class _SettingsPageState extends State<SettingsPage> {
         },
       ),
       onTap: () async {
-        await AppSettings.setLanguageCodeAndNotify(
-          languageCode,
-        ); // Use the static method
-        // The listener _onLanguageChanged will update _currentLanguage and call setState.
-        // For immediate UI update of the radio button itself before dialog pop:
-        // setState(() {
-        //   _currentLanguage = languageCode;
-        // });
+        await AppSettings.setLanguageCodeAndNotify(languageCode);
+        if (context.mounted) {
+          Navigator.pop(context);
+        }
+      },
+    );
+  }
+
+  Widget _buildThemeModeOption(
+    BuildContext context,
+    String themeModeValue,
+    String themeModeName,
+    IconData icon,
+  ) {
+    return ListTile(
+      title: Text(themeModeName),
+      leading: Icon(icon), // Use a specific icon for the radio button
+      trailing: Radio<String>(
+        value: themeModeValue,
+        groupValue: _currentThemeMode,
+        onChanged: (value) async {
+          if (value != null) {
+            await AppSettings.setThemeModeAndNotify(value);
+            if (context.mounted) {
+              Navigator.pop(context);
+            }
+          }
+        },
+      ),
+      onTap: () async {
+        await AppSettings.setThemeModeAndNotify(themeModeValue);
         if (context.mounted) {
           Navigator.pop(context);
         }
