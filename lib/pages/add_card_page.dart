@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Import AppLocalizations
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:qr_code_tools/qr_code_tools.dart';
 
 import '../models/card_item.dart';
 
@@ -56,7 +58,7 @@ class _AddCardPageState extends State<AddCardPage>
 
   // Validation functions
   String? _validateBarcode(String? value) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     if (value == null || value.isEmpty) {
       return l10n.validationPleaseEnterValue;
     }
@@ -73,7 +75,7 @@ class _AddCardPageState extends State<AddCardPage>
   }
 
   String? _validateTitle(String? value) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     if (value == null || value.isEmpty) {
       return l10n.validationTitleRequired;
     }
@@ -84,7 +86,7 @@ class _AddCardPageState extends State<AddCardPage>
   }
 
   String? _validateDescription(String? value) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     if (value != null && value.isNotEmpty && value.length < 5) {
       return l10n.validationDescriptionMinLength;
     }
@@ -93,7 +95,7 @@ class _AddCardPageState extends State<AddCardPage>
 
   // Show success feedback to user
   void _showScanSuccessUI(BuildContext context, String format) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     HapticFeedback.mediumImpact();
 
     ScaffoldMessenger.of(context).clearSnackBars();
@@ -124,11 +126,60 @@ class _AddCardPageState extends State<AddCardPage>
     });
   }
 
+  Future<void> _importFromPhoto() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+    String? qrData;
+    try {
+      qrData = await QrCodeToolsPlugin.decodeFrom(pickedFile.path);
+    } catch (e) {
+      qrData = null;
+    }
+    if (!mounted) return;
+    if (qrData != null && qrData.isNotEmpty) {
+      setState(() {
+        _scannedData = qrData;
+        _barcodeController.text = qrData ?? '';
+        _selectedCardType = CardType.QR_CODE;
+        _isManualEntry = false;
+        _isScanning = false;
+      });
+      _showScanSuccessUI(context, 'QR Code');
+    } else {
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: Text('Import from Photo'),
+              content: Text(
+                'No QR code could be detected in the selected image.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!; // Get l10n instance
+    final l10n = AppLocalizations.of(context); // Get l10n instance
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.addCard)), // Use localized string
+      appBar: AppBar(
+        title: Text(l10n.addCard), // Use localized string
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.photo_library),
+            tooltip: 'Import from Photo',
+            onPressed: _importFromPhoto,
+          ),
+        ],
+      ),
       body: Column(
         children: [
           // Toggle buttons for scan/manual entry

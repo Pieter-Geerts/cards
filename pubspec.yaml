@@ -23,6 +23,8 @@ dependencies:
   path: ^1.8.3
   barcode_widget: ^2.0.4
   shared_preferences: ^2.2.2
+  image_picker: ^1.0.7
+  qr_code_tools: ^0.2.0
 
 dev_dependencies:
   flutter_test:
