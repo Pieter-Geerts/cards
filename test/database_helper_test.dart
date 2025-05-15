@@ -19,6 +19,7 @@ void main() {
         title: 'Test Card',
         description: 'Test Description',
         name: 'Test Name',
+        sortOrder: 0,
       );
       await dbHelper.insertCard(card);
 
@@ -38,6 +39,7 @@ void main() {
         title: 'Card to Delete',
         description: 'Description to Delete',
         name: 'Name to Delete',
+        sortOrder: 1,
       );
       final id = await dbHelper.insertCard(card);
 

@@ -1,0 +1,62 @@
+{
+  "appTitle": "Kaarten - QR Scanner",
+  "myCards": "Mijn Kaarten",
+  "addCard": "Kaart Toevoegen",
+  "scanBarcode": "Scan Barcode",
+  "manualEntry": "Handmatige Invoer",
+  "noCardsYet": "Nog geen kaarten. Voeg je eerste kaart toe!",
+  "deleteCard": "Verwijder Kaart",
+  "deleteConfirmation": "Weet je zeker dat je deze kaart wilt verwijderen?",
+  "cancel": "Annuleren",
+  "delete": "Verwijderen",
+  "cardType": "Type: {type}",
+  "@cardType": {
+    "placeholders": {
+      "type": {}
+    }
+  },
+  "title": "Titel",
+  "titleHint": "Voer een titel in voor deze kaart",
+  "description": "Omschrijving",
+  "descriptionHint": "Voer een omschrijving in",
+  "barcode": "Barcode",
+  "qrCode": "QR Code",
+  "barcodeValue": "Barcode Waarde",
+  "qrCodeValue": "QR Code Waarde",
+  "enterBarcodeValue": "Voer de barcode waarde in",
+  "enterQrCodeValue": "Voer de QR code waarde in",
+  "detectedFormat": "Gedetecteerd: {format}",
+  "@detectedFormat": {
+    "placeholders": {
+      "format": {}
+    }
+  },
+  "noDataScanned": "Geen data gescand",
+  "settings": "Instellingen",
+  "language": "Taal",
+  "selectLanguage": "Selecteer Taal",
+  "english": "Engels",
+  "spanish": "Spaans",
+  "dutch": "Nederlands",
+  "theme": "Thema",
+  "selectTheme": "Selecteer Thema",
+  "light": "Licht",
+  "dark": "Donker",
+  "system": "Systeem",
+  "scanSuccessMessage": "{format} succesvol gedetecteerd!",
+  "@scanSuccessMessage": {
+    "placeholders": {
+      "format": {}
+    }
+  },
+  "validationPleaseEnterValue": "Voer een waarde in",
+  "validationBarcodeOnlyAlphanumeric": "Barcode mag alleen cijfers en letters bevatten",
+  "validationBarcodeMinLength": "Barcode moet minimaal 3 tekens lang zijn",
+  "validationTitleRequired": "Voer een titel in",
+  "validationTitleMinLength": "Titel moet minimaal 3 tekens lang zijn",
+  "validationDescriptionMinLength": "Omschrijving moet minimaal 5 tekens lang zijn",
+  "textBarcode": "Barcode",
+  "textQrCode": "QR Code",
+  "search": "Zoeken",
+  "noResultsFound": "Geen resultaten gevonden voor"
+}

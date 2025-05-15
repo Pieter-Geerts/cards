@@ -1,4 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Add Camera Permission -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Declare camera feature. 'required="true"' means the app won't install on devices without a camera.
+         If your app can function without a camera (e.g., manual entry only), set this to "false".
+         Given it's a QR scanner, "true" is appropriate. -->
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+
     <application
         android:label="Cards - QR Scanner"
         android:name="${applicationName}"

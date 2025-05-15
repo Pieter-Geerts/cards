@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Import AppLocalizations
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../models/card_item.dart';
@@ -18,7 +19,8 @@ class _AddCardPageState extends State<AddCardPage>
   String? _scannedData;
   bool _isManualEntry = false;
   CardType _selectedCardType = CardType.QR_CODE;
-  String _detectedFormat = '';
+  String _detectedFormatString =
+      ''; // Changed to avoid conflict with l10n getter
 
   // Controllers for manual input fields
   final TextEditingController _barcodeController = TextEditingController();
@@ -54,56 +56,50 @@ class _AddCardPageState extends State<AddCardPage>
 
   // Validation functions
   String? _validateBarcode(String? value) {
+    final l10n = AppLocalizations.of(context)!;
     if (value == null || value.isEmpty) {
-      return 'Please enter a value';
+      return l10n.validationPleaseEnterValue;
     }
 
-    // For barcodes, we might want to check if it's numeric
     if (_selectedCardType == CardType.BARCODE) {
-      // Add specific barcode validation if needed
-      // For example, check if the barcode is numeric or has the right length
       if (!RegExp(r'^[0-9a-zA-Z]+$').hasMatch(value)) {
-        return 'Barcode can only contain numbers and letters';
+        return l10n.validationBarcodeOnlyAlphanumeric;
       }
-
       if (value.length < 3) {
-        return 'Barcode should be at least 3 characters';
+        return l10n.validationBarcodeMinLength;
       }
     }
-
     return null;
   }
 
   String? _validateTitle(String? value) {
+    final l10n = AppLocalizations.of(context)!;
     if (value == null || value.isEmpty) {
-      return 'Please enter a title';
+      return l10n.validationTitleRequired;
     }
-
     if (value.length < 3) {
-      return 'Title should be at least 3 characters';
+      return l10n.validationTitleMinLength;
     }
-
     return null;
   }
 
   String? _validateDescription(String? value) {
-    // Description can be optional, or you can add minimum length requirements
+    final l10n = AppLocalizations.of(context)!;
     if (value != null && value.isNotEmpty && value.length < 5) {
-      return 'Description should be at least 5 characters';
+      return l10n.validationDescriptionMinLength;
     }
     return null;
   }
 
   // Show success feedback to user
   void _showScanSuccessUI(BuildContext context, String format) {
-    // Play haptic feedback
+    final l10n = AppLocalizations.of(context)!;
     HapticFeedback.mediumImpact();
 
-    // Show snackbar with scan success message
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$format detected successfully!'),
+        content: Text(l10n.scanSuccessMessage(format)), // Use localized string
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 1),
         behavior: SnackBarBehavior.floating,
@@ -130,24 +126,25 @@ class _AddCardPageState extends State<AddCardPage>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!; // Get l10n instance
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Card')),
+      appBar: AppBar(title: Text(l10n.addCard)), // Use localized string
       body: Column(
         children: [
           // Toggle buttons for scan/manual entry
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: SegmentedButton<bool>(
-              segments: const [
+              segments: [
                 ButtonSegment<bool>(
                   value: false,
-                  label: Text('Scan Barcode'),
-                  icon: Icon(Icons.qr_code_scanner),
+                  label: Text(l10n.scanBarcode), // Use localized string
+                  icon: const Icon(Icons.qr_code_scanner),
                 ),
                 ButtonSegment<bool>(
                   value: true,
-                  label: Text('Manual Entry'),
-                  icon: Icon(Icons.keyboard),
+                  label: Text(l10n.manualEntry), // Use localized string
+                  icon: const Icon(Icons.keyboard),
                 ),
               ],
               selected: {_isManualEntry},
@@ -161,18 +158,22 @@ class _AddCardPageState extends State<AddCardPage>
 
           // Display either scanner or manual input form
           Expanded(
-            child: _isManualEntry ? _buildManualEntryForm() : _buildScanner(),
+            child:
+                _isManualEntry
+                    ? _buildManualEntryForm(l10n)
+                    : _buildScanner(l10n),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildScanner() {
+  Widget _buildScanner(AppLocalizations l10n) {
+    // Pass l10n
     return Column(
       children: [
         // Display detected barcode type if available
-        if (_scannedData != null && _detectedFormat.isNotEmpty)
+        if (_scannedData != null && _detectedFormatString.isNotEmpty)
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -181,7 +182,9 @@ class _AddCardPageState extends State<AddCardPage>
                 const Icon(Icons.check_circle, color: Colors.green),
                 const SizedBox(width: 8),
                 Text(
-                  'Detected: $_detectedFormat',
+                  l10n.detectedFormat(
+                    _detectedFormatString,
+                  ), // Use localized string
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
@@ -213,17 +216,22 @@ class _AddCardPageState extends State<AddCardPage>
                                 _barcodeController.text = _scannedData ?? '';
 
                                 // Safely check the format to avoid null errors
-                                final format = barcode.format?.toString() ?? '';
-                                if (format.toLowerCase().contains("qr")) {
-                                  _detectedFormat = 'QR Code';
+                                final formatName = barcode.format.toString();
+                                if (formatName.toLowerCase().contains("qr")) {
+                                  _detectedFormatString =
+                                      l10n.textQrCode; // Use localized string
                                   _selectedCardType = CardType.QR_CODE;
                                 } else {
-                                  _detectedFormat = 'Barcode';
+                                  _detectedFormatString =
+                                      l10n.textBarcode; // Use localized string
                                   _selectedCardType = CardType.BARCODE;
                                 }
 
                                 // Show success UI
-                                _showScanSuccessUI(context, _detectedFormat);
+                                _showScanSuccessUI(
+                                  context,
+                                  _detectedFormatString,
+                                );
                               });
                             }
                           }
@@ -261,16 +269,20 @@ class _AddCardPageState extends State<AddCardPage>
                             children: [
                               const Text('Type: '),
                               SegmentedButton<CardType>(
-                                segments: const [
+                                segments: [
                                   ButtonSegment<CardType>(
                                     value: CardType.BARCODE,
-                                    label: Text('Barcode'),
-                                    icon: Icon(Icons.barcode_reader),
+                                    label: Text(
+                                      l10n.barcode,
+                                    ), // Use localized string
+                                    icon: const Icon(Icons.barcode_reader),
                                   ),
                                   ButtonSegment<CardType>(
                                     value: CardType.QR_CODE,
-                                    label: Text('QR Code'),
-                                    icon: Icon(Icons.qr_code),
+                                    label: Text(
+                                      l10n.qrCode,
+                                    ), // Use localized string
+                                    icon: const Icon(Icons.qr_code),
                                   ),
                                 ],
                                 selected: {_selectedCardType},
@@ -286,10 +298,10 @@ class _AddCardPageState extends State<AddCardPage>
                           // Add validation for title
                           TextFormField(
                             controller: _titleController,
-                            decoration: const InputDecoration(
-                              labelText: 'Title',
-                              hintText: 'Enter a title for this card',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: l10n.title, // Use localized string
+                              hintText: l10n.titleHint, // Use localized string
+                              border: const OutlineInputBorder(),
                             ),
                             validator: _validateTitle,
                           ),
@@ -298,43 +310,47 @@ class _AddCardPageState extends State<AddCardPage>
                           TextFormField(
                             controller: _descriptionController,
                             maxLines: 3,
-                            decoration: const InputDecoration(
-                              labelText: 'Description',
-                              hintText: 'Enter a description',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText:
+                                  l10n.description, // Use localized string
+                              hintText:
+                                  l10n.descriptionHint, // Use localized string
+                              border: const OutlineInputBorder(),
                             ),
                             validator: _validateDescription,
                           ),
                           const SizedBox(height: 10),
                           ElevatedButton(
                             onPressed: () {
-                              // Ensure _scannedData is not null before proceeding
                               if (_scannedData != null &&
                                   _formKey.currentState!.validate()) {
                                 Navigator.pop(
                                   context,
-                                  CardItem(
+                                  CardItem.temp(
+                                    // Use the temporary constructor
                                     title:
                                         _titleController.text.isNotEmpty
                                             ? _titleController.text
-                                            : 'New Card',
+                                            : l10n.appTitle,
                                     description:
                                         _descriptionController.text.isNotEmpty
                                             ? _descriptionController.text
-                                            : 'Scanned Description',
+                                            : '',
                                     name: _scannedData!,
                                     cardType: _selectedCardType.name,
                                   ),
                                 );
                               } else if (_scannedData == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('No data scanned'),
+                                  SnackBar(
+                                    content: Text(
+                                      l10n.noDataScanned,
+                                    ), // Use localized string
                                   ),
                                 );
                               }
                             },
-                            child: const Text('Add Card'),
+                            child: Text(l10n.addCard), // Use localized string
                           ),
                         ],
                       ),
@@ -348,7 +364,8 @@ class _AddCardPageState extends State<AddCardPage>
     );
   }
 
-  Widget _buildManualEntryForm() {
+  Widget _buildManualEntryForm(AppLocalizations l10n) {
+    // Pass l10n
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(
@@ -361,19 +378,18 @@ class _AddCardPageState extends State<AddCardPage>
               // Card type selection for manual entry
               Row(
                 children: [
-                  const Text('Card Type: '),
                   Expanded(
                     child: SegmentedButton<CardType>(
-                      segments: const [
+                      segments: [
                         ButtonSegment<CardType>(
                           value: CardType.BARCODE,
-                          label: Text('Barcode'),
-                          icon: Icon(Icons.barcode_reader),
+                          label: Text(l10n.barcode), // Use localized string
+                          icon: const Icon(Icons.barcode_reader),
                         ),
                         ButtonSegment<CardType>(
                           value: CardType.QR_CODE,
-                          label: Text('QR Code'),
-                          icon: Icon(Icons.qr_code),
+                          label: Text(l10n.qrCode), // Use localized string
+                          icon: const Icon(Icons.qr_code),
                         ),
                       ],
                       selected: {_selectedCardType},
@@ -393,12 +409,12 @@ class _AddCardPageState extends State<AddCardPage>
                 decoration: InputDecoration(
                   labelText:
                       _selectedCardType == CardType.BARCODE
-                          ? 'Barcode Value'
-                          : 'QR Code Value',
+                          ? l10n.barcodeValue
+                          : l10n.qrCodeValue, // Use localized string
                   hintText:
                       _selectedCardType == CardType.BARCODE
-                          ? 'Enter the barcode value'
-                          : 'Enter the QR code value',
+                          ? l10n.enterBarcodeValue
+                          : l10n.enterQrCodeValue, // Use localized string
                   border: const OutlineInputBorder(),
                 ),
                 validator: _validateBarcode,
@@ -406,10 +422,10 @@ class _AddCardPageState extends State<AddCardPage>
               const SizedBox(height: 16.0),
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                  hintText: 'Enter a title for this card',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.title, // Use localized string
+                  hintText: l10n.titleHint, // Use localized string
+                  border: const OutlineInputBorder(),
                 ),
                 validator: _validateTitle,
               ),
@@ -417,10 +433,10 @@ class _AddCardPageState extends State<AddCardPage>
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  hintText: 'Enter a description',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.description, // Use localized string
+                  hintText: l10n.descriptionHint, // Use localized string
+                  border: const OutlineInputBorder(),
                 ),
                 validator: _validateDescription,
               ),
@@ -431,22 +447,23 @@ class _AddCardPageState extends State<AddCardPage>
                   if (_formKey.currentState!.validate()) {
                     Navigator.pop(
                       context,
-                      CardItem(
+                      CardItem.temp(
+                        // Use the temporary constructor
                         title:
                             _titleController.text.isNotEmpty
                                 ? _titleController.text
-                                : 'New Card',
+                                : l10n.appTitle,
                         description:
                             _descriptionController.text.isNotEmpty
                                 ? _descriptionController.text
-                                : 'Manual Entry',
+                                : '',
                         name: _barcodeController.text,
                         cardType: _selectedCardType.name,
                       ),
                     );
                   }
                 },
-                child: const Text('Add Card'),
+                child: Text(l10n.addCard), // Use localized string
               ),
               const SizedBox(
                 height: 20.0,

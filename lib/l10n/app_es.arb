@@ -26,5 +26,27 @@
   "language": "Idioma",
   "selectLanguage": "Seleccionar Idioma",
   "english": "Inglés",
-  "spanish": "Español"
+  "spanish": "Español",
+  "dutch": "Holandés",
+  "theme": "Tema",
+  "selectTheme": "Seleccionar Tema",
+  "light": "Claro",
+  "dark": "Oscuro",
+  "system": "Sistema",
+  "scanSuccessMessage": "¡{format} detectado con éxito!",
+  "@scanSuccessMessage": {
+    "placeholders": {
+      "format": {}
+    }
+  },
+  "validationPleaseEnterValue": "Por favor ingrese un valor",
+  "validationBarcodeOnlyAlphanumeric": "El código de barras solo puede contener números y letras",
+  "validationBarcodeMinLength": "El código de barras debe tener al menos 3 caracteres",
+  "validationTitleRequired": "Por favor ingrese un título",
+  "validationTitleMinLength": "El título debe tener al menos 3 caracteres",
+  "validationDescriptionMinLength": "La descripción debe tener al menos 5 caracteres",
+  "textBarcode": "Código de Barras",
+  "textQrCode": "Código QR",
+  "search": "Buscar",
+  "noResultsFound": "No se encontraron resultados para"
 }
