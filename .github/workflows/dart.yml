@@ -51,3 +51,9 @@ jobs:
       # Build Android App Bundle (AAB)
       - name: Build Android App Bundle
         run: flutter build appbundle --release
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
