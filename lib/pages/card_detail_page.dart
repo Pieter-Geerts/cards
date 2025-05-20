@@ -212,7 +212,7 @@ class _EditCardDialogState extends State<_EditCardDialog> {
             );
             // Update in DB
             final db = DatabaseHelper();
-            await db.updateCardSortOrders([updated]);
+            await db.updateCard(updated);
             Navigator.pop(context, updated);
           },
           child: const Text('Save'),
