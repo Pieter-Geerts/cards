@@ -15,7 +15,7 @@ class CardItem {
     this.cardType = 'QR_CODE',
     DateTime? createdAt,
     required this.sortOrder,
-  }) : this.createdAt = createdAt ?? DateTime.now();
+  }) : createdAt = createdAt ?? DateTime.now();
 
   // Temporary constructor for AddCardPage to return data without sortOrder yet.
   // HomePage will use this data to create the final CardItem with a sortOrder.
@@ -24,9 +24,9 @@ class CardItem {
     required this.description,
     required this.name,
     this.cardType = 'QR_CODE',
-  }) : this.id = null,
-       this.createdAt = DateTime.now(),
-       this.sortOrder = -1; // Placeholder, will be overwritten by HomePage
+  }) : id = null,
+       createdAt = DateTime.now(),
+       sortOrder = -1; // Placeholder, will be overwritten by HomePage
 
   Map<String, dynamic> toMap() {
     return {

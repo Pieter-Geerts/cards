@@ -119,4 +119,15 @@ class DatabaseHelper {
     final db = await database;
     return db.delete('cards', where: 'id = ?', whereArgs: [id]);
   }
+
+  Future<int> updateCard(CardItem card) async {
+    final db = await database;
+    if (card.id == null) return 0;
+    return db.update(
+      'cards',
+      card.toMap(),
+      where: 'id = ?',
+      whereArgs: [card.id],
+    );
+  }
 }
