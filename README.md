@@ -96,6 +96,12 @@ The app uses SQLite to store all cards locally on the device. The database struc
 - `description`: TEXT
 - `name`: TEXT (Contains the scanned QR/barcode data)
 
+## Editing Cards
+
+You can edit a card's title and description by tapping the edit (pencil) icon on the card detail page. After saving, your changes will be persisted in the local database and reflected in the card list.
+
+If you do not see your changes immediately, try returning to the main card list or restarting the app to refresh the view.
+
 ## Testing
 
 Run the tests using:
