@@ -1,4 +1,4 @@
-# Workflow to bump version, generate release notes, and build Android bundle (AAB)
+# Workflow to generate release notes and build Android bundle (AAB)
 # Triggered manually from GitHub Actions UI
 
 name: Version & Release Build
@@ -7,27 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  version-bump:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Dart
-        uses: dart-lang/setup-dart@v1
-      - name: Activate pubspec_version
-        run: dart pub global activate pubspec_version
-      - name: Bump patch version
-        run: pubspec_version patch
-      - name: Commit and push version bump
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add pubspec.yaml
-          git commit -m "chore: bump version [skip ci]" || echo "No changes to commit"
-          git push || echo "No changes to push"
-
   release-please:
     runs-on: ubuntu-latest
-    needs: version-bump
     steps:
       - uses: actions/checkout@v4
       - name: Release Please
