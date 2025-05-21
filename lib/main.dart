@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/database_helper.dart';
 import 'models/card_item.dart';
@@ -9,6 +10,38 @@ import 'utils/app_settings.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppSettings.init(); // Initialize settings
+
+  // Onboarding: Insert example cards on first launch
+  final prefs = await SharedPreferences.getInstance();
+  final hasOnboarded = prefs.getBool('hasOnboarded') ?? false;
+  if (!hasOnboarded) {
+    final db = DatabaseHelper();
+    final now = DateTime.now();
+    // Example barcode card
+    await db.insertCard(
+      CardItem(
+        title: 'Example Loyalty Card',
+        description: 'This is a sample barcode card. You can delete it.',
+        name: '123456789012',
+        cardType: 'BARCODE',
+        createdAt: now,
+        sortOrder: 0,
+      ),
+    );
+    // Example QR code card
+    await db.insertCard(
+      CardItem(
+        title: 'Example QR Code',
+        description: 'This is a sample QR code card. You can delete it.',
+        name: 'https://example.com',
+        cardType: 'QR_CODE',
+        createdAt: now,
+        sortOrder: 1,
+      ),
+    );
+    await prefs.setBool('hasOnboarded', true);
+  }
+
   runApp(const MyApp());
 }
 
@@ -69,17 +102,24 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _addCard(CardItem card) async {
-    // Check if the card is the delete signal
+    // Remove example cards if user adds a real card
     if (card.title == "##DELETE_CARD_SIGNAL##" &&
         card.id == null &&
         card.sortOrder == -1) {
       // This is the delete signal, do not insert it.
       // Proceed to load cards to refresh the list.
     } else {
-      // This is a genuine new card, insert it.
+      // Remove all example cards if present
+      final db = DatabaseHelper();
+      final cards = await db.getCards();
+      for (final c in cards) {
+        if (c.title.startsWith('Example')) {
+          if (c.id != null) await db.deleteCard(c.id!);
+        }
+      }
       await _dbHelper.insertCard(card);
     }
-    await _loadCards(); // Reload cards to reflect changes (addition or post-deletion refresh)
+    await _loadCards(); // Reload cards to reflect changes
   }
 
   @override

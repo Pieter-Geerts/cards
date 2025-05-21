@@ -109,7 +109,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
     if (updated != null && updated.id != null) {
-      // Update the card in the displayed list
       setState(() {
         final idx = _displayedCards.indexWhere((c) => c.id == updated.id);
         if (idx != -1) {
@@ -266,37 +265,29 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-
     return Scaffold(
       appBar: AppBar(
-        leading:
-            _isSearchActive
-                ? IconButton(
-                  icon: Icon(Icons.arrow_back),
-                  onPressed: () {
-                    setState(() {
-                      _isSearchActive = false;
-                      _searchController.clear();
-                      _searchQuery = '';
-                      _applySearchFilter();
-                    });
-                  },
-                )
-                : null,
-        title: _buildAppBarTitle(l10n),
+        title: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(l10n.myCards),
+        ),
         actions: _buildAppBarActions(l10n),
+        elevation: 4.0, // More pronounced shadow
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        iconTheme: IconThemeData(
+          color: Theme.of(context).colorScheme.onSurface,
+          size: 28,
+        ),
+        toolbarHeight: 64,
       ),
       body:
           _displayedCards.isEmpty
-              ? Center(
-                child: Text(
-                  _searchQuery.isNotEmpty
-                      ? '${l10n.noResultsFound} "$_searchQuery"'
-                      : l10n.noCardsYet,
-                ),
-              )
+              ? _buildEmptyState(context, l10n)
               : ReorderableListView.builder(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16.0,
+                  horizontal: 12.0,
+                ),
                 itemCount: _displayedCards.length,
                 itemBuilder: (context, index) {
                   final card = _displayedCards[index];
@@ -304,59 +295,116 @@ class _HomePageState extends State<HomePage> {
                     key: ValueKey(
                       card.id ?? card.name + card.createdAt.toString(),
                     ),
-                    margin: const EdgeInsets.symmetric(
-                      vertical: 14.0,
-                      horizontal: 8.0,
-                    ),
+                    margin: const EdgeInsets.symmetric(vertical: 14.0),
                     child: Material(
-                      elevation: 6.0,
-                      borderRadius: BorderRadius.circular(18.0),
+                      elevation: 8.0, // More pronounced elevation
+                      borderRadius: BorderRadius.circular(
+                        20.0,
+                      ), // Consistent rounded corners
                       color: Theme.of(context).cardColor,
                       shadowColor:
                           Theme.of(context).brightness == Brightness.dark
                               ? Colors.white24
-                              : null, // Use a light shadow in dark mode
+                              : Colors.black26,
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(18.0),
+                        borderRadius: BorderRadius.circular(20.0),
                         onTap: () => _onCardTap(card),
+                        splashColor: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.12),
+                        highlightColor: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.08),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             vertical: 28.0,
                             horizontal: 24.0,
                           ),
-                          child: Column(
+                          child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                card.title.toUpperCase(),
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 26,
+                              Icon(
+                                card.cardType == 'BARCODE'
+                                    ? Icons.qr_code_2
+                                    : Icons.qr_code,
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 32,
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      card.title,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.headlineSmall?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 24,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    if (card.description.trim().isNotEmpty) ...[
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        card.description,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodyLarge?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withOpacity(0.8),
+                                          fontSize: 16,
+                                        ),
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      l10n.cardType(card.cardType),
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.labelMedium?.copyWith(
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.secondary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuButton<String>(
+                                icon: Icon(
+                                  Icons.more_vert,
                                   color:
                                       Theme.of(context).colorScheme.onSurface,
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                                onSelected: (value) {
+                                  if (value == 'edit') _onCardTap(card);
+                                  if (value == 'delete') _deleteCard(card);
+                                },
+                                itemBuilder:
+                                    (context) => [
+                                      PopupMenuItem(
+                                        value: 'edit',
+                                        child: Text('Edit'),
+                                      ),
+                                      PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text(l10n.delete),
+                                      ),
+                                    ],
                               ),
-                              // Only show description if it's not empty
-                              if (card.description.trim().isNotEmpty) ...[
-                                const SizedBox(height: 10),
-                                Text(
-                                  card.description,
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.bodyLarge?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurface.withOpacity(0.7),
-                                    fontSize: 16,
-                                  ),
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
                             ],
                           ),
                         ),
@@ -368,7 +416,57 @@ class _HomePageState extends State<HomePage> {
               ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToAddCardPage,
-        child: const Icon(Icons.add),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        child: const Icon(Icons.add, size: 32),
+        elevation: 6.0,
+        shape: const CircleBorder(),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.credit_card,
+              size: 80,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              l10n.noCardsYet,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _navigateToAddCardPage,
+              icon: const Icon(Icons.add),
+              label: Text(l10n.addCard),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
+                ),
+                textStyle: Theme.of(context).textTheme.titleMedium,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 2,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
