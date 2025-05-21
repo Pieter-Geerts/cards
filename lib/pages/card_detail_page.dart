@@ -89,6 +89,19 @@ class _CardDetailPageState extends State<CardDetailPage> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.share),
+            tooltip:
+                'Share', // Fallback to plain string if l10n.share is missing
+            onPressed: () async {
+              final tempDir = await getTemporaryDirectory();
+              final file = File('${tempDir.path}/card.txt');
+              await file.writeAsString(_currentCard.name);
+              await Share.shareXFiles([
+                XFile(file.path),
+              ], text: _currentCard.title);
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.edit),
             tooltip:
                 l10n.addCard, // Should be l10n.edit, but fallback if not present
@@ -119,7 +132,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
                   });
                 },
               )
-              : SingleChildScrollView(
+              : Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,23 +162,6 @@ class _CardDetailPageState extends State<CardDetailPage> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.share),
-                          tooltip: 'Share',
-                          onPressed: () async {
-                            final tempDir = await getTemporaryDirectory();
-                            final file = File('${tempDir.path}/card.txt');
-                            await file.writeAsString(_currentCard.name);
-                            await Share.shareXFiles([
-                              XFile(file.path),
-                            ], text: _currentCard.title);
-                          },
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
