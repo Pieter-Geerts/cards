@@ -68,7 +68,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
           ),
     );
     if (confirmed == true) {
-      await DatabaseHelper().deleteCard(_currentCard.id!);
+      if (_currentCard.id != null) {
+        await DatabaseHelper().deleteCard(_currentCard.id!);
+      }
       widget.onDelete?.call(_currentCard);
       if (mounted) Navigator.of(context).pop();
     }
@@ -92,11 +94,12 @@ class _CardDetailPageState extends State<CardDetailPage> {
                 l10n.addCard, // Should be l10n.edit, but fallback if not present
             onPressed: _editing ? null : _startEditing,
           ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            tooltip: l10n.deleteCard,
-            onPressed: () => _deleteCard(context),
-          ),
+          if (widget.onDelete != null)
+            IconButton(
+              icon: const Icon(Icons.delete),
+              tooltip: l10n.deleteCard,
+              onPressed: () => _deleteCard(context),
+            ),
         ],
       ),
       body:
@@ -116,7 +119,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
                   });
                 },
               )
-              : Padding(
+              : SingleChildScrollView(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,7 +148,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
                         MediaQuery.of(context).size.width * 0.7,
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [

@@ -108,10 +108,7 @@ class _AddCardPageState extends State<AddCardPage>
   }
 
   String? _validateDescription(String? value) {
-    final l10n = AppLocalizations.of(context);
-    if (value != null && value.isNotEmpty && value.length < 5) {
-      return l10n.validationDescriptionMinLength;
-    }
+    // No validation for description field (optional)
     return null;
   }
 
@@ -225,7 +222,7 @@ class _AddCardPageState extends State<AddCardPage>
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -257,7 +254,7 @@ class _AddCardPageState extends State<AddCardPage>
             ),
             const SizedBox(height: 20),
             if (!_isManualEntry)
-              Expanded(child: _buildScanner(l10n))
+              SizedBox(height: 350, child: _buildScanner(l10n))
             else ...[
               Text(
                 l10n.manualEntry,
@@ -336,27 +333,26 @@ class _AddCardPageState extends State<AddCardPage>
                     ),
                     const SizedBox(height: 32),
                     ElevatedButton(
-                      onPressed:
-                          _formKey.currentState?.validate() == true
-                              ? () {
-                                Navigator.pop(
-                                  context,
-                                  CardItem.temp(
-                                    // Use the temporary constructor
-                                    title:
-                                        _titleController.text.isNotEmpty
-                                            ? _titleController.text
-                                            : l10n.appTitle,
-                                    description:
-                                        _descriptionController.text.isNotEmpty
-                                            ? _descriptionController.text
-                                            : '',
-                                    name: _barcodeController.text,
-                                    cardType: _selectedCardType.name,
-                                  ),
-                                );
-                              }
-                              : null,
+                      onPressed: () {
+                        if (_formKey.currentState?.validate() ?? false) {
+                          Navigator.pop(
+                            context,
+                            CardItem.temp(
+                              // Use the temporary constructor
+                              title:
+                                  _titleController.text.isNotEmpty
+                                      ? _titleController.text
+                                      : l10n.appTitle,
+                              description:
+                                  _descriptionController.text.isNotEmpty
+                                      ? _descriptionController.text
+                                      : '',
+                              name: _barcodeController.text,
+                              cardType: _selectedCardType.name,
+                            ),
+                          );
+                        }
+                      },
                       child: Text(l10n.addCard),
                     ),
                   ],
