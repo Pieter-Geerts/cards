@@ -101,13 +101,22 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _onCardTap(CardItem card) {
-    Navigator.push(
+  void _onCardTap(CardItem card) async {
+    final updated = await Navigator.push<CardItem>(
       context,
       MaterialPageRoute(
         builder: (context) => CardDetailPage(card: card, onDelete: _deleteCard),
       ),
     );
+    if (updated != null && updated.id != null) {
+      // Update the card in the displayed list
+      setState(() {
+        final idx = _displayedCards.indexWhere((c) => c.id == updated.id);
+        if (idx != -1) {
+          _displayedCards[idx] = updated;
+        }
+      });
+    }
   }
 
   Widget _buildAppBarTitle(AppLocalizations l10n) {
