@@ -46,9 +46,8 @@ class CardDetailPage extends StatelessWidget {
                 builder: (ctx) => _EditCardDialog(card: card),
               );
               if (updated != null) {
-                await DatabaseHelper().updateCardSortOrders([updated]);
-                // Pop this page to force refresh on parent (or use a callback)
-                Navigator.of(context).pop();
+                // Pop this page and return the updated card to the previous screen (HomePage)
+                Navigator.of(context).pop(updated);
               }
             },
           ),
