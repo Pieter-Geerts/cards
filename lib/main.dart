@@ -28,17 +28,6 @@ void main() async {
         sortOrder: 0,
       ),
     );
-    // Example QR code card
-    await db.insertCard(
-      CardItem(
-        title: 'Example QR Code',
-        description: 'This is a sample QR code card. You can delete it.',
-        name: 'https://example.com',
-        cardType: 'QR_CODE',
-        createdAt: now,
-        sortOrder: 1,
-      ),
-    );
     await prefs.setBool('hasOnboarded', true);
   }
 
