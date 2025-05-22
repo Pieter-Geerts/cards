@@ -217,7 +217,8 @@ class _AddCardPageState extends State<AddCardPage>
         actions: [
           IconButton(
             icon: const Icon(Icons.photo_library),
-            tooltip: 'Import from Photo',
+            tooltip:
+                l10n.scanBarcode, // fallback to scanBarcode for import button
             onPressed: _importFromPhoto,
           ),
         ],
@@ -231,24 +232,22 @@ class _AddCardPageState extends State<AddCardPage>
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ChoiceChip(
-                  label: Text(l10n.scanBarcode),
-                  selected: !_isManualEntry,
-                  onSelected: (selected) {
+                TextButton(
+                  onPressed: () {
                     setState(() {
                       _isManualEntry = false;
                     });
                   },
+                  child: Text(l10n.scanBarcode),
                 ),
-                const SizedBox(width: 12),
-                ChoiceChip(
-                  label: Text(l10n.manualEntry),
-                  selected: _isManualEntry,
-                  onSelected: (selected) {
+                Text('|', style: Theme.of(context).textTheme.bodyMedium),
+                TextButton(
+                  onPressed: () {
                     setState(() {
                       _isManualEntry = true;
                     });
                   },
+                  child: Text(l10n.manualEntry),
                 ),
               ],
             ),
