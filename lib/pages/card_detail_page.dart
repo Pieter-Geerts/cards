@@ -89,9 +89,20 @@ class _CardDetailPageState extends State<CardDetailPage> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.share),
+            tooltip: 'Share',
+            onPressed: () async {
+              final tempDir = await getTemporaryDirectory();
+              final file = File('${tempDir.path}/card.txt');
+              await file.writeAsString(_currentCard.name);
+              await Share.shareXFiles([
+                XFile(file.path),
+              ], text: _currentCard.title);
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.edit),
-            tooltip:
-                l10n.addCard, // Should be l10n.edit, but fallback if not present
+            tooltip: l10n.addCard,
             onPressed: _editing ? null : _startEditing,
           ),
           if (widget.onDelete != null)
@@ -120,74 +131,95 @@ class _CardDetailPageState extends State<CardDetailPage> {
                 },
               )
               : SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _currentCard.title,
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    if (_currentCard.description.isNotEmpty)
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (_currentCard.description.isNotEmpty)
+                        Text(
+                          _currentCard.description,
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(color: Colors.grey[700]),
+                        ),
+                      const SizedBox(height: 16),
                       Text(
-                        _currentCard.description,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey[700],
+                        l10n.cardType(_currentCard.cardType),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 24),
+                      Center(
+                        child: _buildCodeWidget(
+                          MediaQuery.of(context).size.width * 0.7,
                         ),
                       ),
-                    const SizedBox(height: 16),
-                    Text(
-                      l10n.cardType(_currentCard.cardType),
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 24),
-                    Center(
-                      child: _buildCodeWidget(
-                        MediaQuery.of(context).size.width * 0.7,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.share),
-                          tooltip: 'Share',
-                          onPressed: () async {
-                            final tempDir = await getTemporaryDirectory();
-                            final file = File('${tempDir.path}/card.txt');
-                            await file.writeAsString(_currentCard.name);
-                            await Share.shareXFiles([
-                              XFile(file.path),
-                            ], text: _currentCard.title);
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
               ),
     );
   }
 
   Widget _buildCodeWidget(double availableWidth) {
-    if (_currentCard.cardType == 'QR_CODE') {
-      return QrImageView(
-        data: _currentCard.name,
-        size: availableWidth,
-        backgroundColor: Colors.white,
-      );
-    } else {
-      return BarcodeWidget(
-        barcode: Barcode.code128(),
-        data: _currentCard.name,
-        width: availableWidth,
-        height: 80,
-        backgroundColor: Colors.white,
-      );
-    }
+    final theme = Theme.of(context);
+    final isQr = _currentCard.cardType == 'QR_CODE';
+
+    // Main white card container
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: 32.0,
+      ), // Space above and below card
+      child: Center(
+        child: Card(
+          color: Colors.white,
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28), // Pronounced rounding
+          ),
+          child: Container(
+            width: availableWidth, // Significant width
+            padding: const EdgeInsets.symmetric(
+              vertical: 32,
+              horizontal: 28,
+            ), // Generous padding
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Barcode or QR code
+                if (isQr)
+                  QrImageView(
+                    data: _currentCard.name,
+                    size: availableWidth * 0.7,
+                    backgroundColor: Colors.white,
+                  )
+                else
+                  BarcodeWidget(
+                    barcode: Barcode.code128(),
+                    data: _currentCard.name,
+                    width: availableWidth * 0.8,
+                    height: 90,
+                    backgroundColor: Colors.white,
+                  ),
+                const SizedBox(height: 24),
+                // Human-readable barcode value (for barcodes only)
+                if (!isQr)
+                  Text(
+                    _currentCard.name,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 2.0,
+                      fontSize: 20,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
