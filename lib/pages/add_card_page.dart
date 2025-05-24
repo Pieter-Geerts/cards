@@ -555,10 +555,10 @@ class _AddCardPageState extends State<AddCardPage>
                                     null, // Disable toggles after detection
                                 style: ButtonStyle(
                                   foregroundColor:
-                                      MaterialStateProperty.resolveWith<Color?>(
+                                      WidgetStateProperty.resolveWith<Color?>(
                                         (states) {
                                           if (states.contains(
-                                            MaterialState.disabled,
+                                            WidgetState.disabled,
                                           )) {
                                             return Theme.of(
                                               context,
@@ -568,14 +568,14 @@ class _AddCardPageState extends State<AddCardPage>
                                         },
                                       ),
                                   backgroundColor:
-                                      MaterialStateProperty.resolveWith<Color?>(
+                                      WidgetStateProperty.resolveWith<Color?>(
                                         (states) {
                                           if (states.contains(
-                                            MaterialState.disabled,
+                                            WidgetState.disabled,
                                           )) {
                                             return Theme.of(
                                               context,
-                                            ).colorScheme.surfaceVariant;
+                                            ).colorScheme.surfaceContainerHighest;
                                           }
                                           return null;
                                         },
