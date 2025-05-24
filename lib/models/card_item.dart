@@ -6,6 +6,7 @@ class CardItem {
   final String cardType;
   final DateTime createdAt;
   final int sortOrder;
+  final String? logoPath;
 
   CardItem({
     this.id,
@@ -15,6 +16,7 @@ class CardItem {
     this.cardType = 'QR_CODE',
     DateTime? createdAt,
     required this.sortOrder,
+    this.logoPath,
   }) : createdAt = createdAt ?? DateTime.now();
 
   // Temporary constructor for AddCardPage to return data without sortOrder yet.
@@ -24,6 +26,7 @@ class CardItem {
     required this.description,
     required this.name,
     this.cardType = 'QR_CODE',
+    this.logoPath,
   }) : id = null,
        createdAt = DateTime.now(),
        sortOrder = -1; // Placeholder, will be overwritten by HomePage
@@ -37,25 +40,23 @@ class CardItem {
       'cardType': cardType,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'sortOrder': sortOrder,
+      'logoPath': logoPath,
     };
   }
 
   factory CardItem.fromMap(Map<String, dynamic> map) {
     return CardItem(
-      id: map['id'],
-      title: map['title'] ?? '', // Provide default for title if null
-      description:
-          map['description'] ?? '', // Provide default for description if null
-      name: map['name'] ?? '', // Provide default for name if null
-      cardType: map['cardType'] ?? 'QR_CODE',
+      id: map['id'] as int?,
+      title: map['title'] as String,
+      description: map['description'] as String,
+      name: map['name'] as String,
+      cardType: map['cardType'] as String? ?? 'QR_CODE',
       createdAt:
           map['createdAt'] != null
-              ? DateTime.fromMillisecondsSinceEpoch(map['createdAt'])
-              : DateTime.now(), // Default for older records
-      // Provide a sensible default for sortOrder if it's missing,
-      // e.g., using id or a timestamp-based value if id is also null.
-      // Using 0 as a fallback if id is also null.
-      sortOrder: map['sortOrder'] ?? (map['id'] ?? map['createdAt'] ?? 0),
+              ? DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int)
+              : DateTime.now(),
+      sortOrder: map['sortOrder'] as int? ?? 0,
+      logoPath: map['logoPath'] as String?,
     );
   }
 
@@ -67,6 +68,7 @@ class CardItem {
     String? cardType,
     DateTime? createdAt,
     int? sortOrder,
+    String? logoPath,
   }) {
     return CardItem(
       id: id ?? this.id,
@@ -76,6 +78,7 @@ class CardItem {
       cardType: cardType ?? this.cardType,
       createdAt: createdAt ?? this.createdAt,
       sortOrder: sortOrder ?? this.sortOrder,
+      logoPath: logoPath ?? this.logoPath,
     );
   }
 }

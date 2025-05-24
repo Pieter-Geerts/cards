@@ -27,6 +27,7 @@ dependencies:
   fl_mlkit_scanning: ^5.2.2
   share_plus: ^7.2.1
   file_selector: ^1.0.3
+  flutter_svg: ^2.1.0
 
 dev_dependencies:
   flutter_test:

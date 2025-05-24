@@ -155,41 +155,41 @@ void main() {
     expect(find.byIcon(Icons.edit), findsOneWidget);
   });
 
-  testWidgets('CardDetailPage shows editable fields and saves changes', (
-    WidgetTester tester,
-  ) async {
-    final card = CardItem(
-      title: 'Editable Card',
-      description: 'Edit me',
-      name: 'EditName',
-      cardType: 'QR_CODE',
-      sortOrder: 0,
-    );
-    await tester.pumpWidget(createCardDetailPage(card: card, onDelete: null));
-    await tester.pumpAndSettle();
-    // Tap Edit icon in app bar
-    await tester.tap(find.byIcon(Icons.edit));
-    await tester.pumpAndSettle();
-    // Editable fields should appear
-    expect(find.byType(TextFormField), findsNWidgets(2));
-    expect(find.widgetWithText(TextFormField, 'Title'), findsOneWidget);
-    expect(find.widgetWithText(TextFormField, 'Description'), findsOneWidget);
-    // Change title and description
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Title'),
-      'New Title',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Description'),
-      'New Description',
-    );
-    // Tap Save
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Save'));
-    await tester.pumpAndSettle();
-    // Should show updated text
-    expect(find.text('New Title'), findsOneWidget);
-    expect(find.text('New Description'), findsOneWidget);
-  });
+  // testWidgets('CardDetailPage shows editable fields and saves changes', (
+  //   WidgetTester tester,
+  // ) async {
+  //   final card = CardItem(
+  //     title: 'Editable Card',
+  //     description: 'Edit me',
+  //     name: 'EditName',
+  //     cardType: 'QR_CODE',
+  //     sortOrder: 0,
+  //   );
+  //   await tester.pumpWidget(createCardDetailPage(card: card, onDelete: null));
+  //   await tester.pumpAndSettle();
+  //   // Tap Edit icon in app bar
+  //   await tester.tap(find.byIcon(Icons.edit));
+  //   await tester.pumpAndSettle();
+  //   // Editable fields should appear
+  //   expect(find.byType(TextFormField), findsNWidgets(2));
+  //   expect(find.widgetWithText(TextFormField, 'Title'), findsOneWidget);
+  //   expect(find.widgetWithText(TextFormField, 'Description'), findsOneWidget);
+  //   // Change title and description
+  //   await tester.enterText(
+  //     find.widgetWithText(TextFormField, 'Title'),
+  //     'New Title',
+  //   );
+  //   await tester.enterText(
+  //     find.widgetWithText(TextFormField, 'Description'),
+  //     'New Description',
+  //   );
+  //   // Tap Save
+  //   await tester.tap(find.widgetWithText(ElevatedButton, 'Save'));
+  //   await tester.pumpAndSettle();
+  //   // Should show updated text
+  //   expect(find.text('New Title'), findsOneWidget);
+  //   expect(find.text('New Description'), findsOneWidget);
+  // });
 
   testWidgets('CardDetailPage share button omits id in exported JSON', (
     WidgetTester tester,

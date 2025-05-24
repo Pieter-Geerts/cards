@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../helpers/database_helper.dart';
 import '../models/card_item.dart';
@@ -118,41 +120,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Widget _buildAppBarTitle(AppLocalizations l10n) {
-    if (_isSearchActive) {
-      return TextField(
-        controller: _searchController,
-        autofocus: true,
-        decoration: InputDecoration(
-          hintText: '${l10n.search}...', // Add search localization
-          border: InputBorder.none,
-          hintStyle: TextStyle(
-            color: Theme.of(
-              context,
-            ).appBarTheme.titleTextStyle?.color?.withOpacity(0.7),
-          ),
-        ),
-        style: Theme.of(context).appBarTheme.titleTextStyle,
-        onChanged: (query) {
-          // For real-time search, enable this and remove listener logic if preferred
-          // setState(() {
-          //   _searchQuery = query;
-          //   _applyFiltersAndSort();
-          // });
-        },
-        onSubmitted: (query) {
-          // Apply search on submit
-          setState(() {
-            _searchQuery = query;
-            _applySearchFilter();
-          });
-        },
-      );
-    } else {
-      return Text(l10n.myCards);
-    }
-  }
-
   List<Widget> _buildAppBarActions(AppLocalizations l10n) {
     return [
       IconButton(
@@ -256,7 +223,7 @@ class _HomePageState extends State<HomePage> {
       if (cardsToUpdate.isNotEmpty) {
         _dbHelper.updateCardSortOrders(cardsToUpdate);
       }
-      // Also update the main list in main.dart if necessary, or rely on next full load.
+      // Also update the main list in main.dart if necessary, or rely on next full load/reload from main.
       // For now, we assume the local _displayedCards is the primary view model for this screen.
       // And widget.cards will be updated on next full app load/reload from main.
     });
@@ -323,13 +290,7 @@ class _HomePageState extends State<HomePage> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                card.cardType == 'BARCODE'
-                                    ? Icons.qr_code_2
-                                    : Icons.qr_code,
-                                color: Theme.of(context).colorScheme.primary,
-                                size: 32,
-                              ),
+                              buildLogoWidget(card.logoPath),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
@@ -367,19 +328,6 @@ class _HomePageState extends State<HomePage> {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ],
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      l10n.cardType(card.cardType),
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.labelMedium?.copyWith(
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.secondary,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
                                   ],
                                 ),
                               ),
@@ -389,9 +337,9 @@ class _HomePageState extends State<HomePage> {
                                   color:
                                       Theme.of(context).colorScheme.onSurface,
                                 ),
-                                onSelected: (value) {
+                                onSelected: (value) async {
                                   if (value == 'edit') _onCardTap(card);
-                                  if (value == 'delete') _deleteCard(card);
+                                  // Do not handle delete here
                                 },
                                 itemBuilder:
                                     (context) => [
@@ -401,7 +349,23 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                       PopupMenuItem(
                                         value: 'delete',
-                                        child: Text(l10n.delete),
+                                        child: Builder(
+                                          builder:
+                                              (menuContext) => ListTile(
+                                                title: Text(l10n.delete),
+                                                onTap: () async {
+                                                  Navigator.of(
+                                                    menuContext,
+                                                  ).pop(); // Close the menu
+                                                  await Future.delayed(
+                                                    const Duration(
+                                                      milliseconds: 100,
+                                                    ),
+                                                  );
+                                                  _deleteCard(card);
+                                                },
+                                              ),
+                                        ),
                                       ),
                                     ],
                               ),
@@ -486,10 +450,76 @@ class _HomePageState extends State<HomePage> {
         cardType: tempCardData.cardType,
         createdAt: tempCardData.createdAt, // Use createdAt from temp card
         sortOrder: nextOrder,
+        logoPath: tempCardData.logoPath, // <-- Ensure logoPath is passed!
       );
       widget.onAddCard(
         newCard,
       ); // This will trigger a reload in main.dart and update widget.cards
     }
   }
+}
+
+// Place this in a shared file for reuse, but for now, define here for all pages
+Widget buildLogoWidget(
+  String? logoPath, {
+  double size = 48,
+  Color? background,
+}) {
+  final theme =
+      WidgetsBinding
+                  .instance
+                  .platformDispatcher
+                  .views
+                  .first
+                  .platformDispatcher
+                  .defaultRouteName ==
+              '/'
+          ? null
+          : Theme.of(
+            WidgetsBinding.instance.focusManager.primaryFocus?.context ??
+                WidgetsBinding
+                        .instance
+                        .platformDispatcher
+                        .views
+                        .first
+                        .platformDispatcher
+                        .defaultRouteName
+                    as BuildContext,
+          );
+  final bgColor = background ?? (theme?.colorScheme.surface ?? Colors.white);
+  if (logoPath != null && logoPath.isNotEmpty) {
+    final file = File(logoPath);
+    final exists = file.existsSync();
+    if (exists) {
+      if (logoPath.toLowerCase().endsWith('.svg')) {
+        return CircleAvatar(
+          backgroundColor: bgColor,
+          radius: size / 2,
+          child: ClipOval(
+            child: SvgPicture.file(
+              file,
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+            ),
+          ),
+        );
+      } else {
+        return CircleAvatar(
+          backgroundColor: bgColor,
+          radius: size / 2,
+          backgroundImage: FileImage(file),
+        );
+      }
+    }
+  }
+  return CircleAvatar(
+    backgroundColor: bgColor,
+    radius: size / 2,
+    child: Icon(
+      Icons.credit_card,
+      size: size * 0.6,
+      color: theme?.colorScheme.onSurface ?? Colors.black,
+    ),
+  );
 }

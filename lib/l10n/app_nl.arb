@@ -59,5 +59,6 @@
   "textQrCode": "QR Code",
   "search": "Zoeken",
   "noResultsFound": "Geen resultaten gevonden voor",
-  "editCard": "Kaart Bewerken"
+  "editCard": "Kaart Bewerken",
+  "edit": "Bewerken"
 }
