@@ -1,15 +1,22 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 
+import 'package:barcode_widget/barcode_widget.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../helpers/database_helper.dart';
+import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import 'add_card_page.dart';
 import 'card_detail_page.dart';
+import 'edit_card_page.dart';
 import 'settings_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -229,6 +236,64 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> _shareCardAsImage(CardItem card) async {
+    final boundaryKey = GlobalKey();
+    final isQr = card.cardType == 'QR_CODE';
+    final imageWidget = Material(
+      type: MaterialType.transparency,
+      child: Center(
+        child: RepaintBoundary(
+          key: boundaryKey,
+          child: Container(
+            color: Colors.white,
+            padding: const EdgeInsets.all(24),
+            child:
+                isQr
+                    ? QrImageView(
+                      data: card.name,
+                      size: 320,
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                    )
+                    : BarcodeWidget(
+                      barcode: Barcode.code128(),
+                      data: card.name,
+                      width: 320,
+                      height: 120,
+                      backgroundColor: Colors.white,
+                      color: Colors.black,
+                      drawText: false,
+                    ),
+          ),
+        ),
+      ),
+    );
+    final overlay = OverlayEntry(builder: (_) => imageWidget);
+    Overlay.of(context).insert(overlay);
+    await Future.delayed(const Duration(milliseconds: 100));
+    try {
+      final boundary =
+          boundaryKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
+      if (boundary != null) {
+        final image = await boundary.toImage(pixelRatio: 3.0);
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        if (byteData != null) {
+          final pngBytes = byteData.buffer.asUint8List();
+          final tempDir = await getTemporaryDirectory();
+          final file =
+              await File(
+                '${tempDir.path}/card_${card.id ?? card.name}.png',
+              ).create();
+          await file.writeAsBytes(pngBytes);
+          await Share.shareXFiles([XFile(file.path)], text: card.title);
+        }
+      }
+    } finally {
+      overlay.remove();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -338,8 +403,37 @@ class _HomePageState extends State<HomePage> {
                                       Theme.of(context).colorScheme.onSurface,
                                 ),
                                 onSelected: (value) async {
-                                  if (value == 'edit') _onCardTap(card);
-                                  // Do not handle delete here
+                                  if (value == 'edit') {
+                                    final updated =
+                                        await Navigator.push<CardItem>(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => EditCardPage(
+                                                  card: card,
+                                                  onSave: (updatedCard) {
+                                                    Navigator.of(
+                                                      context,
+                                                    ).pop(updatedCard);
+                                                  },
+                                                ),
+                                          ),
+                                        );
+                                    if (updated != null && updated.id != null) {
+                                      setState(() {
+                                        final idx = _displayedCards.indexWhere(
+                                          (c) => c.id == updated.id,
+                                        );
+                                        if (idx != -1) {
+                                          _displayedCards[idx] = updated;
+                                        }
+                                      });
+                                    }
+                                  } else if (value == 'delete') {
+                                    await _deleteCard(card);
+                                  } else if (value == 'share_image') {
+                                    await _shareCardAsImage(card);
+                                  }
                                 },
                                 itemBuilder:
                                     (context) => [
@@ -349,23 +443,11 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                       PopupMenuItem(
                                         value: 'delete',
-                                        child: Builder(
-                                          builder:
-                                              (menuContext) => ListTile(
-                                                title: Text(l10n.delete),
-                                                onTap: () async {
-                                                  Navigator.of(
-                                                    menuContext,
-                                                  ).pop(); // Close the menu
-                                                  await Future.delayed(
-                                                    const Duration(
-                                                      milliseconds: 100,
-                                                    ),
-                                                  );
-                                                  _deleteCard(card);
-                                                },
-                                              ),
-                                        ),
+                                        child: Text(l10n.delete),
+                                      ),
+                                      PopupMenuItem(
+                                        value: 'share_image',
+                                        child: Text('Share as Image'),
                                       ),
                                     ],
                               ),

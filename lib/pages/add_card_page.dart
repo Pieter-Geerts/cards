@@ -1,10 +1,10 @@
 import 'package:barcode_widget/barcode_widget.dart' as bw;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Import AppLocalizations
 import 'package:mobile_scanner/mobile_scanner.dart' as mobile;
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../pages/home_page.dart' show buildLogoWidget;
 import '../secrets.dart';

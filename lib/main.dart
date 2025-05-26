@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/database_helper.dart';
+import 'l10n/app_localizations.dart';
 import 'models/card_item.dart';
 import 'pages/home_page.dart';
 import 'utils/app_settings.dart';
@@ -26,17 +26,6 @@ void main() async {
         cardType: 'BARCODE',
         createdAt: now,
         sortOrder: 0,
-      ),
-    );
-    // Example QR code card
-    await db.insertCard(
-      CardItem(
-        title: 'Example QR Code',
-        description: 'This is a sample QR code card. You can delete it.',
-        name: 'https://example.com',
-        cardType: 'QR_CODE',
-        createdAt: now,
-        sortOrder: 1,
       ),
     );
     await prefs.setBool('hasOnboarded', true);

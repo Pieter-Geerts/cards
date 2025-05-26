@@ -1,11 +1,17 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter/rendering.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../helpers/database_helper.dart';
+import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
+import '../pages/edit_card_page.dart';
 import '../pages/home_page.dart' show buildLogoWidget;
 
 class CardDetailPage extends StatefulWidget {
@@ -22,6 +28,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late CardItem _currentCard;
+  final GlobalKey _imageKey = GlobalKey();
 
   @override
   void initState() {
@@ -38,8 +45,24 @@ class _CardDetailPageState extends State<CardDetailPage> {
     super.dispose();
   }
 
-  void _startEditing() {
-    setState(() {});
+  void _startEditing() async {
+    final updated = await Navigator.push<CardItem>(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => EditCardPage(
+              card: _currentCard,
+              onSave: (updatedCard) {
+                Navigator.of(context).pop(updatedCard);
+              },
+            ),
+      ),
+    );
+    if (updated != null) {
+      setState(() {
+        _currentCard = updated;
+      });
+    }
   }
 
   Future<void> _deleteCard(BuildContext context) async {
@@ -68,6 +91,64 @@ class _CardDetailPageState extends State<CardDetailPage> {
       }
       widget.onDelete?.call(_currentCard);
       if (mounted) Navigator.of(context).pop();
+    }
+  }
+
+  Future<void> _shareCardAsImage() async {
+    // Show the code widget in an overlay to render it offscreen
+    final isQr = _currentCard.cardType == 'QR_CODE';
+    final imageWidget = Material(
+      type: MaterialType.transparency,
+      child: Center(
+        child: RepaintBoundary(
+          key: _imageKey,
+          child: Container(
+            color: Colors.white,
+            padding: const EdgeInsets.all(24),
+            child:
+                isQr
+                    ? QrImageView(
+                      data: _currentCard.name,
+                      size: 320,
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                    )
+                    : BarcodeWidget(
+                      barcode: Barcode.code128(),
+                      data: _currentCard.name,
+                      width: 320,
+                      height: 120,
+                      backgroundColor: Colors.white,
+                      color: Colors.black,
+                      drawText: false,
+                    ),
+          ),
+        ),
+      ),
+    );
+    final overlay = OverlayEntry(builder: (_) => imageWidget);
+    Overlay.of(context).insert(overlay);
+    await Future.delayed(const Duration(milliseconds: 100));
+    try {
+      final boundary =
+          _imageKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
+      if (boundary != null) {
+        final image = await boundary.toImage(pixelRatio: 3.0);
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        if (byteData != null) {
+          final pngBytes = byteData.buffer.asUint8List();
+          final tempDir = await getTemporaryDirectory();
+          final file =
+              await File(
+                '${tempDir.path}/card_${_currentCard.id ?? _currentCard.name}.png',
+              ).create();
+          await file.writeAsBytes(pngBytes);
+          await Share.shareXFiles([XFile(file.path)], text: _currentCard.title);
+        }
+      }
+    } finally {
+      overlay.remove();
     }
   }
 
@@ -113,15 +194,20 @@ class _CardDetailPageState extends State<CardDetailPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.share, color: theme.colorScheme.onSurface),
-            tooltip: 'Share',
+            tooltip: l10n.share,
             onPressed: () async {
               final code = _currentCard.name;
               await Share.share(code, subject: _currentCard.title);
             },
           ),
           IconButton(
+            icon: Icon(Icons.image, color: theme.colorScheme.onSurface),
+            tooltip: l10n.shareAsImage,
+            onPressed: _shareCardAsImage,
+          ),
+          IconButton(
             icon: Icon(Icons.edit, color: theme.colorScheme.onSurface),
-            tooltip: 'Edit',
+            tooltip: l10n.edit,
             onPressed: _startEditing,
           ),
           IconButton(

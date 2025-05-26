@@ -50,5 +50,7 @@
   "search": "Buscar",
   "noResultsFound": "No se encontraron resultados para",
   "editCard": "Editar Tarjeta",
-  "edit": "Editar"
+  "edit": "Editar",
+  "share": "Compartir",
+  "shareAsImage": "Compartir como imagen"
 }
