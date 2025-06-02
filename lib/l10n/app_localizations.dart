@@ -393,6 +393,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share as Image'**
   String get shareAsImage;
+
+  /// No description provided for @scanInstructionsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Place the barcode in the frame'**
+  String get scanInstructionsTooltip;
+
+  /// No description provided for @companyOrNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Company/Name'**
+  String get companyOrNameLabel;
+
+  /// No description provided for @codeValueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Code Value'**
+  String get codeValueLabel;
+
+  /// No description provided for @searchLogoAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Logo'**
+  String get searchLogoAction;
+
+  /// No description provided for @editAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editAction;
+
+  /// No description provided for @shareAsImageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Share as Image'**
+  String get shareAsImageAction;
+
+  /// No description provided for @removeLogoButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Logo'**
+  String get removeLogoButton;
+
+  /// No description provided for @unsavedChangesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsaved Changes'**
+  String get unsavedChangesTitle;
+
+  /// No description provided for @unsavedChangesMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You have unsaved changes. Do you want to discard them?'**
+  String get unsavedChangesMessage;
+
+  /// No description provided for @discardButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get discardButton;
+
+  /// No description provided for @stayButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay'**
+  String get stayButton;
+
+  /// No description provided for @cardTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Card Type'**
+  String get cardTypeLabel;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @currentLogo.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Logo'**
+  String get currentLogo;
+
+  /// No description provided for @searchLogoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter company name for logo'**
+  String get searchLogoHint;
+
+  /// No description provided for @logoSearchFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Logo Search Failed'**
+  String get logoSearchFailedTitle;
+
+  /// No description provided for @logoSearchFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not find a logo for the entered name. Please try a different name or check your internet connection.'**
+  String get logoSearchFailedMessage;
+
+  /// No description provided for @logoDownloadFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Logo Download Failed'**
+  String get logoDownloadFailedTitle;
+
+  /// No description provided for @logoDownloadFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not download the selected logo. Please check your internet connection and try again.'**
+  String get logoDownloadFailedMessage;
 }
 
 class _AppLocalizationsDelegate

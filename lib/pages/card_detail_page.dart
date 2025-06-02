@@ -185,7 +185,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
                   fontSize: 26,
                   letterSpacing: 0.5,
                 ),
-                maxLines: 1, 
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -194,16 +194,8 @@ class _CardDetailPageState extends State<CardDetailPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.share, color: theme.colorScheme.onSurface),
-            tooltip: l10n.share,
-            onPressed: () async {
-              final code = _currentCard.name;
-              await Share.share(code, subject: _currentCard.title);
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.image, color: theme.colorScheme.onSurface),
-            tooltip: l10n.shareAsImage,
-            onPressed: _shareCardAsImage,
+            tooltip: l10n.shareAsImage, // Changed from l10n.share
+            onPressed: _shareCardAsImage, // Changed to call _shareCardAsImage
           ),
           IconButton(
             icon: Icon(Icons.edit, color: theme.colorScheme.onSurface),

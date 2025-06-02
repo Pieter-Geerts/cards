@@ -401,55 +401,58 @@ class _HomePageState extends State<HomePage> {
                                   Icons.more_vert,
                                   color:
                                       Theme.of(context).colorScheme.onSurface,
+                                  size: 28,
                                 ),
                                 onSelected: (value) async {
                                   if (value == 'edit') {
-                                    final updated =
-                                        await Navigator.push<CardItem>(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder:
-                                                (context) => EditCardPage(
-                                                  card: card,
-                                                  onSave: (updatedCard) {
-                                                    Navigator.of(
-                                                      context,
-                                                    ).pop(updatedCard);
-                                                  },
-                                                ),
-                                          ),
-                                        );
-                                    if (updated != null && updated.id != null) {
-                                      setState(() {
-                                        final idx = _displayedCards.indexWhere(
-                                          (c) => c.id == updated.id,
-                                        );
-                                        if (idx != -1) {
-                                          _displayedCards[idx] = updated;
-                                        }
-                                      });
+                                    final updatedCard = await Navigator.push<
+                                      CardItem
+                                    >(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) => EditCardPage(
+                                              card: card,
+                                              onSave: (updated) async {
+                                                await _dbHelper.updateCard(
+                                                  updated,
+                                                );
+                                                // Signal main.dart to reload by passing the updated card
+                                                widget.onAddCard(updated);
+                                              },
+                                            ),
+                                      ),
+                                    );
+                                    if (updatedCard != null) {
+                                      // Already handled by onSave callback and widget.onAddCard
                                     }
                                   } else if (value == 'delete') {
                                     await _deleteCard(card);
-                                  } else if (value == 'share_image') {
+                                  } else if (value == 'share') {
                                     await _shareCardAsImage(card);
                                   }
                                 },
                                 itemBuilder:
-                                    (context) => [
-                                      PopupMenuItem(
-                                        value: 'edit',
-                                        child: Text('Edit'),
-                                      ),
-                                      PopupMenuItem(
-                                        value: 'delete',
-                                        child: Text(l10n.delete),
-                                      ),
-                                      PopupMenuItem(
-                                        value: 'share_image',
-                                        child: Text('Share as Image'),
-                                      ),
-                                    ],
+                                    (BuildContext context) =>
+                                        <PopupMenuEntry<String>>[
+                                          PopupMenuItem<String>(
+                                            value: 'edit',
+                                            child: Text(
+                                              l10n.editAction,
+                                            ), // Changed from hardcoded string
+                                          ),
+                                          PopupMenuItem<String>(
+                                            value: 'share',
+                                            child: Text(
+                                              l10n.shareAsImageAction,
+                                            ), // Changed from hardcoded string
+                                          ),
+                                          const PopupMenuDivider(),
+                                          PopupMenuItem<String>(
+                                            value: 'delete',
+                                            child: Text(l10n.delete),
+                                          ),
+                                        ],
                               ),
                             ],
                           ),
@@ -544,7 +547,9 @@ class _HomePageState extends State<HomePage> {
 // Place this in a shared file for reuse, but for now, define here for all pages
 Widget buildLogoWidget(
   String? logoPath, {
-  double size = 48,
+  double size = 48, // Default size
+  double? width, // Optional width, overrides size if provided
+  double? height, // Optional height, overrides size if provided
   Color? background,
 }) {
   final theme =
@@ -569,6 +574,9 @@ Widget buildLogoWidget(
                     as BuildContext,
           );
   final bgColor = background ?? (theme?.colorScheme.surface ?? Colors.white);
+  final double effectiveWidth = width ?? size;
+  final double effectiveHeight = height ?? size;
+
   if (logoPath != null && logoPath.isNotEmpty) {
     final file = File(logoPath);
     final exists = file.existsSync();
@@ -576,31 +584,39 @@ Widget buildLogoWidget(
       if (logoPath.toLowerCase().endsWith('.svg')) {
         return CircleAvatar(
           backgroundColor: bgColor,
-          radius: size / 2,
+          radius:
+              effectiveWidth / 2, // Use effectiveWidth for radius if circular
           child: ClipOval(
             child: SvgPicture.file(
               file,
-              width: size,
-              height: size,
-              fit: BoxFit.cover,
+              width: effectiveWidth,
+              height: effectiveHeight,
+              fit:
+                  BoxFit
+                      .contain, // Changed to contain to better handle various aspect ratios
             ),
           ),
         );
       } else {
         return CircleAvatar(
           backgroundColor: bgColor,
-          radius: size / 2,
+          radius:
+              effectiveWidth / 2, // Use effectiveWidth for radius if circular
           backgroundImage: FileImage(file),
+          child:
+              !exists
+                  ? Icon(Icons.broken_image, size: effectiveWidth * 0.6)
+                  : null,
         );
       }
     }
   }
   return CircleAvatar(
     backgroundColor: bgColor,
-    radius: size / 2,
+    radius: effectiveWidth / 2, // Use effectiveWidth for radius if circular
     child: Icon(
       Icons.credit_card,
-      size: size * 0.6,
+      size: effectiveWidth * 0.6,
       color: theme?.colorScheme.onSurface ?? Colors.black,
     ),
   );

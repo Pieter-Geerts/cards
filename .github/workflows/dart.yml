@@ -40,15 +40,14 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # - name: Format code
-      #   run: flutter format --set-exit-if-changed .
+      - name: Format code
+        run: flutter format --set-exit-if-changed .
 
-      # - name: Analyze project source
-      #   run: flutter analyze
+      - name: Analyze project source
+        run: flutter analyze
 
       - name: Run tests
         run: flutter test
-
 
       # Build Android App Bundle (AAB) with symbols for Play Console
       - name: Build Android App Bundle (AAB) with symbols

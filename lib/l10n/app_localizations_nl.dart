@@ -165,4 +165,64 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get shareAsImage => 'Delen als afbeelding';
+
+  @override
+  String get scanInstructionsTooltip => 'Plaats de barcode in het kader';
+
+  @override
+  String get companyOrNameLabel => 'Bedrijf/Naam';
+
+  @override
+  String get codeValueLabel => 'Codewaarde';
+
+  @override
+  String get searchLogoAction => 'Zoek Logo';
+
+  @override
+  String get editAction => 'Bewerken';
+
+  @override
+  String get shareAsImageAction => 'Deel als afbeelding';
+
+  @override
+  String get removeLogoButton => 'Logo Verwijderen';
+
+  @override
+  String get unsavedChangesTitle => 'Niet-opgeslagen Wijzigingen';
+
+  @override
+  String get unsavedChangesMessage =>
+      'U heeft niet-opgeslagen wijzigingen. Wilt u deze verwijderen?';
+
+  @override
+  String get discardButton => 'Verwijderen';
+
+  @override
+  String get stayButton => 'Blijven';
+
+  @override
+  String get cardTypeLabel => 'Kaarttype';
+
+  @override
+  String get save => 'Opslaan';
+
+  @override
+  String get currentLogo => 'Huidig Logo';
+
+  @override
+  String get searchLogoHint => 'Voer bedrijfsnaam in voor logo';
+
+  @override
+  String get logoSearchFailedTitle => 'Logo Zoeken Mislukt';
+
+  @override
+  String get logoSearchFailedMessage =>
+      'Kon geen logo vinden voor de ingevoerde naam. Probeer een andere naam of controleer uw internetverbinding.';
+
+  @override
+  String get logoDownloadFailedTitle => 'Logo Downloaden Mislukt';
+
+  @override
+  String get logoDownloadFailedMessage =>
+      'Kon het geselecteerde logo niet downloaden. Controleer uw internetverbinding en probeer het opnieuw.';
 }

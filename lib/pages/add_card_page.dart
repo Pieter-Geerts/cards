@@ -216,7 +216,7 @@ class _ScanCardPageState extends State<_ScanCardPage> {
             left: 0,
             right: 0,
             child: Text(
-              'Position the barcode/QR code within the frame',
+              l10n.scanInstructionsTooltip,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.white,
