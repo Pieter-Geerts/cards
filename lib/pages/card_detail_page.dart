@@ -185,7 +185,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
                   fontSize: 26,
                   letterSpacing: 0.5,
                 ),
-                maxLines: 2,
+                maxLines: 1, 
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -390,8 +390,7 @@ class _CardEditFormState extends State<_CardEditForm> {
       child: Form(
         key: _formKey,
         child: Column(
-          mainAxisSize:
-              MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextFormField(
