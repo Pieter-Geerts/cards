@@ -391,7 +391,7 @@ class _CardEditFormState extends State<_CardEditForm> {
         key: _formKey,
         child: Column(
           mainAxisSize:
-              MainAxisSize.min, // Fix for unbounded height in scrollable
+              MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextFormField(

@@ -526,10 +526,10 @@ class _AddCardDetailsPageState extends State<_AddCardDetailsPage> {
                     );
                   }
                 },
-                child: Text(l10n.addCard),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(56),
                 ),
+                child: Text(l10n.addCard),
               ),
             ],
           ),

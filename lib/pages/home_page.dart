@@ -464,9 +464,9 @@ class _HomePageState extends State<HomePage> {
         onPressed: _navigateToAddCardPage,
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        child: const Icon(Icons.add, size: 32),
         elevation: 6.0,
         shape: const CircleBorder(),
+        child: const Icon(Icons.add, size: 32),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
