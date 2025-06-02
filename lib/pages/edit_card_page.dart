@@ -1,13 +1,13 @@
 import 'dart:async'; // Added for Timer (debouncer)
 
 import 'package:barcode_widget/barcode_widget.dart'; // Added for BarcodeWidget
+import 'package:cards/secrets.dart'; // Changed import path
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart'; // Added for QrImageView
 
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../pages/home_page.dart' show buildLogoWidget;
-import '../secrets.dart';
 import '../services/logo_dev_service.dart';
 
 class EditCardPage extends StatefulWidget {
@@ -261,15 +261,29 @@ class _EditCardPageState extends State<EditCardPage> {
     final l10n = AppLocalizations.of(context);
     final codeValueForPreview = _nameController.text.trim();
 
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope<void>(
+      // Changed from WillPopScope
+      canPop:
+          false, // When true, allows popping. When false, callback is called.
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) {
+          return;
+        }
+
+        // Store the navigator and context values before the await
+        final navigator = Navigator.of(context);
+        final shouldPop = await _onWillPop();
+
+        if (shouldPop && mounted) {
+          navigator.pop();
+        }
+      },
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.editCard),
           actions: [
             IconButton(
               icon: const Icon(Icons.save),
-              // Disable save if title or code value is empty, or if no changes have been made
               onPressed:
                   (_titleController.text.trim().isNotEmpty &&
                           _nameController.text.trim().isNotEmpty &&
@@ -367,6 +381,12 @@ class _EditCardPageState extends State<EditCardPage> {
                                   data: codeValueForPreview,
                                   version: QrVersions.auto,
                                   size: 200.0,
+                                  eyeStyle: const QrEyeStyle(
+                                    color: Colors.black,
+                                  ), // Added
+                                  dataModuleStyle: const QrDataModuleStyle(
+                                    color: Colors.black,
+                                  ), // Added
                                   // backgroundColor: Colors.white, // Handled by container
                                   errorCorrectionLevel: QrErrorCorrectLevel.M,
                                 )

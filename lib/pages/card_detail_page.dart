@@ -66,7 +66,11 @@ class _CardDetailPageState extends State<CardDetailPage> {
   }
 
   Future<void> _deleteCard(BuildContext context) async {
+    // Cache everything we need from BuildContext before any async operations
     final l10n = AppLocalizations.of(context);
+    final navigator = Navigator.of(context);
+
+    // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
       builder:
@@ -85,12 +89,25 @@ class _CardDetailPageState extends State<CardDetailPage> {
             ],
           ),
     );
+
+    // Early return if widget is unmounted
+    if (!mounted) return;
+
+    // Only proceed with deletion if confirmed
     if (confirmed == true) {
+      // Delete from database if card has an ID
       if (_currentCard.id != null) {
         await DatabaseHelper().deleteCard(_currentCard.id!);
+
+        // Check again if widget is still mounted after async operation
+        if (!mounted) return;
       }
+
       widget.onDelete?.call(_currentCard);
-      if (mounted) Navigator.of(context).pop();
+
+      if (mounted) {
+        navigator.pop();
+      }
     }
   }
 
@@ -111,7 +128,11 @@ class _CardDetailPageState extends State<CardDetailPage> {
                       data: _currentCard.name,
                       size: 320,
                       backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
+                      eyeStyle: const QrEyeStyle(color: Colors.black), // Added
+                      dataModuleStyle: const QrDataModuleStyle(
+                        color: Colors.black,
+                      ), // Added
+                      // foregroundColor: Colors.black; // Removed deprecated
                     )
                     : BarcodeWidget(
                       barcode: Barcode.code128(),
@@ -227,7 +248,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
                   color: Colors.white,
                   elevation: isDark ? 16 : 8,
                   shadowColor:
-                      isDark ? Colors.black.withOpacity(0.45) : Colors.black26,
+                      isDark
+                          ? Colors.black.withAlpha(115) // 0.45 * 255 ≈ 115
+                          : Colors.black26,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(32),
                   ),
@@ -274,7 +297,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
                       style: theme.textTheme.titleSmall?.copyWith(
                         color:
                             isDark
-                                ? theme.colorScheme.onSurface.withOpacity(0.7)
+                                ? theme.colorScheme.onSurface.withAlpha(
+                                  179,
+                                ) // 0.7 * 255 ≈ 179
                                 : Colors.grey[800],
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
@@ -286,7 +311,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color:
                             isDark
-                                ? theme.colorScheme.onSurface.withOpacity(0.85)
+                                ? theme.colorScheme.onSurface.withAlpha(
+                                  217,
+                                ) // 0.85 * 255 ≈ 217
                                 : Colors.grey[900],
                         fontSize: 16,
                       ),
@@ -308,7 +335,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
         data: _currentCard.name,
         size: availableWidth * 0.7,
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        eyeStyle: const QrEyeStyle(color: Colors.black), // Added
+        dataModuleStyle: const QrDataModuleStyle(color: Colors.black), // Added
+        // foregroundColor: Colors.black, // Removed deprecated
       );
     } else {
       return BarcodeWidget(

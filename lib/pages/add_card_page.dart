@@ -1,4 +1,5 @@
 import 'package:barcode_widget/barcode_widget.dart' as bw;
+import 'package:cards/secrets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart' as mobile;
@@ -7,10 +8,9 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../pages/home_page.dart' show buildLogoWidget;
-import '../secrets.dart';
 import '../services/logo_dev_service.dart';
 
-enum CardType { BARCODE, QR_CODE }
+enum CardType { barcode, qrCode } // Changed BARCODE, QR_CODE to barcode, qrCode
 
 class AddCardPage extends StatelessWidget {
   const AddCardPage({super.key});
@@ -34,6 +34,7 @@ class _AddCardFlowControllerState extends State<_AddCardFlowController> {
   }
 
   void _showEntryModal() async {
+    // Create the modal here using current context
     final l10n = AppLocalizations.of(context);
     final result = await showModalBottomSheet<_AddCardEntryResult>(
       context: context,
@@ -41,12 +42,17 @@ class _AddCardFlowControllerState extends State<_AddCardFlowController> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) => _AddCardEntryModal(l10n: l10n),
+      builder: (modalContext) => _AddCardEntryModal(l10n: l10n),
     );
+
+    // Check if the widget is still mounted after the async operation
+    if (!mounted) return;
+
+    // Use the current context (not a cached one) after checking mounted
     if (result == _AddCardEntryResult.scan) {
       _goToScan();
     } else if (result == _AddCardEntryResult.manual) {
-      _goToDetails(null, null, CardType.QR_CODE);
+      _goToDetails(null, null, CardType.qrCode);
     } else {
       Navigator.of(context).pop();
     }
@@ -56,6 +62,11 @@ class _AddCardFlowControllerState extends State<_AddCardFlowController> {
     final scanResult = await Navigator.of(
       context,
     ).push<_ScanResult?>(MaterialPageRoute(builder: (_) => _ScanCardPage()));
+
+    // Check if the widget is still mounted after the async operation
+    if (!mounted) return;
+
+    // Use the current context (not a cached one) after checking mounted
     if (scanResult != null && scanResult.data != null) {
       _goToDetails(scanResult.data, scanResult.type, scanResult.cardType);
     } else {
@@ -74,6 +85,11 @@ class _AddCardFlowControllerState extends State<_AddCardFlowController> {
             ),
       ),
     );
+
+    // Check if the widget is still mounted after the async operation
+    if (!mounted) return;
+
+    // Use the current context (not a cached one) after checking mounted
     if (card != null) {
       Navigator.of(context).pop(card);
     } else {
@@ -157,7 +173,7 @@ class _ScanCardPage extends StatefulWidget {
 class _ScanCardPageState extends State<_ScanCardPage> {
   String? _scannedData;
   String? _detectedFormatString;
-  CardType _detectedCardType = CardType.QR_CODE;
+  CardType _detectedCardType = CardType.qrCode;
   bool _isScanning = true;
 
   void _onDetect(mobile.BarcodeCapture capture) {
@@ -171,18 +187,26 @@ class _ScanCardPageState extends State<_ScanCardPage> {
           final formatName = barcode.format.toString();
           if (formatName.toLowerCase().contains("qr")) {
             _detectedFormatString = "QR Code";
-            _detectedCardType = CardType.QR_CODE;
+            _detectedCardType = CardType.qrCode;
           } else {
             _detectedFormatString = "Barcode";
-            _detectedCardType = CardType.BARCODE;
+            _detectedCardType = CardType.barcode;
           }
           _isScanning = false;
         });
         HapticFeedback.mediumImpact();
+
+        // Store values now as we'll need them after the delay
+        final scannedData = _scannedData;
+        final detectedFormatString = _detectedFormatString;
+        final detectedCardType = _detectedCardType;
+
         Future.delayed(const Duration(milliseconds: 500), () {
-          Navigator.of(context).pop(
-            _ScanResult(_scannedData, _detectedFormatString, _detectedCardType),
-          );
+          if (mounted) {
+            Navigator.of(context).pop(
+              _ScanResult(scannedData, detectedFormatString, detectedCardType),
+            );
+          }
         });
       }
     }
@@ -312,7 +336,7 @@ class _AddCardDetailsPageState extends State<_AddCardDetailsPage> {
     if (value == null || value.isEmpty) {
       return l10n.validationPleaseEnterValue;
     }
-    if (_selectedCardType == CardType.BARCODE) {
+    if (_selectedCardType == CardType.barcode) {
       if (!RegExp(r'^[0-9a-zA-Z]+$').hasMatch(value)) {
         return l10n.validationBarcodeOnlyAlphanumeric;
       }
@@ -364,13 +388,16 @@ class _AddCardDetailsPageState extends State<_AddCardDetailsPage> {
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: Center(
                     child:
-                        _selectedCardType == CardType.QR_CODE
+                        _selectedCardType == CardType.qrCode
                             ? QrImageView(
                               data: _codeController.text,
                               version: QrVersions.auto,
                               size: 160,
                               backgroundColor: Colors.white,
-                              foregroundColor: Colors.black,
+                              eyeStyle: const QrEyeStyle(color: Colors.black),
+                              dataModuleStyle: const QrDataModuleStyle(
+                                color: Colors.black,
+                              ),
                             )
                             : bw.BarcodeWidget(
                               barcode: bw.Barcode.code128(),
@@ -389,10 +416,13 @@ class _AddCardDetailsPageState extends State<_AddCardDetailsPage> {
                   Expanded(
                     child: ChoiceChip(
                       label: Text(l10n.barcode),
-                      selected: _selectedCardType == CardType.BARCODE,
+                      selected:
+                          _selectedCardType ==
+                          CardType.barcode, // Changed CardType.BARCODE
                       onSelected: (selected) {
                         setState(() {
-                          _selectedCardType = CardType.BARCODE;
+                          _selectedCardType =
+                              CardType.barcode; // Changed CardType.BARCODE
                         });
                       },
                     ),
@@ -401,10 +431,13 @@ class _AddCardDetailsPageState extends State<_AddCardDetailsPage> {
                   Expanded(
                     child: ChoiceChip(
                       label: Text(l10n.qrCode),
-                      selected: _selectedCardType == CardType.QR_CODE,
+                      selected:
+                          _selectedCardType ==
+                          CardType.qrCode, // Changed CardType.QR_CODE
                       onSelected: (selected) {
                         setState(() {
-                          _selectedCardType = CardType.QR_CODE;
+                          _selectedCardType =
+                              CardType.qrCode; // Changed CardType.QR_CODE
                         });
                       },
                     ),
@@ -416,11 +449,11 @@ class _AddCardDetailsPageState extends State<_AddCardDetailsPage> {
                 controller: _codeController,
                 decoration: InputDecoration(
                   labelText:
-                      _selectedCardType == CardType.BARCODE
+                      _selectedCardType == CardType.barcode
                           ? l10n.barcodeValue
                           : l10n.qrCodeValue,
                   hintText:
-                      _selectedCardType == CardType.BARCODE
+                      _selectedCardType == CardType.barcode
                           ? l10n.enterBarcodeValue
                           : l10n.enterQrCodeValue,
                   border: const OutlineInputBorder(),

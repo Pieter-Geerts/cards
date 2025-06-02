@@ -94,20 +94,50 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // Method used when deleting from CardDetailPage
   Future<void> _deleteCard(CardItem card) async {
     if (card.id != null) {
-      await _dbHelper.deleteCard(card.id!);
-      // Use a very specific, unlikely-to-be-real card as a signal
-      // to main.dart to reload the cards without inserting this one.
-      // CardItem.temp creates a card with id=null and sortOrder=-1.
-      widget.onAddCard(
-        CardItem.temp(
-          title: "##DELETE_CARD_SIGNAL##",
-          description: "",
-          name: "",
-        ),
-      );
+      try {
+        // First update the UI immediately to prevent widget tree issues
+        if (mounted) {
+          setState(() {
+            _displayedCards.removeWhere((item) => item.id == card.id);
+          });
+        }
+        
+        // Then delete from database
+        await _dbHelper.deleteCard(card.id!);
+        
+        // If still mounted, notify parent to update
+        if (mounted) {
+          // Use a special signal CardItem to tell main.dart to reload without this card
+          widget.onAddCard(
+            CardItem.temp(
+              title: "##DELETE_CARD_SIGNAL##",
+              description: "",
+              name: "",
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          // Re-add the card to the list if deletion failed
+          if (!_displayedCards.any((item) => item.id == card.id)) {
+            setState(() {
+              _displayedCards.add(card);
+            });
+          }
+          
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Error deleting card. Please try again."),
+            ),
+          );
+        }
+      }
     }
+  }
   }
 
   void _onCardTap(CardItem card) async {
@@ -158,13 +188,17 @@ class _HomePageState extends State<HomePage> {
                   }
                 }
               }
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text('Import successful!')));
+              if (mounted) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text('Import successful!')));
+              }
             } catch (e) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text('Invalid JSON file.')));
+              if (mounted) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text('Invalid JSON file.')));
+              }
             }
           }
         },
@@ -253,7 +287,11 @@ class _HomePageState extends State<HomePage> {
                       data: card.name,
                       size: 320,
                       backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
+                      eyeStyle: const QrEyeStyle(color: Colors.black), // Added
+                      dataModuleStyle: const QrDataModuleStyle(
+                        color: Colors.black,
+                      ), // Added
+                      // foregroundColor: Colors.black, // Removed deprecated
                     )
                     : BarcodeWidget(
                       barcode: Barcode.code128(),
@@ -336,17 +374,18 @@ class _HomePageState extends State<HomePage> {
                       color: Theme.of(context).cardColor,
                       shadowColor:
                           Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white24
-                              : Colors.black26,
+                              ? Colors
+                                  .white24 // Keep direct color for now
+                              : Colors.black26, // Keep direct color for now
                       child: InkWell(
                         borderRadius: BorderRadius.circular(20.0),
                         onTap: () => _onCardTap(card),
                         splashColor: Theme.of(
                           context,
-                        ).colorScheme.primary.withOpacity(0.12),
+                        ).colorScheme.primary.withAlpha(31), // 0.12 * 255 ≈ 31
                         highlightColor: Theme.of(
                           context,
-                        ).colorScheme.primary.withOpacity(0.08),
+                        ).colorScheme.primary.withAlpha(20), // 0.08 * 255 ≈ 20
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             vertical: 28.0,
@@ -383,10 +422,11 @@ class _HomePageState extends State<HomePage> {
                                         style: Theme.of(
                                           context,
                                         ).textTheme.bodyLarge?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface
-                                              .withOpacity(0.8),
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface.withAlpha(
+                                            204,
+                                          ), // 0.8 * 255 ≈ 204
                                           fontSize: 16,
                                         ),
                                         maxLines: 3,
@@ -404,33 +444,72 @@ class _HomePageState extends State<HomePage> {
                                   size: 28,
                                 ),
                                 onSelected: (value) async {
-                                  if (value == 'edit') {
-                                    final updatedCard = await Navigator.push<
-                                      CardItem
-                                    >(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) => EditCardPage(
-                                              card: card,
-                                              onSave: (updated) async {
-                                                await _dbHelper.updateCard(
-                                                  updated,
-                                                );
-                                                // Signal main.dart to reload by passing the updated card
-                                                widget.onAddCard(updated);
-                                              },
-                                            ),
-                                      ),
-                                    );
-                                    if (updatedCard != null) {
-                                      // Already handled by onSave callback and widget.onAddCard
+                                  // Close the popup menu before performing any actions
+                                  // that might modify the widget tree
+                                  WidgetsBinding.instance.addPostFrameCallback((_) async {
+                                    if (value == 'edit') {
+                                      final updatedCard = await Navigator.push<CardItem>(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => EditCardPage(
+                                            card: card,
+                                            onSave: (updated) async {
+                                              await _dbHelper.updateCard(updated);
+                                              // Signal main.dart to reload by passing the updated card
+                                              widget.onAddCard(updated);
+                                            },
+                                          ),
+                                        ),
+                                      );
+                                      if (updatedCard != null) {
+                                        // Already handled by onSave callback and widget.onAddCard
+                                      }
+                                    } else if (value == 'delete') {
+                                      // Close any open popup dialog immediately before deleting
+                                      Navigator.of(context).pop();
+                                      
+                                      // For delete operation, first remove the card from the UI
+                                      // to prevent UI from accessing destroyed widgets
+                                      final cardId = card.id;
+                                      final cardForUndoIfNeeded = card; // Save for potential undo
+                                      
+                                      if (cardId != null && mounted) {
+                                        // Remove from UI first
+                                        setState(() {
+                                          _displayedCards.removeWhere((item) => item.id == cardId);
+                                        });
+                                        
+                                        try {
+                                          // Then actually delete in the background
+                                          await _dbHelper.deleteCard(cardId);
+                                          
+                                          if (mounted) {
+                                            // Signal to reload
+                                            widget.onAddCard(CardItem.temp(
+                                              title: "##DELETE_CARD_SIGNAL##",
+                                              description: "",
+                                              name: "",
+                                            ));
+                                          }
+                                        } catch (e) {
+                                          // If delete fails, restore the card in UI
+                                          if (mounted) {
+                                            setState(() {
+                                              if (!_displayedCards.any((c) => c.id == cardId)) {
+                                                _displayedCards.add(cardForUndoIfNeeded);
+                                              }
+                                            });
+                                            
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text("Error deleting card"))
+                                            );
+                                          }
+                                        }
+                                      }
+                                    } else if (value == 'share') {
+                                      await _shareCardAsImage(card);
                                     }
-                                  } else if (value == 'delete') {
-                                    await _deleteCard(card);
-                                  } else if (value == 'share') {
-                                    await _shareCardAsImage(card);
-                                  }
+                                  });
                                 },
                                 itemBuilder:
                                     (BuildContext context) =>

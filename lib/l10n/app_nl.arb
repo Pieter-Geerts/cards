@@ -9,6 +9,7 @@
   "deleteConfirmation": "Weet je zeker dat je deze kaart wilt verwijderen?",
   "cancel": "Annuleren",
   "delete": "Verwijderen",
+  "ok": "OK",
   "cardType": "Type: {type}",
   "@cardType": {
     "placeholders": {
@@ -81,6 +82,5 @@
   "logoSearchFailedTitle": "Logo Zoeken Mislukt",
   "logoSearchFailedMessage": "Kon geen logo vinden voor de ingevoerde naam. Probeer een andere naam of controleer uw internetverbinding.",
   "logoDownloadFailedTitle": "Logo Downloaden Mislukt",
-  "logoDownloadFailedMessage": "Kon het geselecteerde logo niet downloaden. Controleer uw internetverbinding en probeer het opnieuw.",
-  "ok": "OK"
+  "logoDownloadFailedMessage": "Kon het geselecteerde logo niet downloaden. Controleer uw internetverbinding en probeer het opnieuw."
 }

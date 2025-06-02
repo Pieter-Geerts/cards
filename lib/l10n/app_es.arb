@@ -9,6 +9,7 @@
   "deleteConfirmation": "¿Estás seguro de que quieres eliminar esta tarjeta?",
   "cancel": "Cancelar",
   "delete": "Eliminar",
+  "ok": "Aceptar",
   "cardType": "Tipo: {type}",
   "title": "Título",
   "titleHint": "Introduce un título para esta tarjeta",
@@ -71,6 +72,5 @@
   "logoSearchFailedTitle": "Error en la Búsqueda de Logos",
   "logoSearchFailedMessage": "No se pudo encontrar un logo para el nombre ingresado. Por favor, intente con un nombre diferente o verifique su conexión a internet.",
   "logoDownloadFailedTitle": "Error en la Descarga del Logo",
-  "logoDownloadFailedMessage": "No se pudo descargar el logo seleccionado. Por favor, verifique su conexión a internet e intente de nuevo.",
-  "ok": "Aceptar"
+  "logoDownloadFailedMessage": "No se pudo descargar el logo seleccionado. Por favor, verifique su conexión a internet e intente de nuevo."
 }

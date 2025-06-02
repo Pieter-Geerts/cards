@@ -41,6 +41,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get delete => 'Eliminar';
 
   @override
+  String get ok => 'Aceptar';
+
+  @override
   String cardType(Object type) {
     return 'Tipo: $type';
   }

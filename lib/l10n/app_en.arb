@@ -9,6 +9,7 @@
   "deleteConfirmation": "Are you sure you want to delete this card?",
   "cancel": "Cancel",
   "delete": "Delete",
+  "ok": "OK",
   "cardType": "Type: {type}",
   "@cardType": {
     "placeholders": {
@@ -81,6 +82,5 @@
   "logoSearchFailedTitle": "Logo Search Failed",
   "logoSearchFailedMessage": "Could not find a logo for the entered name. Please try a different name or check your internet connection.",
   "logoDownloadFailedTitle": "Logo Download Failed",
-  "logoDownloadFailedMessage": "Could not download the selected logo. Please check your internet connection and try again.",
-  "ok": "OK"
+  "logoDownloadFailedMessage": "Could not download the selected logo. Please check your internet connection and try again."
 }

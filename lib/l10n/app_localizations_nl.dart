@@ -40,6 +40,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get delete => 'Verwijderen';
 
   @override
+  String get ok => 'OK';
+
+  @override
   String cardType(Object type) {
     return 'Type: $type';
   }
