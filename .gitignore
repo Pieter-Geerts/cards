@@ -64,3 +64,5 @@ ios/Flutter/Flutter.podspec
 key.properties
 *.jks
 *.keystore
+
+lib/secrets.dart

@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return openDatabase(
       path,
-      version: 4, // Increment version to 4
+      version: 5, // Increment version to 5
       onCreate: (db, version) {
         return db.execute('''
           CREATE TABLE cards (
@@ -33,7 +33,8 @@ class DatabaseHelper {
             name TEXT,
             cardType TEXT,
             createdAt INTEGER,
-            sortOrder INTEGER 
+            sortOrder INTEGER,
+            logoPath TEXT
           )
         ''');
       },
@@ -68,6 +69,9 @@ class DatabaseHelper {
             );
           }
           await batch.commit(noResult: true);
+        }
+        if (oldVersion < 5) {
+          await db.execute('ALTER TABLE cards ADD COLUMN logoPath TEXT');
         }
       },
     );

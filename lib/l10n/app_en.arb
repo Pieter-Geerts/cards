@@ -59,5 +59,8 @@
   "textQrCode": "QR Code",
   "search": "Search",
   "noResultsFound": "No results found for",
-  "editCard": "Edit Card"
+  "editCard": "Edit Card",
+  "edit": "Edit",
+  "share": "Share",
+  "shareAsImage": "Share as Image"
 }
