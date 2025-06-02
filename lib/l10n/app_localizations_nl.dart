@@ -30,8 +30,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get deleteCard => 'Verwijder Kaart';
 
   @override
-  String get deleteConfirmation =>
-      'Weet je zeker dat je deze kaart wilt verwijderen?';
+  String get deleteConfirmation => 'Weet je zeker dat je deze kaart wilt verwijderen?';
 
   @override
   String get cancel => 'Annuleren';
@@ -127,23 +126,19 @@ class AppLocalizationsNl extends AppLocalizations {
   String get validationPleaseEnterValue => 'Voer een waarde in';
 
   @override
-  String get validationBarcodeOnlyAlphanumeric =>
-      'Barcode mag alleen cijfers en letters bevatten';
+  String get validationBarcodeOnlyAlphanumeric => 'Barcode mag alleen cijfers en letters bevatten';
 
   @override
-  String get validationBarcodeMinLength =>
-      'Barcode moet minimaal 3 tekens lang zijn';
+  String get validationBarcodeMinLength => 'Barcode moet minimaal 3 tekens lang zijn';
 
   @override
   String get validationTitleRequired => 'Voer een titel in';
 
   @override
-  String get validationTitleMinLength =>
-      'Titel moet minimaal 3 tekens lang zijn';
+  String get validationTitleMinLength => 'Titel moet minimaal 3 tekens lang zijn';
 
   @override
-  String get validationDescriptionMinLength =>
-      'Omschrijving moet minimaal 5 tekens lang zijn';
+  String get validationDescriptionMinLength => 'Omschrijving moet minimaal 5 tekens lang zijn';
 
   @override
   String get textBarcode => 'Barcode';
@@ -194,8 +189,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get unsavedChangesTitle => 'Niet-opgeslagen Wijzigingen';
 
   @override
-  String get unsavedChangesMessage =>
-      'U heeft niet-opgeslagen wijzigingen. Wilt u deze verwijderen?';
+  String get unsavedChangesMessage => 'U heeft niet-opgeslagen wijzigingen. Wilt u deze verwijderen?';
 
   @override
   String get discardButton => 'Verwijderen';
@@ -219,13 +213,11 @@ class AppLocalizationsNl extends AppLocalizations {
   String get logoSearchFailedTitle => 'Logo Zoeken Mislukt';
 
   @override
-  String get logoSearchFailedMessage =>
-      'Kon geen logo vinden voor de ingevoerde naam. Probeer een andere naam of controleer uw internetverbinding.';
+  String get logoSearchFailedMessage => 'Kon geen logo vinden voor de ingevoerde naam. Probeer een andere naam of controleer uw internetverbinding.';
 
   @override
   String get logoDownloadFailedTitle => 'Logo Downloaden Mislukt';
 
   @override
-  String get logoDownloadFailedMessage =>
-      'Kon het geselecteerde logo niet downloaden. Controleer uw internetverbinding en probeer het opnieuw.';
+  String get logoDownloadFailedMessage => 'Kon het geselecteerde logo niet downloaden. Controleer uw internetverbinding en probeer het opnieuw.';
 }
