@@ -82,5 +82,13 @@
   "logoSearchFailedTitle": "Logo Zoeken Mislukt",
   "logoSearchFailedMessage": "Kon geen logo vinden voor de ingevoerde naam. Probeer een andere naam of controleer uw internetverbinding.",
   "logoDownloadFailedTitle": "Logo Downloaden Mislukt",
-  "logoDownloadFailedMessage": "Kon het geselecteerde logo niet downloaden. Controleer uw internetverbinding en probeer het opnieuw."
+  "logoDownloadFailedMessage": "Kon het geselecteerde logo niet downloaden. Controleer uw internetverbinding en probeer het opnieuw.",
+  "scanFromImageAction": "Scan vanuit Afbeelding",
+  "noBarcodeFoundInImage": "Geen barcode of QR-code gevonden in de geselecteerde afbeelding.",
+  "scanFromImageTitle": "Scan vanuit Afbeelding",
+  "processingImage": "Afbeelding verwerken...",
+  "selectImageButton": "Afbeelding Selecteren",
+  "scanFromImageSubtitle": "Selecteer een afbeelding uit je galerij",
+  "manualEntrySubtitle": "Typ de code handmatig in",
+  "scanFromImageInstructions": "Selecteer een afbeelding uit je galerij die een QR-code of barcode bevat"
 }

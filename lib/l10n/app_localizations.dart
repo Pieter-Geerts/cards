@@ -513,6 +513,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not download the selected logo. Please check your internet connection and try again.'**
   String get logoDownloadFailedMessage;
+
+  /// No description provided for @scanFromImageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan from Image'**
+  String get scanFromImageAction;
+
+  /// No description provided for @noBarcodeFoundInImage.
+  ///
+  /// In en, this message translates to:
+  /// **'No barcode or QR code found in the selected image.'**
+  String get noBarcodeFoundInImage;
+
+  /// No description provided for @scanFromImageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan from Image'**
+  String get scanFromImageTitle;
+
+  /// No description provided for @processingImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing image...'**
+  String get processingImage;
+
+  /// No description provided for @selectImageButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Image'**
+  String get selectImageButton;
+
+  /// No description provided for @scanFromImageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select an image from your gallery'**
+  String get scanFromImageSubtitle;
+
+  /// No description provided for @manualEntrySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Type in the code manually'**
+  String get manualEntrySubtitle;
+
+  /// No description provided for @scanFromImageInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Select an image from your gallery that contains a QR code or barcode'**
+  String get scanFromImageInstructions;
 }
 
 class _AppLocalizationsDelegate

@@ -72,5 +72,13 @@
   "logoSearchFailedTitle": "Error en la Búsqueda de Logos",
   "logoSearchFailedMessage": "No se pudo encontrar un logo para el nombre ingresado. Por favor, intente con un nombre diferente o verifique su conexión a internet.",
   "logoDownloadFailedTitle": "Error en la Descarga del Logo",
-  "logoDownloadFailedMessage": "No se pudo descargar el logo seleccionado. Por favor, verifique su conexión a internet e intente de nuevo."
+  "logoDownloadFailedMessage": "No se pudo descargar el logo seleccionado. Por favor, verifique su conexión a internet e intente de nuevo.",
+  "scanFromImageAction": "Escanear desde Imagen",
+  "noBarcodeFoundInImage": "No se encontró ningún código de barras o código QR en la imagen seleccionada.",
+  "scanFromImageTitle": "Escanear desde Imagen",
+  "processingImage": "Procesando imagen...",
+  "selectImageButton": "Seleccionar Imagen",
+  "scanFromImageSubtitle": "Selecciona una imagen de tu galería",
+  "manualEntrySubtitle": "Escribe el código manualmente",
+  "scanFromImageInstructions": "Selecciona una imagen de tu galería que contenga un código QR o código de barras"
 }

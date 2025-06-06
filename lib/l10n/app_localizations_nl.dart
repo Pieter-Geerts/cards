@@ -228,4 +228,30 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get logoDownloadFailedMessage =>
       'Kon het geselecteerde logo niet downloaden. Controleer uw internetverbinding en probeer het opnieuw.';
+
+  @override
+  String get scanFromImageAction => 'Scan vanuit Afbeelding';
+
+  @override
+  String get noBarcodeFoundInImage =>
+      'Geen barcode of QR-code gevonden in de geselecteerde afbeelding.';
+
+  @override
+  String get scanFromImageTitle => 'Scan vanuit Afbeelding';
+
+  @override
+  String get processingImage => 'Afbeelding verwerken...';
+
+  @override
+  String get selectImageButton => 'Afbeelding Selecteren';
+
+  @override
+  String get scanFromImageSubtitle => 'Selecteer een afbeelding uit je galerij';
+
+  @override
+  String get manualEntrySubtitle => 'Typ de code handmatig in';
+
+  @override
+  String get scanFromImageInstructions =>
+      'Selecteer een afbeelding uit je galerij die een QR-code of barcode bevat';
 }

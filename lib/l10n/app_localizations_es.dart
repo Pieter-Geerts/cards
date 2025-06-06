@@ -230,4 +230,30 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get logoDownloadFailedMessage =>
       'No se pudo descargar el logo seleccionado. Por favor, verifique su conexión a internet e intente de nuevo.';
+
+  @override
+  String get scanFromImageAction => 'Escanear desde Imagen';
+
+  @override
+  String get noBarcodeFoundInImage =>
+      'No se encontró ningún código de barras o código QR en la imagen seleccionada.';
+
+  @override
+  String get scanFromImageTitle => 'Escanear desde Imagen';
+
+  @override
+  String get processingImage => 'Procesando imagen...';
+
+  @override
+  String get selectImageButton => 'Seleccionar Imagen';
+
+  @override
+  String get scanFromImageSubtitle => 'Selecciona una imagen de tu galería';
+
+  @override
+  String get manualEntrySubtitle => 'Escribe el código manualmente';
+
+  @override
+  String get scanFromImageInstructions =>
+      'Selecciona una imagen de tu galería que contenga un código QR o código de barras';
 }

@@ -104,9 +104,7 @@ class _HomePageState extends State<HomePage> {
         // Then delete from database
         await _dbHelper.deleteCard(card.id!);
 
-        // If still mounted, notify parent to update
         if (mounted) {
-          // Use a special signal CardItem to tell main.dart to reload without this card
           widget.onAddCard(
             CardItem.temp(
               title: "##DELETE_CARD_SIGNAL##",
@@ -255,9 +253,6 @@ class _HomePageState extends State<HomePage> {
       if (cardsToUpdate.isNotEmpty) {
         _dbHelper.updateCardSortOrders(cardsToUpdate);
       }
-      // Also update the main list in main.dart if necessary, or rely on next full load/reload from main.
-      // For now, we assume the local _displayedCards is the primary view model for this screen.
-      // And widget.cards will be updated on next full app load/reload from main.
     });
   }
 
@@ -321,6 +316,66 @@ class _HomePageState extends State<HomePage> {
     } finally {
       overlay.remove();
     }
+  }
+
+  void _showCardActions(
+    BuildContext context,
+    CardItem card,
+    AppLocalizations l10n,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext modalContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: Text(l10n.editAction),
+                onTap: () async {
+                  Navigator.of(modalContext).pop(); // Close modal first
+                  await Navigator.push<CardItem>(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => EditCardPage(
+                            card: card,
+                            onSave: (updated) async {
+                              await _dbHelper.updateCard(updated);
+                              widget.onAddCard(updated);
+                            },
+                          ),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.share),
+                title: Text(l10n.shareAsImageAction),
+                onTap: () async {
+                  Navigator.of(modalContext).pop(); // Close modal first
+                  await _shareCardAsImage(card);
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: Text(
+                  l10n.delete,
+                  style: const TextStyle(color: Colors.red),
+                ),
+                onTap: () async {
+                  Navigator.of(modalContext).pop(); // Close modal first
+                  await _deleteCard(card);
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -427,124 +482,18 @@ class _HomePageState extends State<HomePage> {
                                   ],
                                 ),
                               ),
-                              PopupMenuButton<String>(
-                                icon: Icon(
-                                  Icons.more_vert,
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                  size: 28,
+                              GestureDetector(
+                                onTap:
+                                    () => _showCardActions(context, card, l10n),
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Icon(
+                                    Icons.more_vert,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                    size: 28,
+                                  ),
                                 ),
-                                onSelected: (value) async {
-                                  // Close the popup menu before performing any actions
-                                  // that might modify the widget tree
-                                  WidgetsBinding.instance.addPostFrameCallback((
-                                    _,
-                                  ) async {
-                                    if (value == 'edit') {
-                                      final updatedCard = await Navigator.push<
-                                        CardItem
-                                      >(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder:
-                                              (context) => EditCardPage(
-                                                card: card,
-                                                onSave: (updated) async {
-                                                  await _dbHelper.updateCard(
-                                                    updated,
-                                                  );
-                                                  // Signal main.dart to reload by passing the updated card
-                                                  widget.onAddCard(updated);
-                                                },
-                                              ),
-                                        ),
-                                      );
-                                      if (updatedCard != null) {
-                                        // Already handled by onSave callback and widget.onAddCard
-                                      }
-                                    } else if (value == 'delete') {
-                                      // Close any open popup dialog immediately before deleting
-                                      Navigator.of(context).pop();
-
-                                      // For delete operation, first remove the card from the UI
-                                      // to prevent UI from accessing destroyed widgets
-                                      final cardId = card.id;
-                                      final cardForUndoIfNeeded =
-                                          card; // Save for potential undo
-
-                                      if (cardId != null && mounted) {
-                                        // Remove from UI first
-                                        setState(() {
-                                          _displayedCards.removeWhere(
-                                            (item) => item.id == cardId,
-                                          );
-                                        });
-
-                                        try {
-                                          // Then actually delete in the background
-                                          await _dbHelper.deleteCard(cardId);
-
-                                          if (mounted) {
-                                            // Signal to reload
-                                            widget.onAddCard(
-                                              CardItem.temp(
-                                                title: "##DELETE_CARD_SIGNAL##",
-                                                description: "",
-                                                name: "",
-                                              ),
-                                            );
-                                          }
-                                        } catch (e) {
-                                          // If delete fails, restore the card in UI
-                                          if (mounted) {
-                                            setState(() {
-                                              if (!_displayedCards.any(
-                                                (c) => c.id == cardId,
-                                              )) {
-                                                _displayedCards.add(
-                                                  cardForUndoIfNeeded,
-                                                );
-                                              }
-                                            });
-
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  "Error deleting card",
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                        }
-                                      }
-                                    } else if (value == 'share') {
-                                      await _shareCardAsImage(card);
-                                    }
-                                  });
-                                },
-                                itemBuilder:
-                                    (BuildContext context) =>
-                                        <PopupMenuEntry<String>>[
-                                          PopupMenuItem<String>(
-                                            value: 'edit',
-                                            child: Text(
-                                              l10n.editAction,
-                                            ), // Changed from hardcoded string
-                                          ),
-                                          PopupMenuItem<String>(
-                                            value: 'share',
-                                            child: Text(
-                                              l10n.shareAsImageAction,
-                                            ), // Changed from hardcoded string
-                                          ),
-                                          const PopupMenuDivider(),
-                                          PopupMenuItem<String>(
-                                            value: 'delete',
-                                            child: Text(l10n.delete),
-                                          ),
-                                        ],
                               ),
                             ],
                           ),
@@ -644,28 +593,6 @@ Widget buildLogoWidget(
   double? height, // Optional height, overrides size if provided
   Color? background,
 }) {
-  final theme =
-      WidgetsBinding
-                  .instance
-                  .platformDispatcher
-                  .views
-                  .first
-                  .platformDispatcher
-                  .defaultRouteName ==
-              '/'
-          ? null
-          : Theme.of(
-            WidgetsBinding.instance.focusManager.primaryFocus?.context ??
-                WidgetsBinding
-                        .instance
-                        .platformDispatcher
-                        .views
-                        .first
-                        .platformDispatcher
-                        .defaultRouteName
-                    as BuildContext,
-          );
-  final bgColor = background ?? (theme?.colorScheme.surface ?? Colors.white);
   final double effectiveWidth = width ?? size;
   final double effectiveHeight = height ?? size;
 
@@ -675,41 +602,34 @@ Widget buildLogoWidget(
     if (exists) {
       if (logoPath.toLowerCase().endsWith('.svg')) {
         return CircleAvatar(
-          backgroundColor: bgColor,
-          radius:
-              effectiveWidth / 2, // Use effectiveWidth for radius if circular
+          backgroundColor: background ?? Colors.grey[100],
+          radius: effectiveWidth / 2,
           child: ClipOval(
             child: SvgPicture.file(
               file,
               width: effectiveWidth,
               height: effectiveHeight,
-              fit:
-                  BoxFit
-                      .contain, // Changed to contain to better handle various aspect ratios
+              fit: BoxFit.contain,
             ),
           ),
         );
       } else {
         return CircleAvatar(
-          backgroundColor: bgColor,
-          radius:
-              effectiveWidth / 2, // Use effectiveWidth for radius if circular
+          backgroundColor: background ?? Colors.grey[100],
+          radius: effectiveWidth / 2,
           backgroundImage: FileImage(file),
-          child:
-              !exists
-                  ? Icon(Icons.broken_image, size: effectiveWidth * 0.6)
-                  : null,
         );
       }
     }
   }
+
   return CircleAvatar(
-    backgroundColor: bgColor,
-    radius: effectiveWidth / 2, // Use effectiveWidth for radius if circular
+    backgroundColor: background ?? Colors.grey[100],
+    radius: effectiveWidth / 2,
     child: Icon(
       Icons.credit_card,
       size: effectiveWidth * 0.6,
-      color: theme?.colorScheme.onSurface ?? Colors.black,
+      color: Colors.black54,
     ),
   );
 }
