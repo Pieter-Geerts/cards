@@ -102,6 +102,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dutch => 'Holandés';
 
   @override
+  String get deviceLanguage => 'Idioma del Dispositivo';
+
+  @override
+  String get resetToDeviceLanguage => 'Restablecer al Idioma del Dispositivo';
+
+  @override
   String get theme => 'Tema';
 
   @override

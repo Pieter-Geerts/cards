@@ -101,6 +101,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get dutch => 'Nederlands';
 
   @override
+  String get deviceLanguage => 'Apparaattaal';
+
+  @override
+  String get resetToDeviceLanguage => 'Terugzetten naar Apparaattaal';
+
+  @override
   String get theme => 'Thema';
 
   @override

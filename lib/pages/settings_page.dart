@@ -12,15 +12,15 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   late String _currentLanguage;
-  late String _currentThemeMode; // Add state for current theme mode
+  late String _currentThemeMode; 
 
   @override
   void initState() {
     super.initState();
     _currentLanguage = AppSettings.getLanguageCode();
-    _currentThemeMode = AppSettings.getThemeMode(); // Initialize theme mode
+    _currentThemeMode = AppSettings.getThemeMode();
     AppSettings.addStaticListener(
-      _onSettingsChanged, // Combined listener for both language and theme
+      _onSettingsChanged, 
     );
   }
 
@@ -49,7 +49,7 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           ListTile(
             title: Text(l10n.language),
-            subtitle: Text(_getLanguageName(_currentLanguage, l10n)),
+            subtitle: Text(_getCurrentLanguageDisplay(l10n)),
             trailing: const Icon(Icons.language),
             onTap: () => _showLanguageSelector(context),
           ),
@@ -75,6 +75,18 @@ class _SettingsPageState extends State<SettingsPage> {
         return l10n.dutch;
       default:
         return l10n.english;
+    }
+  }
+
+  String _getCurrentLanguageDisplay(AppLocalizations l10n) {
+    final hasSetLanguage = AppSettings.getHasSetLanguage();
+    final currentLanguage = _currentLanguage;
+    final deviceLanguage = AppSettings.getDeviceLanguage();
+    
+    if (!hasSetLanguage && currentLanguage == deviceLanguage) {
+      return '${l10n.deviceLanguage} (${_getLanguageName(currentLanguage, l10n)})';
+    } else {
+      return _getLanguageName(currentLanguage, l10n);
     }
   }
 
@@ -113,9 +125,17 @@ class _SettingsPageState extends State<SettingsPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Device Language option
+              _buildLanguageOption(
+                context, 
+                AppSettings.getDeviceLanguage(), 
+                '${l10n.deviceLanguage} (${_getLanguageName(AppSettings.getDeviceLanguage(), l10n)})',
+                isDeviceLanguage: true,
+              ),
+              const Divider(),
               _buildLanguageOption(context, 'en', l10n.english),
               _buildLanguageOption(context, 'es', l10n.spanish),
-              _buildLanguageOption(context, 'nl', l10n.dutch), // Add this line
+              _buildLanguageOption(context, 'nl', l10n.dutch),
             ],
           ),
         );
@@ -162,8 +182,9 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildLanguageOption(
     BuildContext context,
     String languageCode,
-    String languageName,
-  ) {
+    String languageName, {
+    bool isDeviceLanguage = false,
+  }) {
     return ListTile(
       title: Text(languageName),
       leading: Radio<String>(
@@ -171,7 +192,11 @@ class _SettingsPageState extends State<SettingsPage> {
         groupValue: _currentLanguage,
         onChanged: (value) async {
           if (value != null) {
-            await AppSettings.setLanguageCodeAndNotify(value);
+            if (isDeviceLanguage) {
+              await AppSettings.resetToDeviceLanguage();
+            } else {
+              await AppSettings.setLanguageCodeAndNotify(value);
+            }
             if (context.mounted) {
               Navigator.pop(context);
             }
@@ -179,7 +204,11 @@ class _SettingsPageState extends State<SettingsPage> {
         },
       ),
       onTap: () async {
-        await AppSettings.setLanguageCodeAndNotify(languageCode);
+        if (isDeviceLanguage) {
+          await AppSettings.resetToDeviceLanguage();
+        } else {
+          await AppSettings.setLanguageCodeAndNotify(languageCode);
+        }
         if (context.mounted) {
           Navigator.pop(context);
         }

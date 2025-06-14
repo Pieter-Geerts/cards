@@ -41,9 +41,6 @@ class LogoDevService {
       if (response.statusCode == 200) {
         final contentType = response.headers['content-type'] ?? '';
         if (!contentType.startsWith('image/')) {
-          print(
-            '[LogoDevService] Download failed: Not an image, likely an error message. Body: \\${response.body}',
-          );
           return null;
         }
         final bytes = response.bodyBytes;
@@ -53,15 +50,10 @@ class LogoDevService {
             '${dir.path}/logo_${companyNameOrDomain}_${DateTime.now().millisecondsSinceEpoch}.$ext';
         final file = File(filePath);
         await file.writeAsBytes(bytes);
-        print(
-          '[LogoDevService] Logo saved to: $filePath (exists: \\${file.existsSync()})',
-        );
+
         return filePath;
-      } else {
-        print(
-          '[LogoDevService] Download failed: HTTP status \\${response.statusCode}',
-        );
-      }
+      } 
+
     } catch (e) {
       print('[LogoDevService] Logo download error: $e');
     }

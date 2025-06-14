@@ -28,6 +28,8 @@
   "english": "Inglés",
   "spanish": "Español",
   "dutch": "Holandés",
+  "deviceLanguage": "Idioma del Dispositivo",
+  "resetToDeviceLanguage": "Restablecer al Idioma del Dispositivo",
   "theme": "Tema",
   "selectTheme": "Seleccionar Tema",
   "light": "Claro",

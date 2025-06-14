@@ -274,6 +274,18 @@ abstract class AppLocalizations {
   /// **'Dutch'**
   String get dutch;
 
+  /// No description provided for @deviceLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Device Language'**
+  String get deviceLanguage;
+
+  /// No description provided for @resetToDeviceLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to Device Language'**
+  String get resetToDeviceLanguage;
+
   /// No description provided for @theme.
   ///
   /// In en, this message translates to:

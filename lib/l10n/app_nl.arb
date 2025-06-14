@@ -38,6 +38,8 @@
   "english": "Engels",
   "spanish": "Spaans",
   "dutch": "Nederlands",
+  "deviceLanguage": "Apparaattaal",
+  "resetToDeviceLanguage": "Terugzetten naar Apparaattaal",
   "theme": "Thema",
   "selectTheme": "Selecteer Thema",
   "light": "Licht",
