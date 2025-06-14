@@ -181,9 +181,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get codeValueLabel => 'Valor del Código';
 
   @override
-  String get searchLogoAction => 'Buscar Logo';
-
-  @override
   String get editAction => 'Editar';
 
   @override
@@ -215,23 +212,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get currentLogo => 'Logo Actual';
 
   @override
-  String get searchLogoHint => 'Introduce el nombre de la empresa para el logo';
-
-  @override
-  String get logoSearchFailedTitle => 'Error en la Búsqueda de Logos';
-
-  @override
-  String get logoSearchFailedMessage =>
-      'No se pudo encontrar un logo para el nombre ingresado. Por favor, intente con un nombre diferente o verifique su conexión a internet.';
-
-  @override
-  String get logoDownloadFailedTitle => 'Error en la Descarga del Logo';
-
-  @override
-  String get logoDownloadFailedMessage =>
-      'No se pudo descargar el logo seleccionado. Por favor, verifique su conexión a internet e intente de nuevo.';
-
-  @override
   String get scanFromImageAction => 'Escanear desde Imagen';
 
   @override
@@ -256,4 +236,7 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get scanFromImageInstructions =>
       'Selecciona una imagen de tu galería que contenga un código QR o código de barras';
+
+  @override
+  String get or => 'o';
 }

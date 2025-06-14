@@ -418,12 +418,6 @@ abstract class AppLocalizations {
   /// **'Code Value'**
   String get codeValueLabel;
 
-  /// No description provided for @searchLogoAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Search Logo'**
-  String get searchLogoAction;
-
   /// No description provided for @editAction.
   ///
   /// In en, this message translates to:
@@ -484,36 +478,6 @@ abstract class AppLocalizations {
   /// **'Current Logo'**
   String get currentLogo;
 
-  /// No description provided for @searchLogoHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter company name for logo'**
-  String get searchLogoHint;
-
-  /// No description provided for @logoSearchFailedTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Logo Search Failed'**
-  String get logoSearchFailedTitle;
-
-  /// No description provided for @logoSearchFailedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not find a logo for the entered name. Please try a different name or check your internet connection.'**
-  String get logoSearchFailedMessage;
-
-  /// No description provided for @logoDownloadFailedTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Logo Download Failed'**
-  String get logoDownloadFailedTitle;
-
-  /// No description provided for @logoDownloadFailedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not download the selected logo. Please check your internet connection and try again.'**
-  String get logoDownloadFailedMessage;
-
   /// No description provided for @scanFromImageAction.
   ///
   /// In en, this message translates to:
@@ -561,6 +525,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select an image from your gallery that contains a QR code or barcode'**
   String get scanFromImageInstructions;
+
+  /// No description provided for @or.
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get or;
 }
 
 class _AppLocalizationsDelegate

@@ -1,20 +1,15 @@
 import 'dart:io';
 
-import 'package:barcode_widget/barcode_widget.dart' as bw;
-import 'package:cards/config.dart';
 import 'package:fl_mlkit_scanning/fl_mlkit_scanning.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart' as mobile;
-import 'package:qr_flutter/qr_flutter.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
+import '../models/code_renderer.dart';
 import '../pages/home_page.dart' show buildLogoWidget;
-import '../services/logo_dev_service.dart';
-
-enum CardType { barcode, qrCode } // Changed BARCODE, QR_CODE to barcode, qrCode
 
 class AddCardPage extends StatelessWidget {
   const AddCardPage({super.key});
@@ -157,7 +152,9 @@ class _AddCardEntryModal extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -189,7 +186,7 @@ class _AddCardEntryModal extends StatelessWidget {
 
             const SizedBox(height: 16),
             Text(
-              'or',
+              AppLocalizations.of(context).or,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.grey[600],
                 fontWeight: FontWeight.w500,
@@ -467,7 +464,9 @@ class _ScanFromImagePageState extends State<_ScanFromImagePage> {
                   color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Row(
@@ -497,7 +496,9 @@ class _ScanFromImagePageState extends State<_ScanFromImagePage> {
                 child: Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: Colors.grey.withValues(alpha: 0.3),
+                    ),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child:
@@ -569,7 +570,9 @@ class _ScanFromImagePageState extends State<_ScanFromImagePage> {
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: Colors.red.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -602,8 +605,10 @@ class _ScanFromImagePageState extends State<_ScanFromImagePage> {
                         onPressed: _isProcessing ? null : _pickAndScanImage,
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size.fromHeight(56),
-                          backgroundColor: Theme.of(context).colorScheme.primary,
-                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
                         ),
                       ),
                     ),
@@ -653,11 +658,7 @@ class _AddCardDetailsPageState extends State<_AddCardDetailsPage> {
   late TextEditingController _codeController;
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
-  late TextEditingController _logoSearchController;
   String? _logoPath;
-  bool _isSearchingLogo = false;
-  List<Map<String, dynamic>> _searchResults = [];
-  late LogoDevService _logoService;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -667,45 +668,6 @@ class _AddCardDetailsPageState extends State<_AddCardDetailsPage> {
     _codeController = TextEditingController(text: widget.initialCode ?? '');
     _titleController = TextEditingController();
     _descriptionController = TextEditingController();
-    _logoSearchController = TextEditingController();
-    _logoService = LogoDevService(logoDevApiKey);
-    _titleController.addListener(_autoSearchLogoFromTitle);
-  }
-
-  void _autoSearchLogoFromTitle() async {
-    final title = _titleController.text.trim();
-    if (title.isNotEmpty && title.length > 2) {
-      setState(() => _isSearchingLogo = true);
-      final results = await _logoService.searchCompanies(title);
-      setState(() {
-        _searchResults = results;
-        _isSearchingLogo = false;
-      });
-    } else {
-      setState(() => _searchResults = []);
-    }
-  }
-
-  Future<void> _searchLogo(String query) async {
-    setState(() => _isSearchingLogo = true);
-    final results = await _logoService.searchCompanies(query);
-    setState(() {
-      _searchResults = results;
-      _isSearchingLogo = false;
-    });
-  }
-
-  Future<void> _downloadAndSetLogo(String companyNameOrDomain) async {
-    setState(() => _isSearchingLogo = true);
-    final filePath = await _logoService.downloadAndSaveLogo(
-      companyNameOrDomain,
-    );
-    setState(() {
-      _logoPath = filePath;
-      _searchResults = [];
-      _logoSearchController.text = '';
-      _isSearchingLogo = false;
-    });
   }
 
   String? _validateCode(String? value) {
@@ -713,14 +675,17 @@ class _AddCardDetailsPageState extends State<_AddCardDetailsPage> {
     if (value == null || value.isEmpty) {
       return l10n.validationPleaseEnterValue;
     }
-    if (_selectedCardType == CardType.barcode) {
-      if (!RegExp(r'^[0-9a-zA-Z]+$').hasMatch(value)) {
+
+    // Use the code renderer validation
+    final renderer = CodeRendererFactory.getRenderer(_selectedCardType);
+    if (!renderer.validateData(value)) {
+      if (_selectedCardType == CardType.barcode) {
         return l10n.validationBarcodeOnlyAlphanumeric;
-      }
-      if (value.length < 3) {
-        return l10n.validationBarcodeMinLength;
+      } else {
+        return 'Invalid data for ${_selectedCardType.displayName}';
       }
     }
+
     return null;
   }
 
@@ -737,9 +702,8 @@ class _AddCardDetailsPageState extends State<_AddCardDetailsPage> {
 
   @override
   void dispose() {
-    _titleController.removeListener(_autoSearchLogoFromTitle);
-    _logoSearchController.dispose();
     _codeController.dispose();
+    _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
@@ -764,62 +728,39 @@ class _AddCardDetailsPageState extends State<_AddCardDetailsPage> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: Center(
-                    child:
-                        _selectedCardType == CardType.qrCode
-                            ? QrImageView(
-                              data: _codeController.text,
-                              version: QrVersions.auto,
-                              size: 160,
-                              backgroundColor: Colors.white,
-                              eyeStyle: const QrEyeStyle(color: Colors.black),
-                              dataModuleStyle: const QrDataModuleStyle(
-                                color: Colors.black,
-                              ),
-                            )
-                            : bw.BarcodeWidget(
-                              barcode: bw.Barcode.code128(),
-                              data: _codeController.text,
-                              drawText: false,
-                              color: Colors.black,
-                              backgroundColor: Colors.white,
-                              width: 200,
-                              height: 80,
-                            ),
+                    child: CardItem.temp(
+                      title: 'Preview',
+                      description: '',
+                      name: _codeController.text,
+                      cardType: _selectedCardType,
+                    ).renderCode(
+                      size: _selectedCardType.is2D ? 160 : null,
+                      width: _selectedCardType.is1D ? 200 : null,
+                      height: _selectedCardType.is1D ? 80 : null,
+                    ),
                   ),
                 ),
-              // Card type toggle
-              Row(
-                children: [
-                  Expanded(
-                    child: ChoiceChip(
-                      label: Text(l10n.barcode),
-                      selected:
-                          _selectedCardType ==
-                          CardType.barcode, // Changed CardType.BARCODE
-                      onSelected: (selected) {
-                        setState(() {
-                          _selectedCardType =
-                              CardType.barcode; // Changed CardType.BARCODE
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ChoiceChip(
-                      label: Text(l10n.qrCode),
-                      selected:
-                          _selectedCardType ==
-                          CardType.qrCode, // Changed CardType.QR_CODE
-                      onSelected: (selected) {
-                        setState(() {
-                          _selectedCardType =
-                              CardType.qrCode; // Changed CardType.QR_CODE
-                        });
-                      },
-                    ),
-                  ),
-                ],
+              // Card type selection
+              DropdownButtonFormField<CardType>(
+                decoration: InputDecoration(
+                  labelText: 'Card Type',
+                  border: const OutlineInputBorder(),
+                ),
+                value: _selectedCardType,
+                items:
+                    CardType.values.map((cardType) {
+                      return DropdownMenuItem(
+                        value: cardType,
+                        child: Text(cardType.displayName),
+                      );
+                    }).toList(),
+                onChanged: (CardType? newValue) {
+                  if (newValue != null) {
+                    setState(() {
+                      _selectedCardType = newValue;
+                    });
+                  }
+                },
               ),
               const SizedBox(height: 20),
               TextFormField(
@@ -858,62 +799,16 @@ class _AddCardDetailsPageState extends State<_AddCardDetailsPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              // Logo search and preview
-              TextField(
-                controller: _logoSearchController,
-                decoration: InputDecoration(
-                  labelText: 'Search company logo',
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.search),
-                    onPressed: () => _searchLogo(_logoSearchController.text),
-                  ),
-                ),
-                onSubmitted: (query) => _searchLogo(query),
-              ),
-              if (_isSearchingLogo)
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-              if (_searchResults.isNotEmpty)
-                SizedBox(
-                  height: 80,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _searchResults.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) {
-                      final result = _searchResults[index];
-                      return ChoiceChip(
-                        label: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (result['logo_url'] != null &&
-                                result['logo_url'].toString().isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Image.network(
-                                  result['logo_url'],
-                                  width: 32,
-                                  height: 32,
-                                ),
-                              ),
-                            Text(result['name'] ?? ''),
-                          ],
-                        ),
-                        selected: false,
-                        onSelected:
-                            (_) => _downloadAndSetLogo(
-                              result['domain'] ?? result['name'] ?? '',
-                            ),
-                      );
-                    },
-                  ),
-                ),
+              // Logo display (if set)
               if (_logoPath != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  child: Center(child: buildLogoWidget(_logoPath!)),
+                  child: Center(
+                    child: buildLogoWidget(
+                      _logoPath!,
+                      title: _titleController.text,
+                    ),
+                  ),
                 ),
               if (_logoPath != null)
                 TextButton.icon(
@@ -930,7 +825,7 @@ class _AddCardDetailsPageState extends State<_AddCardDetailsPage> {
                         title: _titleController.text,
                         description: _descriptionController.text,
                         name: _codeController.text,
-                        cardType: _selectedCardType.name,
+                        cardType: _selectedCardType,
                         logoPath: _logoPath,
                       ),
                     );

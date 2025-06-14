@@ -179,9 +179,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get codeValueLabel => 'Codewaarde';
 
   @override
-  String get searchLogoAction => 'Zoek Logo';
-
-  @override
   String get editAction => 'Bewerken';
 
   @override
@@ -213,23 +210,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get currentLogo => 'Huidig Logo';
 
   @override
-  String get searchLogoHint => 'Voer bedrijfsnaam in voor logo';
-
-  @override
-  String get logoSearchFailedTitle => 'Logo Zoeken Mislukt';
-
-  @override
-  String get logoSearchFailedMessage =>
-      'Kon geen logo vinden voor de ingevoerde naam. Probeer een andere naam of controleer uw internetverbinding.';
-
-  @override
-  String get logoDownloadFailedTitle => 'Logo Downloaden Mislukt';
-
-  @override
-  String get logoDownloadFailedMessage =>
-      'Kon het geselecteerde logo niet downloaden. Controleer uw internetverbinding en probeer het opnieuw.';
-
-  @override
   String get scanFromImageAction => 'Scan vanuit Afbeelding';
 
   @override
@@ -254,4 +234,7 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get scanFromImageInstructions =>
       'Selecteer een afbeelding uit je galerij die een QR-code of barcode bevat';
+
+  @override
+  String get or => 'of';
 }

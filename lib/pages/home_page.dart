@@ -223,7 +223,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _shareCardAsImage(CardItem card) async {
     final boundaryKey = GlobalKey();
-    final isQr = card.cardType == 'QR_CODE';
+    final isQr = card.isQrCode;
     final imageWidget = Material(
       type: MaterialType.transparency,
       child: Center(
@@ -241,8 +241,7 @@ class _HomePageState extends State<HomePage> {
                       eyeStyle: const QrEyeStyle(color: Colors.black), // Added
                       dataModuleStyle: const QrDataModuleStyle(
                         color: Colors.black,
-                      ), // Added
-                      // foregroundColor: Colors.black, // Removed deprecated
+                      ),
                     )
                     : BarcodeWidget(
                       barcode: Barcode.code128(),
@@ -299,7 +298,7 @@ class _HomePageState extends State<HomePage> {
                 leading: const Icon(Icons.edit),
                 title: Text(l10n.editAction),
                 onTap: () async {
-                  Navigator.of(modalContext).pop(); // Close modal first
+                  Navigator.of(modalContext).pop();
                   await Navigator.push<CardItem>(
                     context,
                     MaterialPageRoute(
@@ -393,7 +392,7 @@ class _HomePageState extends State<HomePage> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              buildLogoWidget(card.logoPath),
+                              buildLogoWidget(card.logoPath, title: card.title),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
@@ -545,6 +544,7 @@ Widget buildLogoWidget(
   double? width, // Optional width, overrides size if provided
   double? height, // Optional height, overrides size if provided
   Color? background,
+  String? title, // Add title parameter for generating initials
 }) {
   final double effectiveWidth = width ?? size;
   final double effectiveHeight = height ?? size;
@@ -576,13 +576,43 @@ Widget buildLogoWidget(
     }
   }
 
+  // Generate initials from title if available
+  String initials = '';
+  if (title != null && title.isNotEmpty) {
+    final words = title.trim().split(RegExp(r'\s+'));
+    if (words.isNotEmpty) {
+      if (words.length == 1) {
+        // Single word: take first two characters
+        initials =
+            words[0].length >= 2
+                ? words[0].substring(0, 2).toUpperCase()
+                : words[0].toUpperCase();
+      } else {
+        // Multiple words: take first letter of each of the first two words
+        initials =
+            words[0].substring(0, 1).toUpperCase() +
+            words[1].substring(0, 1).toUpperCase();
+      }
+    }
+  }
+
   return CircleAvatar(
     backgroundColor: background ?? Colors.grey[100],
     radius: effectiveWidth / 2,
-    child: Icon(
-      Icons.credit_card,
-      size: effectiveWidth * 0.6,
-      color: Colors.black54,
-    ),
+    child:
+        initials.isNotEmpty
+            ? Text(
+              initials,
+              style: TextStyle(
+                fontSize: effectiveWidth * 0.4,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            )
+            : Icon(
+              Icons.credit_card,
+              size: effectiveWidth * 0.6,
+              color: Colors.black54,
+            ),
   );
 }

@@ -67,7 +67,6 @@
   "scanInstructionsTooltip": "Place the barcode in the frame",
   "companyOrNameLabel": "Company/Name",
   "codeValueLabel": "Code Value",
-  "searchLogoAction": "Search Logo",
   "editAction": "Edit",
   "shareAsImageAction": "Share as Image",
   "removeLogoButton": "Remove Logo",
@@ -78,11 +77,6 @@
   "cardTypeLabel": "Card Type",
   "save": "Save",
   "currentLogo": "Current Logo",
-  "searchLogoHint": "Enter company name for logo",
-  "logoSearchFailedTitle": "Logo Search Failed",
-  "logoSearchFailedMessage": "Could not find a logo for the entered name. Please try a different name or check your internet connection.",
-  "logoDownloadFailedTitle": "Logo Download Failed",
-  "logoDownloadFailedMessage": "Could not download the selected logo. Please check your internet connection and try again.",
   "scanFromImageAction": "Scan from Image",
   "noBarcodeFoundInImage": "No barcode or QR code found in the selected image.",
   "scanFromImageTitle": "Scan from Image",
@@ -90,5 +84,6 @@
   "selectImageButton": "Select Image",
   "scanFromImageSubtitle": "Select an image from your gallery",
   "manualEntrySubtitle": "Type in the code manually",
-  "scanFromImageInstructions": "Select an image from your gallery that contains a QR code or barcode"
+  "scanFromImageInstructions": "Select an image from your gallery that contains a QR code or barcode",
+  "or": "or"
 }
