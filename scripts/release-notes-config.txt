@@ -1,0 +1,50 @@
+# Release Notes Configuration
+# This file allows you to customize how release notes are generated
+
+# App-specific keywords and their user-friendly translations
+# Format: "technical_term=User friendly description"
+
+# Feature mappings
+share=Added sharing functionality
+import_photo=Added photo import feature
+card_editing=Improved card editing experience
+qr_scanning=Enhanced QR code scanning
+logo_support=Added logo and branding support
+dark_mode=Improved dark mode support
+localization=Enhanced language support
+
+# Bug fix categories
+stability_fix=Fixed app stability issues
+compatibility_fix=Improved device compatibility
+performance_fix=Enhanced app performance
+ui_fix=Fixed user interface issues
+
+# Skip patterns (commits that should not appear in user-facing notes)
+# One pattern per line
+pipeline
+workflow
+dart.yml
+version
+versioning
+release
+chore:
+test:
+docs:
+build:
+ci:
+
+# Play Store character limit
+max_characters=500
+
+# Maximum items per category for Play Store version
+max_features=3
+max_fixes=3
+max_improvements=3
+
+# App-specific closing message
+closing_message=Thank you for using Cards! Please rate us if you enjoy these updates.
+
+# Category emojis
+emoji_features=🆕
+emoji_fixes=🛠️
+emoji_improvements=✨
