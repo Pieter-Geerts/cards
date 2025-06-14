@@ -19,6 +19,7 @@ void main() {
     SharedPreferences.setMockInitialValues({
       'language_code': 'en', // Default language for tests
       'theme_mode': 'system', // Default theme for tests
+      'has_set_language': true, // Mark as manually set to show just the language name
     });
     await AppSettings.init();
   });

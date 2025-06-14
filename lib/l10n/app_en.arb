@@ -39,6 +39,8 @@
   "english": "English",
   "spanish": "Spanish",
   "dutch": "Dutch",
+  "deviceLanguage": "Device Language",
+  "resetToDeviceLanguage": "Reset to Device Language",
   "theme": "Theme",
   "selectTheme": "Select Theme",
   "light": "Light",

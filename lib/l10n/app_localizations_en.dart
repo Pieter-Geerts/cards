@@ -103,6 +103,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dutch => 'Dutch';
 
   @override
+  String get deviceLanguage => 'Device Language';
+
+  @override
+  String get resetToDeviceLanguage => 'Reset to Device Language';
+
+  @override
   String get theme => 'Theme';
 
   @override
