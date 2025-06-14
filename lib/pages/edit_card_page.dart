@@ -1,7 +1,7 @@
 import 'dart:async'; // Added for Timer (debouncer)
 
 import 'package:barcode_widget/barcode_widget.dart'; // Added for BarcodeWidget
-import 'package:cards/secrets.dart'; // Changed import path
+import 'package:cards/config.dart'; // Use config instead of secrets
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart'; // Added for QrImageView
 

@@ -24,15 +24,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get manualEntry => 'Entrada Manual';
 
   @override
-  String get noCardsYet =>
-      'No hay tarjetas todavía. ¡Añade tu primera tarjeta!';
+  String get noCardsYet => 'No hay tarjetas todavía. ¡Añade tu primera tarjeta!';
 
   @override
   String get deleteCard => 'Eliminar Tarjeta';
 
   @override
-  String get deleteConfirmation =>
-      '¿Estás seguro de que quieres eliminar esta tarjeta?';
+  String get deleteConfirmation => '¿Estás seguro de que quieres eliminar esta tarjeta?';
 
   @override
   String get cancel => 'Cancelar';
@@ -128,23 +126,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get validationPleaseEnterValue => 'Por favor ingrese un valor';
 
   @override
-  String get validationBarcodeOnlyAlphanumeric =>
-      'El código de barras solo puede contener números y letras';
+  String get validationBarcodeOnlyAlphanumeric => 'El código de barras solo puede contener números y letras';
 
   @override
-  String get validationBarcodeMinLength =>
-      'El código de barras debe tener al menos 3 caracteres';
+  String get validationBarcodeMinLength => 'El código de barras debe tener al menos 3 caracteres';
 
   @override
   String get validationTitleRequired => 'Por favor ingrese un título';
 
   @override
-  String get validationTitleMinLength =>
-      'El título debe tener al menos 3 caracteres';
+  String get validationTitleMinLength => 'El título debe tener al menos 3 caracteres';
 
   @override
-  String get validationDescriptionMinLength =>
-      'La descripción debe tener al menos 5 caracteres';
+  String get validationDescriptionMinLength => 'La descripción debe tener al menos 5 caracteres';
 
   @override
   String get textBarcode => 'Código de Barras';
@@ -171,8 +165,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get shareAsImage => 'Compartir como imagen';
 
   @override
-  String get scanInstructionsTooltip =>
-      'Coloca el código de barras en el marco';
+  String get scanInstructionsTooltip => 'Coloca el código de barras en el marco';
 
   @override
   String get companyOrNameLabel => 'Empresa/Nombre';
@@ -196,8 +189,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get unsavedChangesTitle => 'Cambios no guardados';
 
   @override
-  String get unsavedChangesMessage =>
-      'Tienes cambios sin guardar. ¿Quieres descartarlos?';
+  String get unsavedChangesMessage => 'Tienes cambios sin guardar. ¿Quieres descartarlos?';
 
   @override
   String get discardButton => 'Descartar';
@@ -221,22 +213,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get logoSearchFailedTitle => 'Error en la Búsqueda de Logos';
 
   @override
-  String get logoSearchFailedMessage =>
-      'No se pudo encontrar un logo para el nombre ingresado. Por favor, intente con un nombre diferente o verifique su conexión a internet.';
+  String get logoSearchFailedMessage => 'No se pudo encontrar un logo para el nombre ingresado. Por favor, intente con un nombre diferente o verifique su conexión a internet.';
 
   @override
   String get logoDownloadFailedTitle => 'Error en la Descarga del Logo';
 
   @override
-  String get logoDownloadFailedMessage =>
-      'No se pudo descargar el logo seleccionado. Por favor, verifique su conexión a internet e intente de nuevo.';
+  String get logoDownloadFailedMessage => 'No se pudo descargar el logo seleccionado. Por favor, verifique su conexión a internet e intente de nuevo.';
 
   @override
   String get scanFromImageAction => 'Escanear desde Imagen';
 
   @override
-  String get noBarcodeFoundInImage =>
-      'No se encontró ningún código de barras o código QR en la imagen seleccionada.';
+  String get noBarcodeFoundInImage => 'No se encontró ningún código de barras o código QR en la imagen seleccionada.';
 
   @override
   String get scanFromImageTitle => 'Escanear desde Imagen';
@@ -254,6 +243,5 @@ class AppLocalizationsEs extends AppLocalizations {
   String get manualEntrySubtitle => 'Escribe el código manualmente';
 
   @override
-  String get scanFromImageInstructions =>
-      'Selecciona una imagen de tu galería que contenga un código QR o código de barras';
+  String get scanFromImageInstructions => 'Selecciona una imagen de tu galería que contenga un código QR o código de barras';
 }

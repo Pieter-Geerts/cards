@@ -126,23 +126,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationPleaseEnterValue => 'Please enter a value';
 
   @override
-  String get validationBarcodeOnlyAlphanumeric =>
-      'Barcode can only contain numbers and letters';
+  String get validationBarcodeOnlyAlphanumeric => 'Barcode can only contain numbers and letters';
 
   @override
-  String get validationBarcodeMinLength =>
-      'Barcode should be at least 3 characters';
+  String get validationBarcodeMinLength => 'Barcode should be at least 3 characters';
 
   @override
   String get validationTitleRequired => 'Please enter a title';
 
   @override
-  String get validationTitleMinLength =>
-      'Title should be at least 3 characters';
+  String get validationTitleMinLength => 'Title should be at least 3 characters';
 
   @override
-  String get validationDescriptionMinLength =>
-      'Description should be at least 5 characters';
+  String get validationDescriptionMinLength => 'Description should be at least 5 characters';
 
   @override
   String get textBarcode => 'Barcode';
@@ -193,8 +189,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unsavedChangesTitle => 'Unsaved Changes';
 
   @override
-  String get unsavedChangesMessage =>
-      'You have unsaved changes. Do you want to discard them?';
+  String get unsavedChangesMessage => 'You have unsaved changes. Do you want to discard them?';
 
   @override
   String get discardButton => 'Discard';
@@ -218,22 +213,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logoSearchFailedTitle => 'Logo Search Failed';
 
   @override
-  String get logoSearchFailedMessage =>
-      'Could not find a logo for the entered name. Please try a different name or check your internet connection.';
+  String get logoSearchFailedMessage => 'Could not find a logo for the entered name. Please try a different name or check your internet connection.';
 
   @override
   String get logoDownloadFailedTitle => 'Logo Download Failed';
 
   @override
-  String get logoDownloadFailedMessage =>
-      'Could not download the selected logo. Please check your internet connection and try again.';
+  String get logoDownloadFailedMessage => 'Could not download the selected logo. Please check your internet connection and try again.';
 
   @override
   String get scanFromImageAction => 'Scan from Image';
 
   @override
-  String get noBarcodeFoundInImage =>
-      'No barcode or QR code found in the selected image.';
+  String get noBarcodeFoundInImage => 'No barcode or QR code found in the selected image.';
 
   @override
   String get scanFromImageTitle => 'Scan from Image';
@@ -251,6 +243,5 @@ class AppLocalizationsEn extends AppLocalizations {
   String get manualEntrySubtitle => 'Type in the code manually';
 
   @override
-  String get scanFromImageInstructions =>
-      'Select an image from your gallery that contains a QR code or barcode';
+  String get scanFromImageInstructions => 'Select an image from your gallery that contains a QR code or barcode';
 }
