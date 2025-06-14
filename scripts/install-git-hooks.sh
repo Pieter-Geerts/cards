@@ -50,9 +50,10 @@ PRE_COMMIT_HOOK=".git/hooks/pre-commit"
 log_info "Installing pre-commit hook..."
 
 cat > "$PRE_COMMIT_HOOK" << 'EOF'
-#!/bin/zsh
+#!/bin/bash
 
 # Pre-commit hook - calls our custom script
+export PATH="/usr/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
 SCRIPT_DIR="$(git rev-parse --show-toplevel)/scripts"
 exec "$SCRIPT_DIR/pre-commit-hook.sh" "$@"
 EOF

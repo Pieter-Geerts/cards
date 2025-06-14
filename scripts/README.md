@@ -88,9 +88,24 @@ See `../GIT_WORKFLOW.md` for complete documentation.
 
 ## 📦 Dependency Management
 
-- Keep your `pubspec.yaml` updated with the latest dependencies
-- Use `./update-dependencies.sh` to automate dependency updates
-- Regularly run `flutter pub get` to fetch new packages
+Keep your Flutter dependencies up to date with automated tools:
+
+### Manual Updates
+```bash
+# Interactive dependency update with safety checks
+./update-dependencies.sh
+```
+
+### Automated Updates (GitHub)
+- **Dependabot**: Automatically creates PRs for dependency updates (configured in `.github/dependabot.yml`)
+- **Weekly Checks**: GitHub Actions workflow runs weekly to check for outdated dependencies
+- **Status in build-info**: `./build-info.sh` shows current dependency status
+
+### Localization Files
+```bash
+# Regenerate localization files from ARB sources
+./generate-localizations.sh
+```
 
 ## 🎯 Typical Workflow
 

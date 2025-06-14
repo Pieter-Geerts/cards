@@ -106,8 +106,32 @@ else
 fi
 echo
 
+# Dependencies Status
+echo -e "${BLUE}Dependencies:${NC}"
+echo "  Checking for outdated packages..."
+OUTDATED_OUTPUT=$(flutter pub outdated --json 2>/dev/null || echo '{"packages": []}')
+OUTDATED_COUNT=$(echo "$OUTDATED_OUTPUT" | grep -o '"upgradable"' | wc -l | tr -d ' ')
+
+if [ "$OUTDATED_COUNT" -gt 0 ]; then
+    echo -e "  Status: ${YELLOW}$OUTDATED_COUNT packages can be updated${NC}"
+    echo "  Run: ./scripts/update-dependencies.sh"
+else
+    echo -e "  Status: ${GREEN}All packages up to date${NC}"
+fi
+
+# Last dependency update
+PUBSPEC_LOCK_DATE=""
+if [ -f "pubspec.lock" ]; then
+    PUBSPEC_LOCK_DATE=$(stat -f "%Sm" -t "%Y-%m-%d" "pubspec.lock" 2>/dev/null || stat -c "%y" "pubspec.lock" 2>/dev/null | cut -d' ' -f1)
+    if [ -n "$PUBSPEC_LOCK_DATE" ]; then
+        echo "  Last Updated: $PUBSPEC_LOCK_DATE"
+    fi
+fi
+echo
+
 # Quick Actions
 echo -e "${BLUE}Quick Actions:${NC}"
+echo "  • Update dependencies: ./scripts/update-dependencies.sh"
 echo "  • Run pre-checks: ./scripts/pre-release-check.sh"
 echo "  • Release checklist: ./scripts/release-checklist.sh"
 echo "  • Quick patch release: ./scripts/quick-release.sh"
