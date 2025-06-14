@@ -28,6 +28,7 @@ This directory contains automated scripts to make releasing your Flutter app as 
 | `setup-git-workflow.sh`     | 🌊 **Configure Git workflow**          | `./setup-git-workflow.sh`                   |
 | `install-git-hooks.sh`      | 🪝 **Install Git hooks**               | `./install-git-hooks.sh`                    |
 | `pre-commit-hook.sh`        | 🔍 Pre-commit quality checks           | _(auto-runs on commit)_                      |
+| `docs-maintenance.sh`       | 📚 **Documentation maintenance**       | `./docs-maintenance.sh`                     |
 | `smart-release-notes.sh`    | 🤖 **Smart release notes generator**   | `./smart-release-notes.sh [from] [to]`      |
 | `review-release-notes.sh`   | ✨ **Release notes reviewer & editor** | `./review-release-notes.sh [file]`          |
 | `generate-release-notes.sh` | 📝 Basic release notes from commits    | `./generate-release-notes.sh [from] [to]`   |

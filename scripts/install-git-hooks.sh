@@ -66,9 +66,10 @@ PREPARE_COMMIT_MSG_HOOK=".git/hooks/prepare-commit-msg"
 log_info "Installing prepare-commit-msg hook..."
 
 cat > "$PREPARE_COMMIT_MSG_HOOK" << 'EOF'
-#!/bin/zsh
+#!/bin/bash
 
 # Prepare commit message hook - helps with conventional commits
+export PATH="/usr/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
 COMMIT_MSG_FILE=$1
 COMMIT_SOURCE=$2
 
@@ -111,9 +112,10 @@ POST_MERGE_HOOK=".git/hooks/post-merge"
 log_info "Installing post-merge hook..."
 
 cat > "$POST_MERGE_HOOK" << 'EOF'
-#!/bin/zsh
+#!/bin/bash
 
 # Post-merge hook - runs after git pull/merge
+export PATH="/usr/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
 echo "🔄 Post-merge: Checking for dependency updates..."
 
 SCRIPT_DIR="$(git rev-parse --show-toplevel)/scripts"
@@ -143,9 +145,10 @@ COMMIT_MSG_HOOK=".git/hooks/commit-msg"
 log_info "Installing commit-msg hook..."
 
 cat > "$COMMIT_MSG_HOOK" << 'EOF'
-#!/bin/zsh
+#!/bin/bash
 
 # Commit message validation hook
+export PATH="/usr/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
 COMMIT_MSG_FILE=$1
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
 
