@@ -12,16 +12,14 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   late String _currentLanguage;
-  late String _currentThemeMode; 
+  late String _currentThemeMode;
 
   @override
   void initState() {
     super.initState();
     _currentLanguage = AppSettings.getLanguageCode();
     _currentThemeMode = AppSettings.getThemeMode();
-    AppSettings.addStaticListener(
-      _onSettingsChanged, 
-    );
+    AppSettings.addStaticListener(_onSettingsChanged);
   }
 
   @override
@@ -82,7 +80,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final hasSetLanguage = AppSettings.getHasSetLanguage();
     final currentLanguage = _currentLanguage;
     final deviceLanguage = AppSettings.getDeviceLanguage();
-    
+
     if (!hasSetLanguage && currentLanguage == deviceLanguage) {
       return '${l10n.deviceLanguage} (${_getLanguageName(currentLanguage, l10n)})';
     } else {
@@ -127,8 +125,8 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               // Device Language option
               _buildLanguageOption(
-                context, 
-                AppSettings.getDeviceLanguage(), 
+                context,
+                AppSettings.getDeviceLanguage(),
                 '${l10n.deviceLanguage} (${_getLanguageName(AppSettings.getDeviceLanguage(), l10n)})',
                 isDeviceLanguage: true,
               ),
