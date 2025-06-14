@@ -18,14 +18,12 @@ class LogoDevService {
     );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      // Assuming the API returns a JSON object with a 'url' field for the logo
       return data['url'] as String?;
     } else {
       return null;
     }
   }
 
-  // Download the best logo for a company and save it to local storage, returning the file path
   Future<String?> downloadAndSaveLogo(String companyNameOrDomain) async {
     try {
       final logoUrlResponse = await http.get(
