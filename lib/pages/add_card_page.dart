@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:barcode_widget/barcode_widget.dart' as bw;
 import 'package:cards/config.dart';
-import 'package:fl_mlkit_scanning/fl_mlkit_scanning.dart'; 
+import 'package:fl_mlkit_scanning/fl_mlkit_scanning.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart'; 
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart' as mobile;
 import 'package:qr_flutter/qr_flutter.dart';
 

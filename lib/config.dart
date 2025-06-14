@@ -5,9 +5,15 @@
 const String _defaultLogoDevApiKey = '';
 
 // Try to get the API key from environment or use default
-const String logoDevApiKey = String.fromEnvironment('LOGODEV_API_KEY', defaultValue: _defaultLogoDevApiKey);
+const String logoDevApiKey = String.fromEnvironment(
+  'LOGODEV_API_KEY',
+  defaultValue: _defaultLogoDevApiKey,
+);
 
 class AppConfig {
   static const bool isProduction = bool.fromEnvironment('dart.vm.product');
-  static const String logoDevApiKey = String.fromEnvironment('LOGODEV_API_KEY', defaultValue: _defaultLogoDevApiKey);
+  static const String logoDevApiKey = String.fromEnvironment(
+    'LOGODEV_API_KEY',
+    defaultValue: _defaultLogoDevApiKey,
+  );
 }
