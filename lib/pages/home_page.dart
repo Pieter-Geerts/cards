@@ -92,48 +92,11 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> _deleteCard(CardItem card) async {
-    if (card.id != null) {
-      try {
-        if (mounted) {
-          setState(() {
-            _displayedCards.removeWhere((item) => item.id == card.id);
-          });
-        }
-
-        // Then delete from database
-        await _dbHelper.deleteCard(card.id!);
-
-        if (mounted) {
-          widget.onAddCard(
-            CardItem.temp(
-              title: "##DELETE_CARD_SIGNAL##",
-              description: "",
-              name: "",
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          // Re-add the card to the list if deletion failed
-          if (!_displayedCards.any((item) => item.id == card.id)) {
-            setState(() {
-              _displayedCards.add(card);
-            });
-          }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error deleting card. Please try again.")),
-          );
-        }
-      }
-    }
-  }
-
   void _onCardTap(CardItem card) async {
     final updated = await Navigator.push<CardItem>(
       context,
       MaterialPageRoute(
-        builder: (context) => CardDetailPage(card: card, onDelete: _deleteCard),
+        builder: (context) => CardDetailPage(card: card), // Removed onDelete parameter
       ),
     );
     if (updated != null && updated.id != null) {
@@ -356,18 +319,6 @@ class _HomePageState extends State<HomePage> {
                 onTap: () async {
                   Navigator.of(modalContext).pop(); // Close modal first
                   await _shareCardAsImage(card);
-                },
-              ),
-              const Divider(),
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: Text(
-                  l10n.delete,
-                  style: const TextStyle(color: Colors.red),
-                ),
-                onTap: () async {
-                  Navigator.of(modalContext).pop(); // Close modal first
-                  await _deleteCard(card);
                 },
               ),
               const SizedBox(height: 16),
