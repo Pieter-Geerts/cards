@@ -1,0 +1,46 @@
+# Flutter/Dart files
+*.dart text diff=dart
+*.yaml text
+*.yml text
+*.json text
+*.md text
+*.txt text
+
+# Generated files (should be in .gitignore anyway)
+*.g.dart linguist-generated=true
+*.freezed.dart linguist-generated=true
+*.pb*.dart linguist-generated=true
+**/generated_plugin_registrant.dart linguist-generated=true
+lib/l10n/app_localizations*.dart linguist-generated=true
+
+# Build artifacts
+*.aab binary
+*.apk binary
+*.app binary
+*.dSYM binary
+*.ipa binary
+*.jar binary
+*.keystore binary
+*.jks binary
+
+# Images
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text
+
+# Platform specific
+*.pbxproj text merge=union
+*.xcconfig text
+*.entitlements text
+gradlew text eol=lf
+*.gradle text
+*.gradle.kts text
+*.properties text
+
+# Archives
+*.zip binary
+*.tar.gz binary
+*.tar binary

@@ -70,3 +70,58 @@ lib/secrets.dart
 # Generated localization files (regenerated from .arb files)
 lib/l10n/app_localizations.dart
 lib/l10n/app_localizations_*.dart
+
+# Enhanced Flutter ignores
+*.log
+.vscode/settings.json
+.vscode/launch.json
+*.tmp
+*.temp
+.flutter-plugins-dependencies
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# IDE - IntelliJ IDEA
+*.iws
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+.idea/datasources.xml
+.idea/dataSources.ids
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+
+# IDE - VS Code
+.vscode/settings.json
+.vscode/launch.json
+
+# Coverage
+coverage/
+*.lcov
+
+# Test artifacts
+.test_coverage/
+test/coverage_helper_test.dart
+
+# Flutter Web
+/web/dist/
+
+# Temporary files
+*.backup
+*.bak
+*.tmp
+*.swp
+*~
+
+# Local configuration
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
