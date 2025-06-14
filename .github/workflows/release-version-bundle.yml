@@ -1,41 +1,228 @@
-# Workflow to generate release notes and build Android bundle (AAB)
-# Triggered manually from GitHub Actions UI
+# Automated Release Workflow
+# Creates releases with version bumps and builds production-ready AAB files
+# Triggered manually or when a release tag is pushed
 
-name: Version & Release Build
+name: Release & Build
 
 on:
   workflow_dispatch:
+    inputs:
+      version_type:
+        description: "Version bump type"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      upload_to_play_store:
+        description: "Upload to Google Play Store (requires secrets)"
+        required: false
+        default: false
+        type: boolean
+  push:
+    tags:
+      - "v*"
+
+env:
+  FLUTTER_VERSION: "3.27.1"
+  JAVA_VERSION: "21"
 
 jobs:
-  release-please:
+  pre-checks:
+    name: Pre-release Checks
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      build-number: ${{ steps.version.outputs.build-number }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Release Please
-        uses: google-github-actions/release-please-action@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          release-type: dart
+          fetch-depth: 0
 
-  build-bundle:
-    runs-on: ubuntu-latest
-    needs: release-please
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Java 21
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: "21"
+          java-version: ${{ env.JAVA_VERSION }}
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: "stable"
-      - name: Install dependencies
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
         run: flutter pub get
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Run static analysis
+        run: flutter analyze
+
+      - name: Extract version info
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | sed 's/+.*//')
+          BUILD=$(grep '^version:' pubspec.yaml | sed 's/.*+//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build-number=$BUILD" >> $GITHUB_OUTPUT
+          echo "Current version: $VERSION+$BUILD"
+
+  build-android:
+    name: Build Android Release
+    runs-on: ubuntu-latest
+    needs: pre-checks
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Create secrets.dart from template
+        run: |
+          if [ ! -f lib/secrets.dart ]; then
+            cp lib/secrets_template.dart lib/secrets.dart
+            echo "Created secrets.dart from template"
+          fi
+
+      - name: Set up Android signing (if available)
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          # Decode and save keystore
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/upload-keystore.jks
+
+          # Create key.properties
+          cat > android/key.properties << EOF
+          storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=upload-keystore.jks
+          EOF
+
       - name: Build Android App Bundle (AAB)
         run: flutter build appbundle --release
-      - name: Upload AAB artifact
+
+      - name: Build Android APK (for testing)
+        run: flutter build apk --release
+
+      - name: Get build info
+        id: build-info
+        run: |
+          AAB_SIZE=$(du -h build/app/outputs/bundle/release/app-release.aab | cut -f1)
+          APK_SIZE=$(du -h build/app/outputs/flutter-apk/app-release.apk | cut -f1)
+          echo "aab-size=$AAB_SIZE" >> $GITHUB_OUTPUT
+          echo "apk-size=$APK_SIZE" >> $GITHUB_OUTPUT
+
+      - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release.aab
+          name: app-release-aab-v${{ needs.pre-checks.outputs.version }}
           path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk-v${{ needs.pre-checks.outputs.version }}
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: Create build summary
+        run: |
+          echo "## 📱 Build Results" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| AAB (Play Store) | ${{ steps.build-info.outputs.aab-size }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| APK (Testing) | ${{ steps.build-info.outputs.apk-size }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Ready for release!" >> $GITHUB_STEP_SUMMARY
+          echo "- Download the AAB file from artifacts above" >> $GITHUB_STEP_SUMMARY
+          echo "- Upload to [Google Play Console](https://play.google.com/console)" >> $GITHUB_STEP_SUMMARY
+
+  upload-to-play-store:
+    name: Upload to Google Play Store
+    runs-on: ubuntu-latest
+    needs: [pre-checks, build-android]
+    if: ${{ inputs.upload_to_play_store && secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download AAB artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release-aab-v${{ needs.pre-checks.outputs.version }}
+          path: build/app/outputs/bundle/release/
+
+      - name: Upload to Google Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.pietergeerts.cards
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          track: production
+          status: draft
+          whatsNewDirectory: metadata/whatsnew
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [pre-checks, build-android]
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: app-release-*-v${{ needs.pre-checks.outputs.version }}
+          merge-multiple: true
+          path: release-artifacts/
+
+      - name: Generate release notes
+        id: release-notes
+        run: |
+          echo "## 🎉 Release v${{ needs.pre-checks.outputs.version }}" > release-notes.md
+          echo "" >> release-notes.md
+          echo "### 📱 Downloads" >> release-notes.md
+          echo "- **AAB (Google Play Store)**: For uploading to Google Play Console" >> release-notes.md
+          echo "- **APK (Direct Install)**: For testing on Android devices" >> release-notes.md
+          echo "" >> release-notes.md
+          echo "### 🔧 Technical Details" >> release-notes.md
+          echo "- Version: ${{ needs.pre-checks.outputs.version }}" >> release-notes.md
+          echo "- Build Number: ${{ needs.pre-checks.outputs.build-number }}" >> release-notes.md
+          echo "- Flutter Version: ${{ env.FLUTTER_VERSION }}" >> release-notes.md
+          echo "" >> release-notes.md
+          echo "### 📋 Installation Instructions" >> release-notes.md
+          echo "1. **Google Play Store**: Upload the AAB file to Play Console" >> release-notes.md
+          echo "2. **Direct Install**: Download and install the APK file" >> release-notes.md
+
+      - name: Create Release
+        uses: ncipollo/create-release@v1
+        with:
+          artifacts: "release-artifacts/*"
+          bodyFile: release-notes.md
+          tag: ${{ github.ref_name }}
+          name: Release ${{ needs.pre-checks.outputs.version }}
+          draft: false
+          prerelease: false
