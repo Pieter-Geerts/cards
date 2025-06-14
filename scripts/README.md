@@ -23,6 +23,8 @@ This directory contains automated scripts to make releasing your Flutter app as 
 | `master-release.sh`         | 🎯 **Guided release process**          | `./master-release.sh`                       |
 | `quick-release.sh`          | ⚡ Quick patch release                 | `./quick-release.sh`                        |
 | `release.sh`                | 🔧 Full release with options           | `./release.sh [patch\|minor\|major\|X.Y.Z]` |
+| `update-dependencies.sh`    | 📦 **Update Flutter dependencies**     | `./update-dependencies.sh`                  |
+| `generate-localizations.sh` | 🌍 Generate localization files         | `./generate-localizations.sh`               |
 | `smart-release-notes.sh`    | 🤖 **Smart release notes generator**   | `./smart-release-notes.sh [from] [to]`      |
 | `review-release-notes.sh`   | ✨ **Release notes reviewer & editor** | `./review-release-notes.sh [file]`          |
 | `generate-release-notes.sh` | 📝 Basic release notes from commits    | `./generate-release-notes.sh [from] [to]`   |
@@ -50,6 +52,27 @@ This directory contains automated scripts to make releasing your Flutter app as 
 - ✏️ **Interactive editing** with built-in suggestions
 - 📋 **Google Play optimization** (500 character limit compliance)
 - 🎯 **Benefit-focused** language recommendations
+
+## 📦 Dependency Management
+
+Keep your Flutter dependencies up to date with automated tools:
+
+### Manual Updates
+```bash
+# Interactive dependency update with safety checks
+./update-dependencies.sh
+```
+
+### Automated Updates (GitHub)
+- **Dependabot**: Automatically creates PRs for dependency updates (configured in `.github/dependabot.yml`)
+- **Weekly Checks**: GitHub Actions workflow runs weekly to check for outdated dependencies
+- **Status in build-info**: `./build-info.sh` shows current dependency status
+
+### Localization Files
+```bash
+# Regenerate localization files from ARB sources
+./generate-localizations.sh
+```
 
 ## 🎯 Typical Workflow
 
