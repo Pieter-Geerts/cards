@@ -66,7 +66,11 @@ class _CardDetailPageState extends State<CardDetailPage> {
   }
 
   Future<void> _deleteCard(BuildContext context) async {
+    // Cache everything we need from BuildContext before any async operations
     final l10n = AppLocalizations.of(context);
+    final navigator = Navigator.of(context);
+
+    // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
       builder:
@@ -85,12 +89,25 @@ class _CardDetailPageState extends State<CardDetailPage> {
             ],
           ),
     );
+
+    // Early return if widget is unmounted
+    if (!mounted) return;
+
+    // Only proceed with deletion if confirmed
     if (confirmed == true) {
+      // Delete from database if card has an ID
       if (_currentCard.id != null) {
         await DatabaseHelper().deleteCard(_currentCard.id!);
+
+        // Check again if widget is still mounted after async operation
+        if (!mounted) return;
       }
+
       widget.onDelete?.call(_currentCard);
-      if (mounted) Navigator.of(context).pop();
+
+      if (mounted) {
+        navigator.pop();
+      }
     }
   }
 
@@ -111,7 +128,11 @@ class _CardDetailPageState extends State<CardDetailPage> {
                       data: _currentCard.name,
                       size: 320,
                       backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
+                      eyeStyle: const QrEyeStyle(color: Colors.black), // Added
+                      dataModuleStyle: const QrDataModuleStyle(
+                        color: Colors.black,
+                      ), // Added
+                      // foregroundColor: Colors.black; // Removed deprecated
                     )
                     : BarcodeWidget(
                       barcode: Barcode.code128(),
@@ -185,7 +206,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
                   fontSize: 26,
                   letterSpacing: 0.5,
                 ),
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -194,27 +215,20 @@ class _CardDetailPageState extends State<CardDetailPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.share, color: theme.colorScheme.onSurface),
-            tooltip: l10n.share,
-            onPressed: () async {
-              final code = _currentCard.name;
-              await Share.share(code, subject: _currentCard.title);
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.image, color: theme.colorScheme.onSurface),
-            tooltip: l10n.shareAsImage,
-            onPressed: _shareCardAsImage,
+            tooltip: l10n.shareAsImage, // Changed from l10n.share
+            onPressed: _shareCardAsImage, // Changed to call _shareCardAsImage
           ),
           IconButton(
             icon: Icon(Icons.edit, color: theme.colorScheme.onSurface),
             tooltip: l10n.edit,
             onPressed: _startEditing,
           ),
-          IconButton(
-            icon: Icon(Icons.delete, color: theme.colorScheme.onSurface),
-            tooltip: l10n.delete,
-            onPressed: () => _deleteCard(context),
-          ),
+          if (widget.onDelete != null)
+            IconButton(
+              icon: Icon(Icons.delete, color: theme.colorScheme.onSurface),
+              tooltip: l10n.delete,
+              onPressed: () => _deleteCard(context),
+            ),
         ],
       ),
       body: SingleChildScrollView(
@@ -235,7 +249,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
                   color: Colors.white,
                   elevation: isDark ? 16 : 8,
                   shadowColor:
-                      isDark ? Colors.black.withOpacity(0.45) : Colors.black26,
+                      isDark
+                          ? Colors.black.withAlpha(115) // 0.45 * 255 ≈ 115
+                          : Colors.black26,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(32),
                   ),
@@ -251,19 +267,20 @@ class _CardDetailPageState extends State<CardDetailPage> {
                         // Barcode or QR code
                         _buildCodeWidget(availableWidth - 56),
                         const SizedBox(height: 18),
-                        // Human-readable code value
-                        Text(
-                          _currentCard.name,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 22,
-                            letterSpacing: 1.2,
+                        // Human-readable code value (only for barcodes, not QR codes)
+                        if (_currentCard.cardType != 'QR_CODE')
+                          Text(
+                            _currentCard.name,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 22,
+                              letterSpacing: 1.2,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
                       ],
                     ),
                   ),
@@ -282,7 +299,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
                       style: theme.textTheme.titleSmall?.copyWith(
                         color:
                             isDark
-                                ? theme.colorScheme.onSurface.withOpacity(0.7)
+                                ? theme.colorScheme.onSurface.withAlpha(
+                                  179,
+                                ) // 0.7 * 255 ≈ 179
                                 : Colors.grey[800],
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
@@ -294,7 +313,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color:
                             isDark
-                                ? theme.colorScheme.onSurface.withOpacity(0.85)
+                                ? theme.colorScheme.onSurface.withAlpha(
+                                  217,
+                                ) // 0.85 * 255 ≈ 217
                                 : Colors.grey[900],
                         fontSize: 16,
                       ),
@@ -316,7 +337,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
         data: _currentCard.name,
         size: availableWidth * 0.7,
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        eyeStyle: const QrEyeStyle(color: Colors.black), // Added
+        dataModuleStyle: const QrDataModuleStyle(color: Colors.black), // Added
+        // foregroundColor: Colors.black, // Removed deprecated
       );
     } else {
       return BarcodeWidget(
@@ -390,8 +413,7 @@ class _CardEditFormState extends State<_CardEditForm> {
       child: Form(
         key: _formKey,
         child: Column(
-          mainAxisSize:
-              MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextFormField(

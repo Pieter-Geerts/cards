@@ -87,8 +87,6 @@ class _HomePageState extends State<HomePage> {
             );
           }).toList();
     }
-    // No explicit sort here, as the list from widget.cards is already sorted by sortOrder
-    // and ReorderableListView handles visual reordering.
     setState(() {
       _displayedCards = filteredCards;
     });
@@ -96,17 +94,38 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _deleteCard(CardItem card) async {
     if (card.id != null) {
-      await _dbHelper.deleteCard(card.id!);
-      // Use a very specific, unlikely-to-be-real card as a signal
-      // to main.dart to reload the cards without inserting this one.
-      // CardItem.temp creates a card with id=null and sortOrder=-1.
-      widget.onAddCard(
-        CardItem.temp(
-          title: "##DELETE_CARD_SIGNAL##",
-          description: "",
-          name: "",
-        ),
-      );
+      try {
+        if (mounted) {
+          setState(() {
+            _displayedCards.removeWhere((item) => item.id == card.id);
+          });
+        }
+
+        // Then delete from database
+        await _dbHelper.deleteCard(card.id!);
+
+        if (mounted) {
+          widget.onAddCard(
+            CardItem.temp(
+              title: "##DELETE_CARD_SIGNAL##",
+              description: "",
+              name: "",
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          // Re-add the card to the list if deletion failed
+          if (!_displayedCards.any((item) => item.id == card.id)) {
+            setState(() {
+              _displayedCards.add(card);
+            });
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error deleting card. Please try again.")),
+          );
+        }
+      }
     }
   }
 
@@ -158,13 +177,17 @@ class _HomePageState extends State<HomePage> {
                   }
                 }
               }
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text('Import successful!')));
+              if (mounted) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text('Import successful!')));
+              }
             } catch (e) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text('Invalid JSON file.')));
+              if (mounted) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text('Invalid JSON file.')));
+              }
             }
           }
         },
@@ -230,9 +253,6 @@ class _HomePageState extends State<HomePage> {
       if (cardsToUpdate.isNotEmpty) {
         _dbHelper.updateCardSortOrders(cardsToUpdate);
       }
-      // Also update the main list in main.dart if necessary, or rely on next full load/reload from main.
-      // For now, we assume the local _displayedCards is the primary view model for this screen.
-      // And widget.cards will be updated on next full app load/reload from main.
     });
   }
 
@@ -253,7 +273,11 @@ class _HomePageState extends State<HomePage> {
                       data: card.name,
                       size: 320,
                       backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
+                      eyeStyle: const QrEyeStyle(color: Colors.black), // Added
+                      dataModuleStyle: const QrDataModuleStyle(
+                        color: Colors.black,
+                      ), // Added
+                      // foregroundColor: Colors.black, // Removed deprecated
                     )
                     : BarcodeWidget(
                       barcode: Barcode.code128(),
@@ -292,6 +316,66 @@ class _HomePageState extends State<HomePage> {
     } finally {
       overlay.remove();
     }
+  }
+
+  void _showCardActions(
+    BuildContext context,
+    CardItem card,
+    AppLocalizations l10n,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext modalContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: Text(l10n.editAction),
+                onTap: () async {
+                  Navigator.of(modalContext).pop(); // Close modal first
+                  await Navigator.push<CardItem>(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => EditCardPage(
+                            card: card,
+                            onSave: (updated) async {
+                              await _dbHelper.updateCard(updated);
+                              widget.onAddCard(updated);
+                            },
+                          ),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.share),
+                title: Text(l10n.shareAsImageAction),
+                onTap: () async {
+                  Navigator.of(modalContext).pop(); // Close modal first
+                  await _shareCardAsImage(card);
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: Text(
+                  l10n.delete,
+                  style: const TextStyle(color: Colors.red),
+                ),
+                onTap: () async {
+                  Navigator.of(modalContext).pop(); // Close modal first
+                  await _deleteCard(card);
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -336,17 +420,18 @@ class _HomePageState extends State<HomePage> {
                       color: Theme.of(context).cardColor,
                       shadowColor:
                           Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white24
-                              : Colors.black26,
+                              ? Colors
+                                  .white24 // Keep direct color for now
+                              : Colors.black26, // Keep direct color for now
                       child: InkWell(
                         borderRadius: BorderRadius.circular(20.0),
                         onTap: () => _onCardTap(card),
                         splashColor: Theme.of(
                           context,
-                        ).colorScheme.primary.withOpacity(0.12),
+                        ).colorScheme.primary.withAlpha(31), // 0.12 * 255 ≈ 31
                         highlightColor: Theme.of(
                           context,
-                        ).colorScheme.primary.withOpacity(0.08),
+                        ).colorScheme.primary.withAlpha(20), // 0.08 * 255 ≈ 20
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             vertical: 28.0,
@@ -383,10 +468,11 @@ class _HomePageState extends State<HomePage> {
                                         style: Theme.of(
                                           context,
                                         ).textTheme.bodyLarge?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface
-                                              .withOpacity(0.8),
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface.withAlpha(
+                                            204,
+                                          ), // 0.8 * 255 ≈ 204
                                           fontSize: 16,
                                         ),
                                         maxLines: 3,
@@ -396,60 +482,18 @@ class _HomePageState extends State<HomePage> {
                                   ],
                                 ),
                               ),
-                              PopupMenuButton<String>(
-                                icon: Icon(
-                                  Icons.more_vert,
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
+                              GestureDetector(
+                                onTap:
+                                    () => _showCardActions(context, card, l10n),
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Icon(
+                                    Icons.more_vert,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                    size: 28,
+                                  ),
                                 ),
-                                onSelected: (value) async {
-                                  if (value == 'edit') {
-                                    final updated =
-                                        await Navigator.push<CardItem>(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder:
-                                                (context) => EditCardPage(
-                                                  card: card,
-                                                  onSave: (updatedCard) {
-                                                    Navigator.of(
-                                                      context,
-                                                    ).pop(updatedCard);
-                                                  },
-                                                ),
-                                          ),
-                                        );
-                                    if (updated != null && updated.id != null) {
-                                      setState(() {
-                                        final idx = _displayedCards.indexWhere(
-                                          (c) => c.id == updated.id,
-                                        );
-                                        if (idx != -1) {
-                                          _displayedCards[idx] = updated;
-                                        }
-                                      });
-                                    }
-                                  } else if (value == 'delete') {
-                                    await _deleteCard(card);
-                                  } else if (value == 'share_image') {
-                                    await _shareCardAsImage(card);
-                                  }
-                                },
-                                itemBuilder:
-                                    (context) => [
-                                      PopupMenuItem(
-                                        value: 'edit',
-                                        child: Text('Edit'),
-                                      ),
-                                      PopupMenuItem(
-                                        value: 'delete',
-                                        child: Text(l10n.delete),
-                                      ),
-                                      PopupMenuItem(
-                                        value: 'share_image',
-                                        child: Text('Share as Image'),
-                                      ),
-                                    ],
                               ),
                             ],
                           ),
@@ -544,64 +588,48 @@ class _HomePageState extends State<HomePage> {
 // Place this in a shared file for reuse, but for now, define here for all pages
 Widget buildLogoWidget(
   String? logoPath, {
-  double size = 48,
+  double size = 48, // Default size
+  double? width, // Optional width, overrides size if provided
+  double? height, // Optional height, overrides size if provided
   Color? background,
 }) {
-  final theme =
-      WidgetsBinding
-                  .instance
-                  .platformDispatcher
-                  .views
-                  .first
-                  .platformDispatcher
-                  .defaultRouteName ==
-              '/'
-          ? null
-          : Theme.of(
-            WidgetsBinding.instance.focusManager.primaryFocus?.context ??
-                WidgetsBinding
-                        .instance
-                        .platformDispatcher
-                        .views
-                        .first
-                        .platformDispatcher
-                        .defaultRouteName
-                    as BuildContext,
-          );
-  final bgColor = background ?? (theme?.colorScheme.surface ?? Colors.white);
+  final double effectiveWidth = width ?? size;
+  final double effectiveHeight = height ?? size;
+
   if (logoPath != null && logoPath.isNotEmpty) {
     final file = File(logoPath);
     final exists = file.existsSync();
     if (exists) {
       if (logoPath.toLowerCase().endsWith('.svg')) {
         return CircleAvatar(
-          backgroundColor: bgColor,
-          radius: size / 2,
+          backgroundColor: background ?? Colors.grey[100],
+          radius: effectiveWidth / 2,
           child: ClipOval(
             child: SvgPicture.file(
               file,
-              width: size,
-              height: size,
-              fit: BoxFit.cover,
+              width: effectiveWidth,
+              height: effectiveHeight,
+              fit: BoxFit.contain,
             ),
           ),
         );
       } else {
         return CircleAvatar(
-          backgroundColor: bgColor,
-          radius: size / 2,
+          backgroundColor: background ?? Colors.grey[100],
+          radius: effectiveWidth / 2,
           backgroundImage: FileImage(file),
         );
       }
     }
   }
+
   return CircleAvatar(
-    backgroundColor: bgColor,
-    radius: size / 2,
+    backgroundColor: background ?? Colors.grey[100],
+    radius: effectiveWidth / 2,
     child: Icon(
       Icons.credit_card,
-      size: size * 0.6,
-      color: theme?.colorScheme.onSurface ?? Colors.black,
+      size: effectiveWidth * 0.6,
+      color: Colors.black54,
     ),
   );
 }

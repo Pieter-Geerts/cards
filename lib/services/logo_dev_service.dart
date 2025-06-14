@@ -13,68 +13,64 @@ class LogoDevService {
   // Fetch a single high-quality logo by company name or domain (for direct logo display)
   Future<String?> fetchLogoUrl(String companyNameOrDomain) async {
     final response = await http.get(
-      Uri.parse('$_baseUrl/logo?company=$companyNameOrDomain'),
-      headers: {
-        'Authorization': 'Bearer: $apiKey',
-        'Accept': 'application/json',
-      },
+      Uri.parse('$_baseUrl/logo/$companyNameOrDomain'),
+      headers: {'Authorization': 'Bearer $apiKey'},
     );
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return data['logo_url'] as String?;
+      final data = jsonDecode(response.body);
+      // Assuming the API returns a JSON object with a 'url' field for the logo
+      return data['url'] as String?;
+    } else {
+      return null;
     }
-    return null;
   }
 
   // Download the best logo for a company and save it to local storage, returning the file path
   Future<String?> downloadAndSaveLogo(String companyNameOrDomain) async {
-    // Always construct the image URL with the correct API key
-    final imageUrl = 'https://img.logo.dev/$companyNameOrDomain?token=$apiKey';
-    print(
-      '[LogoDevService] Downloading logo for "$companyNameOrDomain" from: $imageUrl',
-    );
     try {
-      final response = await http.get(Uri.parse(imageUrl));
-      print(
-        '[LogoDevService] HTTP status: \\${response.statusCode}, content-type: \\${response.headers['content-type']}',
+      final logoUrlResponse = await http.get(
+        Uri.parse(
+          '$_baseUrl/logo/$companyNameOrDomain?format=png&size=200',
+        ), // Request PNG, 200px
+        headers: {'Authorization': 'Bearer $apiKey'},
       );
-      if (response.statusCode == 200) {
-        final contentType = response.headers['content-type'] ?? '';
+
+      if (logoUrlResponse.statusCode == 200) {
+        // Validate content type to ensure it's an image
+        final contentType = logoUrlResponse.headers['content-type'] ?? '';
         if (!contentType.startsWith('image/')) {
           return null;
         }
-        final bytes = response.bodyBytes;
-        final dir = await getApplicationDocumentsDirectory();
-        final ext = imageUrl.endsWith('.svg') ? 'svg' : 'png';
-        final filePath =
-            '${dir.path}/logo_${companyNameOrDomain}_${DateTime.now().millisecondsSinceEpoch}.$ext';
+
+        final logoData = logoUrlResponse.bodyBytes;
+        final directory = await getApplicationDocumentsDirectory();
+        final sanitizedCompanyName = companyNameOrDomain.replaceAll(
+          RegExp(r'[^a-zA-Z0-9]'),
+          '_',
+        );
+        final filePath = '${directory.path}/logo_$sanitizedCompanyName.png';
         final file = File(filePath);
-        await file.writeAsBytes(bytes);
-
+        await file.writeAsBytes(logoData);
         return filePath;
-      } 
-
+      } else {
+        return null;
+      }
     } catch (e) {
-      print('[LogoDevService] Logo download error: $e');
+      return null;
     }
-    return null;
   }
 
   // Search for companies and their logos (for search UI)
   Future<List<Map<String, dynamic>>> searchCompanies(String query) async {
     final response = await http.get(
-      Uri.parse('https://api.logo.dev/search?q=$query'),
-      headers: {
-        'Authorization': 'Bearer: $apiKey',
-        'Accept': 'application/json',
-      },
+      Uri.parse('$_baseUrl/search?query=${Uri.encodeComponent(query)}'),
+      headers: {'Authorization': 'Bearer $apiKey'},
     );
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data is List) {
-        return List<Map<String, dynamic>>.from(data);
-      }
+      final data = jsonDecode(response.body) as List;
+      return data.cast<Map<String, dynamic>>();
+    } else {
+      return [];
     }
-    return [];
   }
 }
