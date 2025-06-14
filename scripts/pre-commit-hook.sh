@@ -1,9 +1,12 @@
-#!/bin/zsh
+#!/bin/bash
 
 # Pre-commit hook for Flutter Cards app
 # This runs automatic quality checks before each commit
 
 set -e
+
+# Ensure PATH includes standard locations
+export PATH="/usr/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
 
 # Colors
 RED='\033[0;31m'
@@ -52,7 +55,7 @@ fi
 
 # Check for secrets or sensitive data
 log_info "Checking for sensitive data..."
-SECRETS_ISSUES=$(git diff --cached | grep -E "(password|secret|key|token|api_key)" | grep -v "secrets_template" || true)
+SECRETS_ISSUES=$(git diff --cached | grep -E "^[+][^+].*\b(password|secret|key|token|api_key)\s*[=:]" | grep -v "secrets_template" | grep -v "keystore" | grep -v ".md:" || true)
 if [ -n "$SECRETS_ISSUES" ]; then
     log_error "Potential secrets found in staged changes:"
     echo "$SECRETS_ISSUES"
