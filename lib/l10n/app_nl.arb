@@ -69,7 +69,6 @@
   "scanInstructionsTooltip": "Plaats de barcode in het kader",
   "companyOrNameLabel": "Bedrijf/Naam",
   "codeValueLabel": "Codewaarde",
-  "searchLogoAction": "Zoek Logo",
   "editAction": "Bewerken",
   "shareAsImageAction": "Deel als afbeelding",
   "removeLogoButton": "Logo Verwijderen",
@@ -80,11 +79,6 @@
   "cardTypeLabel": "Kaarttype",
   "save": "Opslaan",
   "currentLogo": "Huidig Logo",
-  "searchLogoHint": "Voer bedrijfsnaam in voor logo",
-  "logoSearchFailedTitle": "Logo Zoeken Mislukt",
-  "logoSearchFailedMessage": "Kon geen logo vinden voor de ingevoerde naam. Probeer een andere naam of controleer uw internetverbinding.",
-  "logoDownloadFailedTitle": "Logo Downloaden Mislukt",
-  "logoDownloadFailedMessage": "Kon het geselecteerde logo niet downloaden. Controleer uw internetverbinding en probeer het opnieuw.",
   "scanFromImageAction": "Scan vanuit Afbeelding",
   "noBarcodeFoundInImage": "Geen barcode of QR-code gevonden in de geselecteerde afbeelding.",
   "scanFromImageTitle": "Scan vanuit Afbeelding",
@@ -92,5 +86,6 @@
   "selectImageButton": "Afbeelding Selecteren",
   "scanFromImageSubtitle": "Selecteer een afbeelding uit je galerij",
   "manualEntrySubtitle": "Typ de code handmatig in",
-  "scanFromImageInstructions": "Selecteer een afbeelding uit je galerij die een QR-code of barcode bevat"
+  "scanFromImageInstructions": "Selecteer een afbeelding uit je galerij die een QR-code of barcode bevat",
+  "or": "of"
 }

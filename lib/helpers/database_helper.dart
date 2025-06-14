@@ -134,4 +134,22 @@ class DatabaseHelper {
       whereArgs: [card.id],
     );
   }
+
+  Future<void> deleteAllCards() async {
+    final db = await database;
+    await db.delete('cards');
+  }
+
+  Future<CardItem?> getCard(int id) async {
+    final db = await database;
+    final maps = await db.query(
+      'cards',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (maps.isNotEmpty) {
+      return CardItem.fromMap(maps.first);
+    }
+    return null;
+  }
 }

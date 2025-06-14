@@ -59,7 +59,6 @@
   "scanInstructionsTooltip": "Coloca el código de barras en el marco",
   "companyOrNameLabel": "Empresa/Nombre",
   "codeValueLabel": "Valor del Código",
-  "searchLogoAction": "Buscar Logo",
   "editAction": "Editar",
   "shareAsImageAction": "Compartir como imagen",
   "removeLogoButton": "Eliminar Logo",
@@ -70,11 +69,6 @@
   "cardTypeLabel": "Tipo de Tarjeta",
   "save": "Guardar",
   "currentLogo": "Logo Actual",
-  "searchLogoHint": "Introduce el nombre de la empresa para el logo",
-  "logoSearchFailedTitle": "Error en la Búsqueda de Logos",
-  "logoSearchFailedMessage": "No se pudo encontrar un logo para el nombre ingresado. Por favor, intente con un nombre diferente o verifique su conexión a internet.",
-  "logoDownloadFailedTitle": "Error en la Descarga del Logo",
-  "logoDownloadFailedMessage": "No se pudo descargar el logo seleccionado. Por favor, verifique su conexión a internet e intente de nuevo.",
   "scanFromImageAction": "Escanear desde Imagen",
   "noBarcodeFoundInImage": "No se encontró ningún código de barras o código QR en la imagen seleccionada.",
   "scanFromImageTitle": "Escanear desde Imagen",
@@ -82,5 +76,6 @@
   "selectImageButton": "Seleccionar Imagen",
   "scanFromImageSubtitle": "Selecciona una imagen de tu galería",
   "manualEntrySubtitle": "Escribe el código manualmente",
-  "scanFromImageInstructions": "Selecciona una imagen de tu galería que contenga un código QR o código de barras"
+  "scanFromImageInstructions": "Selecciona una imagen de tu galería que contenga un código QR o código de barras",
+  "or": "o"
 }

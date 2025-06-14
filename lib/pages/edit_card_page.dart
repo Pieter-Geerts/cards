@@ -1,14 +1,12 @@
 import 'dart:async'; // Added for Timer (debouncer)
 
 import 'package:barcode_widget/barcode_widget.dart'; // Added for BarcodeWidget
-import 'package:cards/config.dart'; // Use config instead of secrets
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart'; // Added for QrImageView
 
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../pages/home_page.dart' show buildLogoWidget;
-import '../services/logo_dev_service.dart';
 
 class EditCardPage extends StatefulWidget {
   final CardItem card;
@@ -24,14 +22,9 @@ class _EditCardPageState extends State<EditCardPage> {
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late TextEditingController _nameController; // This is for the code value
-  late LogoDevService _logoService;
-  final TextEditingController _logoSearchController = TextEditingController();
-  bool _isSearchingLogo = false;
-  List<Map<String, dynamic>> _searchResults = [];
   String? _logoPath;
 
-  late String
-  _selectedCardType; // To hold current card type: 'BARCODE' or 'QR_CODE'
+  late CardType _selectedCardType; // To hold current card type enum
   bool _hasUnsavedChanges = false;
   Timer? _debouncer;
 
@@ -43,7 +36,6 @@ class _EditCardPageState extends State<EditCardPage> {
     _nameController = TextEditingController(
       text: widget.card.name,
     ); // Code value
-    _logoService = LogoDevService(logoDevApiKey);
     _logoPath = widget.card.logoPath;
     _selectedCardType = widget.card.cardType;
 
@@ -51,26 +43,17 @@ class _EditCardPageState extends State<EditCardPage> {
     _titleController.addListener(_onFieldChanged);
     _descController.addListener(_onFieldChanged);
     _nameController.addListener(_onFieldChanged);
-    _logoSearchController.addListener(
-      _onFieldChanged,
-    ); // Also if user types in logo search
-
-    // Listener for automatic logo search from title
-    _titleController.addListener(_onTitleChangedForAutoLogoSearch);
   }
 
   @override
   void dispose() {
     _titleController.removeListener(_onFieldChanged);
-    _titleController.removeListener(_onTitleChangedForAutoLogoSearch);
     _descController.removeListener(_onFieldChanged);
     _nameController.removeListener(_onFieldChanged);
-    _logoSearchController.removeListener(_onFieldChanged);
 
     _titleController.dispose();
     _descController.dispose();
     _nameController.dispose();
-    _logoSearchController.dispose();
     _debouncer?.cancel();
     super.dispose();
   }
@@ -99,117 +82,10 @@ class _EditCardPageState extends State<EditCardPage> {
     }
   }
 
-  void _onTitleChangedForAutoLogoSearch() {
-    if (_debouncer?.isActive ?? false) _debouncer!.cancel();
-    _debouncer = Timer(const Duration(milliseconds: 750), () {
-      final title = _titleController.text.trim();
-      if (title.isNotEmpty && title.length > 2 && _logoPath == null) {
-        // Only auto-search if no logo is set yet
-        _searchLogo(title, triggeredByTitleChange: true);
-      }
-    });
-  }
-
-  Future<void> _searchLogo(
-    String query, {
-    bool triggeredByTitleChange = false,
-  }) async {
-    if (query.isEmpty) return;
-    setState(() {
-      _isSearchingLogo = true;
-      if (!triggeredByTitleChange) {
-        _searchResults = [];
-      }
-    });
-    try {
-      final results = await _logoService.searchCompanies(query);
-      if (mounted) {
-        setState(() {
-          _searchResults = results;
-          _isSearchingLogo = false;
-        });
-        if (results.isEmpty && !triggeredByTitleChange) {
-          // Show error if search was manual and no results
-          _showErrorDialog(
-            AppLocalizations.of(context).logoSearchFailedTitle,
-            AppLocalizations.of(context).logoSearchFailedMessage,
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isSearchingLogo = false;
-        });
-        _showErrorDialog(
-          AppLocalizations.of(context).logoSearchFailedTitle,
-          AppLocalizations.of(context).logoSearchFailedMessage,
-        );
-      }
-    }
-  }
-
-  Future<void> _downloadAndSetLogo(String companyNameOrDomain) async {
-    setState(
-      () => _isSearchingLogo = true,
-    ); // Keep loading indicator during download
-    try {
-      final filePath = await _logoService.downloadAndSaveLogo(
-        companyNameOrDomain,
-      );
-      if (mounted) {
-        if (filePath != null) {
-          setState(() {
-            _logoPath = filePath;
-            _searchResults = [];
-            _logoSearchController.clear();
-            _hasUnsavedChanges = true; // Mark changes
-          });
-        } else {
-          // Show download failed error
-          _showErrorDialog(
-            AppLocalizations.of(context).logoDownloadFailedTitle,
-            AppLocalizations.of(context).logoDownloadFailedMessage,
-          );
-        }
-        setState(() => _isSearchingLogo = false);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isSearchingLogo = false);
-        _showErrorDialog(
-          AppLocalizations.of(context).logoDownloadFailedTitle,
-          AppLocalizations.of(context).logoDownloadFailedMessage,
-        );
-      }
-    }
-  }
-
-  void _showErrorDialog(String title, String message) {
-    if (!mounted) return;
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: Text(AppLocalizations.of(context).ok),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _removeLogo() {
     setState(() {
       _logoPath = null;
-      _onFieldChanged(); // Update unsaved changes status
+      _onFieldChanged();
     });
   }
 
@@ -320,20 +196,17 @@ class _EditCardPageState extends State<EditCardPage> {
                   minLines: 1,
                 ),
                 const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
+                DropdownButtonFormField<CardType>(
                   decoration: InputDecoration(labelText: l10n.cardTypeLabel),
                   value: _selectedCardType,
-                  items: [
-                    DropdownMenuItem(
-                      value: 'QR_CODE',
-                      child: Text(l10n.qrCode),
-                    ),
-                    DropdownMenuItem(
-                      value: 'BARCODE',
-                      child: Text(l10n.barcode),
-                    ),
-                  ],
-                  onChanged: (String? newValue) {
+                  items:
+                      CardType.values.map((cardType) {
+                        return DropdownMenuItem(
+                          value: cardType,
+                          child: Text(cardType.displayName),
+                        );
+                      }).toList(),
+                  onChanged: (CardType? newValue) {
                     if (newValue != null && newValue != _selectedCardType) {
                       setState(() {
                         _selectedCardType = newValue;
@@ -348,7 +221,7 @@ class _EditCardPageState extends State<EditCardPage> {
                   decoration: InputDecoration(
                     labelText: l10n.codeValueLabel,
                     hintText:
-                        _selectedCardType == 'QR_CODE'
+                        _selectedCardType == CardType.qrCode
                             ? l10n.enterQrCodeValue
                             : l10n.enterBarcodeValue,
                   ),
@@ -376,7 +249,7 @@ class _EditCardPageState extends State<EditCardPage> {
                           ),
                         ),
                         child:
-                            _selectedCardType == 'QR_CODE'
+                            _selectedCardType == CardType.qrCode
                                 ? QrImageView(
                                   data: codeValueForPreview,
                                   version: QrVersions.auto,
@@ -403,56 +276,7 @@ class _EditCardPageState extends State<EditCardPage> {
                     ),
                   ),
                 const SizedBox(height: 24),
-                TextField(
-                  controller: _logoSearchController,
-                  decoration: InputDecoration(
-                    labelText: l10n.searchLogoAction,
-                    hintText: l10n.searchLogoHint,
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.search),
-                      onPressed:
-                          _logoSearchController.text.trim().isEmpty
-                              ? null
-                              : () => _searchLogo(
-                                _logoSearchController.text.trim(),
-                              ),
-                    ),
-                  ),
-                  onSubmitted: (query) {
-                    if (query.trim().isNotEmpty) {
-                      _searchLogo(query.trim());
-                    }
-                  },
-                ),
-                if (_isSearchingLogo)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                if (_searchResults.isNotEmpty)
-                  SizedBox(
-                    height: 150,
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: _searchResults.length,
-                      itemBuilder: (context, index) {
-                        final result = _searchResults[index];
-                        return ListTile(
-                          leading: buildLogoWidget(
-                            result['logo_url'],
-                            width: 40,
-                            height: 40,
-                          ),
-                          title: Text(result['name'] ?? ''),
-                          subtitle: Text(result['domain'] ?? ''),
-                          onTap:
-                              () => _downloadAndSetLogo(
-                                result['domain'] ?? result['name'] ?? '',
-                              ),
-                        );
-                      },
-                    ),
-                  ),
+                // Logo display (if exists)
                 if (_logoPath != null && _logoPath!.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -464,7 +288,12 @@ class _EditCardPageState extends State<EditCardPage> {
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                         const SizedBox(height: 8),
-                        buildLogoWidget(_logoPath, width: 100, height: 100),
+                        buildLogoWidget(
+                          _logoPath,
+                          width: 100,
+                          height: 100,
+                          title: _titleController.text,
+                        ),
                         const SizedBox(height: 8),
                         TextButton.icon(
                           icon: const Icon(Icons.delete_outline),
@@ -487,15 +316,3 @@ class _EditCardPageState extends State<EditCardPage> {
     );
   }
 }
-
-// Add these new l10n keys to your .arb files:
-// "save": "Save" (if not already present for the tooltip)
-// "currentLogo": "Current Logo"
-// "searchLogoHint": "Enter company name for logo"
-// "unsavedChangesTitle": "Unsaved Changes" (already added)
-// "unsavedChangesMessage": "You have unsaved changes. Do you want to discard them?" (already added)
-// "discardButton": "Discard" (already added)
-// "stayButton": "Stay" (already added)
-// "cardTypeLabel": "Card Type" (already added)
-// "removeLogoButton": "Remove Logo" (already added)
-// "ok": "OK" (add this to all arb files)
