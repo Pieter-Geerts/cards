@@ -96,7 +96,9 @@ class _HomePageState extends State<HomePage> {
     final updated = await Navigator.push<CardItem>(
       context,
       MaterialPageRoute(
-        builder: (context) => CardDetailPage(card: card), // Removed onDelete parameter
+        builder:
+            (context) =>
+                CardDetailPage(card: card), // Removed onDelete parameter
       ),
     );
     if (updated != null && updated.id != null) {
