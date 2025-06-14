@@ -23,7 +23,7 @@ void main() async {
         title: 'Example Loyalty Card',
         description: 'This is a sample barcode card. You can delete it.',
         name: '123456789012',
-        cardType: 'BARCODE',
+        cardType: CardType.barcode,
         createdAt: now,
         sortOrder: 0,
       ),

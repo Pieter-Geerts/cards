@@ -30,7 +30,8 @@ class AppLocalizationsNl extends AppLocalizations {
   String get deleteCard => 'Verwijder Kaart';
 
   @override
-  String get deleteConfirmation => 'Weet je zeker dat je deze kaart wilt verwijderen?';
+  String get deleteConfirmation =>
+      'Weet je zeker dat je deze kaart wilt verwijderen?';
 
   @override
   String get cancel => 'Annuleren';
@@ -103,6 +104,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get dutch => 'Nederlands';
 
   @override
+  String get deviceLanguage => 'Apparaattaal';
+
+  @override
+  String get resetToDeviceLanguage => 'Terugzetten naar Apparaattaal';
+
+  @override
   String get theme => 'Thema';
 
   @override
@@ -126,19 +133,23 @@ class AppLocalizationsNl extends AppLocalizations {
   String get validationPleaseEnterValue => 'Voer een waarde in';
 
   @override
-  String get validationBarcodeOnlyAlphanumeric => 'Barcode mag alleen cijfers en letters bevatten';
+  String get validationBarcodeOnlyAlphanumeric =>
+      'Barcode mag alleen cijfers en letters bevatten';
 
   @override
-  String get validationBarcodeMinLength => 'Barcode moet minimaal 3 tekens lang zijn';
+  String get validationBarcodeMinLength =>
+      'Barcode moet minimaal 3 tekens lang zijn';
 
   @override
   String get validationTitleRequired => 'Voer een titel in';
 
   @override
-  String get validationTitleMinLength => 'Titel moet minimaal 3 tekens lang zijn';
+  String get validationTitleMinLength =>
+      'Titel moet minimaal 3 tekens lang zijn';
 
   @override
-  String get validationDescriptionMinLength => 'Omschrijving moet minimaal 5 tekens lang zijn';
+  String get validationDescriptionMinLength =>
+      'Omschrijving moet minimaal 5 tekens lang zijn';
 
   @override
   String get textBarcode => 'Barcode';
@@ -174,9 +185,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get codeValueLabel => 'Codewaarde';
 
   @override
-  String get searchLogoAction => 'Zoek Logo';
-
-  @override
   String get editAction => 'Bewerken';
 
   @override
@@ -189,7 +197,8 @@ class AppLocalizationsNl extends AppLocalizations {
   String get unsavedChangesTitle => 'Niet-opgeslagen Wijzigingen';
 
   @override
-  String get unsavedChangesMessage => 'U heeft niet-opgeslagen wijzigingen. Wilt u deze verwijderen?';
+  String get unsavedChangesMessage =>
+      'U heeft niet-opgeslagen wijzigingen. Wilt u deze verwijderen?';
 
   @override
   String get discardButton => 'Verwijderen';
@@ -207,25 +216,11 @@ class AppLocalizationsNl extends AppLocalizations {
   String get currentLogo => 'Huidig Logo';
 
   @override
-  String get searchLogoHint => 'Voer bedrijfsnaam in voor logo';
-
-  @override
-  String get logoSearchFailedTitle => 'Logo Zoeken Mislukt';
-
-  @override
-  String get logoSearchFailedMessage => 'Kon geen logo vinden voor de ingevoerde naam. Probeer een andere naam of controleer uw internetverbinding.';
-
-  @override
-  String get logoDownloadFailedTitle => 'Logo Downloaden Mislukt';
-
-  @override
-  String get logoDownloadFailedMessage => 'Kon het geselecteerde logo niet downloaden. Controleer uw internetverbinding en probeer het opnieuw.';
-
-  @override
   String get scanFromImageAction => 'Scan vanuit Afbeelding';
 
   @override
-  String get noBarcodeFoundInImage => 'Geen barcode of QR-code gevonden in de geselecteerde afbeelding.';
+  String get noBarcodeFoundInImage =>
+      'Geen barcode of QR-code gevonden in de geselecteerde afbeelding.';
 
   @override
   String get scanFromImageTitle => 'Scan vanuit Afbeelding';
@@ -243,5 +238,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get manualEntrySubtitle => 'Typ de code handmatig in';
 
   @override
-  String get scanFromImageInstructions => 'Selecteer een afbeelding uit je galerij die een QR-code of barcode bevat';
+  String get scanFromImageInstructions =>
+      'Selecteer een afbeelding uit je galerij die een QR-code of barcode bevat';
+
+  @override
+  String get or => 'of';
 }

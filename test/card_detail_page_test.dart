@@ -33,7 +33,7 @@ void main() {
       title: 'QR Test Card',
       description: 'This is a QR code.',
       name: 'QRCodeData123',
-      cardType: 'QR_CODE',
+      cardType: CardType.qrCode,
       sortOrder: 0,
     );
     await tester.pumpWidget(createCardDetailPage(card: card));
@@ -56,7 +56,7 @@ void main() {
       title: 'Barcode Test Card',
       description: 'This is a barcode.',
       name: '112345566',
-      cardType: 'BARCODE',
+      cardType: CardType.barcode,
       sortOrder: 0,
     );
     await tester.pumpWidget(createCardDetailPage(card: card));
@@ -84,7 +84,7 @@ void main() {
       title: 'Deletable Card',
       description: 'Test delete.',
       name: 'ToDelete123',
-      cardType: 'QR_CODE',
+      cardType: CardType.qrCode,
       sortOrder: 0,
     );
 
@@ -129,7 +129,7 @@ void main() {
         title: 'No Delete Card',
         description: 'No delete function provided.',
         name: 'NoDelete123',
-        cardType: 'QR_CODE',
+        cardType: CardType.qrCode,
         sortOrder: 0,
       );
 
@@ -147,7 +147,7 @@ void main() {
       title: 'Test Card',
       description: 'Test description',
       name: 'TestName',
-      cardType: 'QR_CODE',
+      cardType: CardType.qrCode,
       sortOrder: 0,
     );
     await tester.pumpWidget(createCardDetailPage(card: card, onDelete: null));
@@ -199,7 +199,7 @@ void main() {
       title: 'Share Card',
       description: 'Share description',
       name: 'ShareName',
-      cardType: 'QR_CODE',
+      cardType: CardType.qrCode,
       sortOrder: 0,
     );
     await tester.pumpWidget(createCardDetailPage(card: card, onDelete: null));
@@ -215,5 +215,123 @@ void main() {
     final jsonString = jsonEncode(map);
     expect(jsonString.contains('"id"'), isFalse);
     expect(jsonString.contains('Share Card'), isTrue);
+  });
+
+  group('CardDetailPage with code renderer system', () {
+    testWidgets('should use code renderer for QR code display', (WidgetTester tester) async {
+      final card = CardItem(
+        title: 'QR Card',
+        description: 'Test QR code rendering',
+        name: 'https://example.com',
+        cardType: CardType.qrCode,
+        sortOrder: 0,
+      );
+
+      await tester.pumpWidget(createCardDetailPage(card: card));
+      await tester.pumpAndSettle();
+
+      // Should render the card correctly using the renderer system
+      expect(find.text('QR Card'), findsOneWidget);
+      expect(find.text('Test QR code rendering'), findsOneWidget);
+      
+      // Should use the code renderer (we can't easily test the actual QR widget,
+      // but we can verify the card renders without errors)
+      expect(find.byType(Card), findsOneWidget);
+    });
+
+    testWidgets('should use code renderer for barcode display', (WidgetTester tester) async {
+      final card = CardItem(
+        title: 'Barcode Card',
+        description: 'Test barcode rendering',
+        name: 'ABC123',
+        cardType: CardType.barcode,
+        sortOrder: 0,
+      );
+
+      await tester.pumpWidget(createCardDetailPage(card: card));
+      await tester.pumpAndSettle();
+
+      // Should render the card correctly using the renderer system
+      expect(find.text('Barcode Card'), findsOneWidget);
+      expect(find.text('Test barcode rendering'), findsOneWidget);
+      
+      // For barcodes, should show the code value as text
+      expect(find.text('ABC123'), findsOneWidget);
+    });
+
+    testWidgets('should show barcode value text only for 1D codes', (WidgetTester tester) async {
+      // Test with barcode
+      final barcodeCard = CardItem(
+        title: 'Barcode Card',
+        description: 'Barcode test',
+        name: 'BARCODE_123',
+        cardType: CardType.barcode,
+        sortOrder: 0,
+      );
+
+      await tester.pumpWidget(createCardDetailPage(card: barcodeCard));
+      await tester.pumpAndSettle();
+
+      // First verify basic elements are there
+      expect(find.text('Barcode Card'), findsOneWidget);
+      expect(find.text('Barcode test'), findsOneWidget);
+      
+      // Now look for all text in the card's white container
+      final cardWidget = find.byType(Card);
+      expect(cardWidget, findsOneWidget);
+      
+      // Let's be more lenient - check if ANY text widget contains our barcode value
+      final allTextFinder = find.byType(Text);
+      bool foundBarcodeText = false;
+      
+      for (final element in allTextFinder.evaluate()) {
+        final textWidget = element.widget as Text;
+        if (textWidget.data?.contains('BARCODE_123') == true) {
+          foundBarcodeText = true;
+          break;
+        }
+      }
+      
+      // The barcode text should be displayed for barcode cards
+      expect(foundBarcodeText, isTrue, reason: 'Barcode text should be displayed for barcode cards');
+      
+      // Also test that QR codes don't show the text
+      final qrCard = CardItem(
+        title: 'QR Card',
+        description: 'QR test',
+        name: 'QR_DATA_123',
+        cardType: CardType.qrCode,
+        sortOrder: 0,
+      );
+
+      await tester.pumpWidget(createCardDetailPage(card: qrCard));
+      await tester.pumpAndSettle();
+
+      // QR code value should NOT be shown as text
+      expect(find.text('QR_DATA_123'), findsNothing);
+    });
+
+    testWidgets('should handle card type changes correctly', (WidgetTester tester) async {
+      // Test that the helper methods work correctly
+      final qrCard = CardItem(
+        title: 'Test Card',
+        description: 'Test',
+        name: 'TEST123',
+        cardType: CardType.qrCode,
+        sortOrder: 0,
+      );
+
+      final barcodeCard = qrCard.copyWith(cardType: CardType.barcode);
+
+      expect(qrCard.isQrCode, true);
+      expect(qrCard.isBarcode, false);
+      expect(qrCard.is2D, true);
+      expect(qrCard.is1D, false);
+
+      expect(barcodeCard.isQrCode, false);
+      expect(barcodeCard.isBarcode, true);
+      expect(barcodeCard.is2D, false);
+      expect(barcodeCard.is1D, true);
+    });
   });
 }

@@ -63,7 +63,8 @@ import 'app_localizations_nl.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,18 +85,19 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
     Locale('es'),
-    Locale('nl')
+    Locale('nl'),
   ];
 
   /// No description provided for @appTitle.
@@ -277,6 +280,18 @@ abstract class AppLocalizations {
   /// **'Dutch'**
   String get dutch;
 
+  /// No description provided for @deviceLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Device Language'**
+  String get deviceLanguage;
+
+  /// No description provided for @resetToDeviceLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to Device Language'**
+  String get resetToDeviceLanguage;
+
   /// No description provided for @theme.
   ///
   /// In en, this message translates to:
@@ -415,12 +430,6 @@ abstract class AppLocalizations {
   /// **'Code Value'**
   String get codeValueLabel;
 
-  /// No description provided for @searchLogoAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Search Logo'**
-  String get searchLogoAction;
-
   /// No description provided for @editAction.
   ///
   /// In en, this message translates to:
@@ -481,36 +490,6 @@ abstract class AppLocalizations {
   /// **'Current Logo'**
   String get currentLogo;
 
-  /// No description provided for @searchLogoHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter company name for logo'**
-  String get searchLogoHint;
-
-  /// No description provided for @logoSearchFailedTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Logo Search Failed'**
-  String get logoSearchFailedTitle;
-
-  /// No description provided for @logoSearchFailedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not find a logo for the entered name. Please try a different name or check your internet connection.'**
-  String get logoSearchFailedMessage;
-
-  /// No description provided for @logoDownloadFailedTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Logo Download Failed'**
-  String get logoDownloadFailedTitle;
-
-  /// No description provided for @logoDownloadFailedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not download the selected logo. Please check your internet connection and try again.'**
-  String get logoDownloadFailedMessage;
-
   /// No description provided for @scanFromImageAction.
   ///
   /// In en, this message translates to:
@@ -558,9 +537,16 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select an image from your gallery that contains a QR code or barcode'**
   String get scanFromImageInstructions;
+
+  /// No description provided for @or.
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get or;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -569,26 +555,28 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'es', 'nl'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'es', 'nl'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return AppLocalizationsEn();
-    case 'es': return AppLocalizationsEs();
-    case 'nl': return AppLocalizationsNl();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
+    case 'nl':
+      return AppLocalizationsNl();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
+    'that was used.',
   );
 }

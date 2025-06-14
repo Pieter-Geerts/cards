@@ -46,13 +46,11 @@ void main() {
 
       // Retrieve cards
       final retrievedCards = await dbHelper.getCards();
-
+      
       expect(retrievedCards.length, 2);
-
+      
       final retrievedQr = retrievedCards.firstWhere((c) => c.id == qrId);
-      final retrievedBarcode = retrievedCards.firstWhere(
-        (c) => c.id == barcodeId,
-      );
+      final retrievedBarcode = retrievedCards.firstWhere((c) => c.id == barcodeId);
 
       expect(retrievedQr.cardType, CardType.qrCode);
       expect(retrievedQr.title, 'QR Test Card');
@@ -66,7 +64,7 @@ void main() {
     test('should handle legacy data format during migration', () async {
       // Simulate legacy data by directly inserting old format
       final db = await dbHelper.database;
-
+      
       // Insert card with legacy format
       await db.insert('cards', {
         'title': 'Legacy QR Card',
@@ -88,9 +86,9 @@ void main() {
 
       // Retrieve using the helper (should convert legacy format)
       final cards = await dbHelper.getCards();
-
+      
       expect(cards.length, 2);
-
+      
       final qrCard = cards.firstWhere((c) => c.name == 'LEGACY123');
       final barcodeCard = cards.firstWhere((c) => c.name == 'LEGACY456');
 
@@ -104,7 +102,7 @@ void main() {
 
     test('should handle invalid legacy data gracefully', () async {
       final db = await dbHelper.database;
-
+      
       // Insert card with invalid legacy format
       await db.insert('cards', {
         'title': 'Invalid Card',
@@ -117,11 +115,11 @@ void main() {
 
       // Retrieve using the helper
       final cards = await dbHelper.getCards();
-
+      
       expect(cards.length, 1);
-
+      
       final card = cards.first;
-
+      
       // Should fallback to default (QR code)
       expect(card.cardType, CardType.qrCode);
       expect(card.title, 'Invalid Card');
@@ -129,7 +127,7 @@ void main() {
 
     test('should handle null cardType gracefully', () async {
       final db = await dbHelper.database;
-
+      
       // Insert card with null cardType
       await db.insert('cards', {
         'title': 'Null Type Card',
@@ -142,11 +140,11 @@ void main() {
 
       // Retrieve using the helper
       final cards = await dbHelper.getCards();
-
+      
       expect(cards.length, 1);
-
+      
       final card = cards.first;
-
+      
       // Should fallback to default (QR code)
       expect(card.cardType, CardType.qrCode);
       expect(card.title, 'Null Type Card');
@@ -163,7 +161,7 @@ void main() {
       );
 
       final cardId = await dbHelper.insertCard(originalCard);
-
+      
       // Update the card with new type
       final updatedCard = originalCard.copyWith(
         id: cardId,
@@ -172,10 +170,10 @@ void main() {
       );
 
       await dbHelper.updateCard(updatedCard);
-
+      
       // Retrieve and verify
       final retrievedCard = await dbHelper.getCard(cardId);
-
+      
       expect(retrievedCard, isNotNull);
       expect(retrievedCard!.cardType, CardType.barcode);
       expect(retrievedCard.description, 'Updated Description');
@@ -220,10 +218,8 @@ void main() {
       expect(retrievedCards.length, 3);
 
       // Verify types are preserved
-      final qrCards =
-          retrievedCards.where((c) => c.cardType == CardType.qrCode).toList();
-      final barcodeCards =
-          retrievedCards.where((c) => c.cardType == CardType.barcode).toList();
+      final qrCards = retrievedCards.where((c) => c.cardType == CardType.qrCode).toList();
+      final barcodeCards = retrievedCards.where((c) => c.cardType == CardType.barcode).toList();
 
       expect(qrCards.length, 2);
       expect(barcodeCards.length, 1);

@@ -24,14 +24,8 @@ void main() {
       expect(CardTypeExtension.fromLegacyValue('BARCODE'), CardType.barcode);
       expect(CardTypeExtension.fromLegacyValue('qr_code'), CardType.qrCode);
       expect(CardTypeExtension.fromLegacyValue('barcode'), CardType.barcode);
-      expect(
-        CardTypeExtension.fromLegacyValue('INVALID'),
-        CardType.qrCode,
-      ); // fallback
-      expect(
-        CardTypeExtension.fromLegacyValue(''),
-        CardType.qrCode,
-      ); // fallback
+      expect(CardTypeExtension.fromLegacyValue('INVALID'), CardType.qrCode); // fallback
+      expect(CardTypeExtension.fromLegacyValue(''), CardType.qrCode); // fallback
     });
   });
 
