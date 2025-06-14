@@ -1,11 +1,9 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../helpers/database_helper.dart';
@@ -113,7 +111,6 @@ class _CardDetailPageState extends State<CardDetailPage> {
 
   Future<void> _shareCardAsImage() async {
     // Show the code widget in an overlay to render it offscreen
-    final isQr = _currentCard.cardType == 'QR_CODE';
     final imageWidget = Material(
       type: MaterialType.transparency,
       child: Center(
@@ -122,27 +119,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
           child: Container(
             color: Colors.white,
             padding: const EdgeInsets.all(24),
-            child:
-                isQr
-                    ? QrImageView(
-                      data: _currentCard.name,
-                      size: 320,
-                      backgroundColor: Colors.white,
-                      eyeStyle: const QrEyeStyle(color: Colors.black), // Added
-                      dataModuleStyle: const QrDataModuleStyle(
-                        color: Colors.black,
-                      ), // Added
-                      // foregroundColor: Colors.black; // Removed deprecated
-                    )
-                    : BarcodeWidget(
-                      barcode: Barcode.code128(),
-                      data: _currentCard.name,
-                      width: 320,
-                      height: 120,
-                      backgroundColor: Colors.white,
-                      color: Colors.black,
-                      drawText: false,
-                    ),
+            child: _currentCard.renderForSharing(size: 320),
           ),
         ),
       ),
@@ -183,6 +160,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
       _currentCard.logoPath,
       size: 36,
       background: theme.colorScheme.surface,
+      title: _currentCard.title,
     );
 
     return Scaffold(
@@ -268,7 +246,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
                         _buildCodeWidget(availableWidth - 56),
                         const SizedBox(height: 18),
                         // Human-readable code value (only for barcodes, not QR codes)
-                        if (_currentCard.cardType != 'QR_CODE')
+                        if (_currentCard.isBarcode)
                           Text(
                             _currentCard.name,
                             textAlign: TextAlign.center,
@@ -331,27 +309,11 @@ class _CardDetailPageState extends State<CardDetailPage> {
   }
 
   Widget _buildCodeWidget(double availableWidth) {
-    final isQr = _currentCard.cardType == 'QR_CODE';
-    if (isQr) {
-      return QrImageView(
-        data: _currentCard.name,
-        size: availableWidth * 0.7,
-        backgroundColor: Colors.white,
-        eyeStyle: const QrEyeStyle(color: Colors.black), // Added
-        dataModuleStyle: const QrDataModuleStyle(color: Colors.black), // Added
-        // foregroundColor: Colors.black, // Removed deprecated
-      );
-    } else {
-      return BarcodeWidget(
-        barcode: Barcode.code128(),
-        data: _currentCard.name,
-        width: availableWidth * 0.8,
-        height: 90,
-        backgroundColor: Colors.white,
-        color: Colors.black,
-        drawText: false,
-      );
-    }
+    final size = _currentCard.is2D ? availableWidth * 0.7 : null;
+    final width = _currentCard.is1D ? availableWidth * 0.8 : null;
+    final height = _currentCard.is1D ? 90.0 : null;
+
+    return _currentCard.renderCode(size: size, width: width, height: height);
   }
 }
 

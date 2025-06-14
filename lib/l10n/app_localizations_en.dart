@@ -178,9 +178,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get codeValueLabel => 'Code Value';
 
   @override
-  String get searchLogoAction => 'Search Logo';
-
-  @override
   String get editAction => 'Edit';
 
   @override
@@ -212,23 +209,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currentLogo => 'Current Logo';
 
   @override
-  String get searchLogoHint => 'Enter company name for logo';
-
-  @override
-  String get logoSearchFailedTitle => 'Logo Search Failed';
-
-  @override
-  String get logoSearchFailedMessage =>
-      'Could not find a logo for the entered name. Please try a different name or check your internet connection.';
-
-  @override
-  String get logoDownloadFailedTitle => 'Logo Download Failed';
-
-  @override
-  String get logoDownloadFailedMessage =>
-      'Could not download the selected logo. Please check your internet connection and try again.';
-
-  @override
   String get scanFromImageAction => 'Scan from Image';
 
   @override
@@ -253,4 +233,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get scanFromImageInstructions =>
       'Select an image from your gallery that contains a QR code or barcode';
+
+  @override
+  String get or => 'or';
 }

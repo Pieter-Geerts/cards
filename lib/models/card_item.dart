@@ -1,9 +1,44 @@
+import 'package:flutter/material.dart';
+
+import 'code_renderer.dart';
+
+enum CardType { qrCode, barcode }
+
+extension CardTypeExtension on CardType {
+  String get displayName {
+    switch (this) {
+      case CardType.qrCode:
+        return 'QR Code';
+      case CardType.barcode:
+        return 'Barcode';
+    }
+  }
+
+  bool get is2D {
+    return switch (this) {
+      CardType.qrCode => true,
+      CardType.barcode => false,
+    };
+  }
+
+  bool get is1D => !is2D;
+
+  // Migration helper for converting old database values
+  static CardType fromLegacyValue(String value) {
+    return switch (value.toUpperCase()) {
+      'QR_CODE' => CardType.qrCode,
+      'BARCODE' => CardType.barcode,
+      _ => CardType.qrCode,
+    };
+  }
+}
+
 class CardItem {
   final int? id;
   final String title;
   final String description;
   final String name;
-  final String cardType;
+  final CardType cardType;
   final DateTime createdAt;
   final int sortOrder;
   final String? logoPath;
@@ -13,23 +48,54 @@ class CardItem {
     required this.title,
     required this.description,
     required this.name,
-    this.cardType = 'QR_CODE',
+    this.cardType = CardType.qrCode,
     DateTime? createdAt,
     required this.sortOrder,
     this.logoPath,
   }) : createdAt = createdAt ?? DateTime.now();
 
-  // Temporary constructor for AddCardPage to return data without sortOrder yet.
-  // HomePage will use this data to create the final CardItem with a sortOrder.
   CardItem.temp({
     required this.title,
     required this.description,
     required this.name,
-    this.cardType = 'QR_CODE',
+    this.cardType = CardType.qrCode,
     this.logoPath,
   }) : id = null,
        createdAt = DateTime.now(),
-       sortOrder = -1; // Placeholder, will be overwritten by HomePage
+       sortOrder = -1;
+
+  // Helper to check if this is a QR code
+  bool get isQrCode => cardType == CardType.qrCode;
+
+  // Helper to check if this is a barcode
+  bool get isBarcode => cardType == CardType.barcode;
+
+  // Helper to check if this is a 2D code (QR, Data Matrix, etc.)
+  bool get is2D => cardType.is2D;
+
+  // Helper to check if this is a 1D code (traditional barcodes)
+  bool get is1D => cardType.is1D;
+
+  /// Gets the appropriate code renderer for this card
+  CodeRenderer get codeRenderer => CodeRendererFactory.getRenderer(cardType);
+
+  /// Renders the code widget for display
+  Widget renderCode({double? size, double? width, double? height}) {
+    return codeRenderer.renderCode(
+      name,
+      size: size,
+      width: width,
+      height: height,
+    );
+  }
+
+  /// Renders the code widget for sharing
+  Widget renderForSharing({double? size}) {
+    return codeRenderer.renderForSharing(name, size: size);
+  }
+
+  /// Validates if the current name/data is valid for this card type
+  bool get isDataValid => codeRenderer.validateData(name);
 
   Map<String, dynamic> toMap() {
     return {
@@ -37,7 +103,7 @@ class CardItem {
       'title': title,
       'description': description,
       'name': name,
-      'cardType': cardType,
+      'cardType': cardType.name,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'sortOrder': sortOrder,
       'logoPath': logoPath,
@@ -45,12 +111,27 @@ class CardItem {
   }
 
   factory CardItem.fromMap(Map<String, dynamic> map) {
+    CardType parsedCardType;
+    final cardTypeValue = map['cardType'] as String?;
+
+    if (cardTypeValue == null) {
+      parsedCardType = CardType.qrCode;
+    } else {
+      // Try parsing as enum name first (new format)
+      try {
+        parsedCardType = CardType.values.byName(cardTypeValue);
+      } catch (e) {
+        // Fall back to legacy format conversion
+        parsedCardType = CardTypeExtension.fromLegacyValue(cardTypeValue);
+      }
+    }
+
     return CardItem(
       id: map['id'] as int?,
       title: map['title'] as String,
       description: map['description'] as String,
       name: map['name'] as String,
-      cardType: map['cardType'] as String? ?? 'QR_CODE',
+      cardType: parsedCardType,
       createdAt:
           map['createdAt'] != null
               ? DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int)
@@ -65,7 +146,7 @@ class CardItem {
     String? title,
     String? description,
     String? name,
-    String? cardType,
+    CardType? cardType,
     DateTime? createdAt,
     int? sortOrder,
     String? logoPath,
@@ -79,6 +160,33 @@ class CardItem {
       createdAt: createdAt ?? this.createdAt,
       sortOrder: sortOrder ?? this.sortOrder,
       logoPath: logoPath ?? this.logoPath,
+    );
+  }
+
+  // Helper method to render the card
+  Widget renderCard() {
+    return Card(
+      child: Column(
+        children: [
+          if (logoPath != null) ...[
+            Image.asset(logoPath!),
+            const SizedBox(height: 8),
+          ],
+          Text(
+            title,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(description, style: const TextStyle(fontSize: 16)),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: () {
+              // Handle button press
+            },
+            child: Text('Action'),
+          ),
+        ],
+      ),
     );
   }
 }
