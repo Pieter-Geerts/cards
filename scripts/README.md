@@ -23,6 +23,11 @@ This directory contains automated scripts to make releasing your Flutter app as 
 | `master-release.sh`         | 🎯 **Guided release process**          | `./master-release.sh`                       |
 | `quick-release.sh`          | ⚡ Quick patch release                 | `./quick-release.sh`                        |
 | `release.sh`                | 🔧 Full release with options           | `./release.sh [patch\|minor\|major\|X.Y.Z]` |
+| `update-dependencies.sh`    | 📦 **Update Flutter dependencies**     | `./update-dependencies.sh`                  |
+| `generate-localizations.sh` | 🌍 Generate localization files         | `./generate-localizations.sh`               |
+| `setup-git-workflow.sh`     | 🌊 **Configure Git workflow**          | `./setup-git-workflow.sh`                   |
+| `install-git-hooks.sh`      | 🪝 **Install Git hooks**               | `./install-git-hooks.sh`                    |
+| `pre-commit-hook.sh`        | 🔍 Pre-commit quality checks           | _(auto-runs on commit)_                      |
 | `smart-release-notes.sh`    | 🤖 **Smart release notes generator**   | `./smart-release-notes.sh [from] [to]`      |
 | `review-release-notes.sh`   | ✨ **Release notes reviewer & editor** | `./review-release-notes.sh [file]`          |
 | `generate-release-notes.sh` | 📝 Basic release notes from commits    | `./generate-release-notes.sh [from] [to]`   |
@@ -50,6 +55,42 @@ This directory contains automated scripts to make releasing your Flutter app as 
 - ✏️ **Interactive editing** with built-in suggestions
 - 📋 **Google Play optimization** (500 character limit compliance)
 - 🎯 **Benefit-focused** language recommendations
+
+## 🌊 Git Workflow Enhancement
+
+Improve your development workflow with automated quality gates:
+
+### One-time Setup
+```bash
+# Configure Git settings and aliases
+./setup-git-workflow.sh
+
+# Install quality check hooks
+./install-git-hooks.sh
+```
+
+### What You Get
+- **Pre-commit hooks**: Automatic code formatting, linting, and testing
+- **Commit templates**: Conventional commit format suggestions
+- **Post-merge automation**: Dependencies and localizations auto-update
+- **Useful aliases**: Streamlined Git commands
+- **Quality gates**: Prevent broken commits
+
+### New Git Commands
+```bash
+git st                    # Short status
+git feature-start <name>  # Create feature branch
+git flutter-check         # Run analyze + test
+git release-check         # Pre-release validation
+```
+
+See `../GIT_WORKFLOW.md` for complete documentation.
+
+## 📦 Dependency Management
+
+- Keep your `pubspec.yaml` updated with the latest dependencies
+- Use `./update-dependencies.sh` to automate dependency updates
+- Regularly run `flutter pub get` to fetch new packages
 
 ## 🎯 Typical Workflow
 
