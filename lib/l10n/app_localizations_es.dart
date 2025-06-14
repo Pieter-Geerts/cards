@@ -41,6 +41,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get delete => 'Eliminar';
 
   @override
+  String get ok => 'Aceptar';
+
+  @override
   String cardType(Object type) {
     return 'Tipo: $type';
   }
@@ -166,4 +169,91 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get shareAsImage => 'Compartir como imagen';
+
+  @override
+  String get scanInstructionsTooltip =>
+      'Coloca el código de barras en el marco';
+
+  @override
+  String get companyOrNameLabel => 'Empresa/Nombre';
+
+  @override
+  String get codeValueLabel => 'Valor del Código';
+
+  @override
+  String get searchLogoAction => 'Buscar Logo';
+
+  @override
+  String get editAction => 'Editar';
+
+  @override
+  String get shareAsImageAction => 'Compartir como imagen';
+
+  @override
+  String get removeLogoButton => 'Eliminar Logo';
+
+  @override
+  String get unsavedChangesTitle => 'Cambios no guardados';
+
+  @override
+  String get unsavedChangesMessage =>
+      'Tienes cambios sin guardar. ¿Quieres descartarlos?';
+
+  @override
+  String get discardButton => 'Descartar';
+
+  @override
+  String get stayButton => 'Permanecer';
+
+  @override
+  String get cardTypeLabel => 'Tipo de Tarjeta';
+
+  @override
+  String get save => 'Guardar';
+
+  @override
+  String get currentLogo => 'Logo Actual';
+
+  @override
+  String get searchLogoHint => 'Introduce el nombre de la empresa para el logo';
+
+  @override
+  String get logoSearchFailedTitle => 'Error en la Búsqueda de Logos';
+
+  @override
+  String get logoSearchFailedMessage =>
+      'No se pudo encontrar un logo para el nombre ingresado. Por favor, intente con un nombre diferente o verifique su conexión a internet.';
+
+  @override
+  String get logoDownloadFailedTitle => 'Error en la Descarga del Logo';
+
+  @override
+  String get logoDownloadFailedMessage =>
+      'No se pudo descargar el logo seleccionado. Por favor, verifique su conexión a internet e intente de nuevo.';
+
+  @override
+  String get scanFromImageAction => 'Escanear desde Imagen';
+
+  @override
+  String get noBarcodeFoundInImage =>
+      'No se encontró ningún código de barras o código QR en la imagen seleccionada.';
+
+  @override
+  String get scanFromImageTitle => 'Escanear desde Imagen';
+
+  @override
+  String get processingImage => 'Procesando imagen...';
+
+  @override
+  String get selectImageButton => 'Seleccionar Imagen';
+
+  @override
+  String get scanFromImageSubtitle => 'Selecciona una imagen de tu galería';
+
+  @override
+  String get manualEntrySubtitle => 'Escribe el código manualmente';
+
+  @override
+  String get scanFromImageInstructions =>
+      'Selecciona una imagen de tu galería que contenga un código QR o código de barras';
 }

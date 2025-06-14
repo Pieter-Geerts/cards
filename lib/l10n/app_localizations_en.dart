@@ -39,6 +39,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get delete => 'Delete';
 
   @override
+  String get ok => 'OK';
+
+  @override
   String cardType(Object type) {
     return 'Type: $type';
   }
@@ -164,4 +167,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareAsImage => 'Share as Image';
+
+  @override
+  String get scanInstructionsTooltip => 'Place the barcode in the frame';
+
+  @override
+  String get companyOrNameLabel => 'Company/Name';
+
+  @override
+  String get codeValueLabel => 'Code Value';
+
+  @override
+  String get searchLogoAction => 'Search Logo';
+
+  @override
+  String get editAction => 'Edit';
+
+  @override
+  String get shareAsImageAction => 'Share as Image';
+
+  @override
+  String get removeLogoButton => 'Remove Logo';
+
+  @override
+  String get unsavedChangesTitle => 'Unsaved Changes';
+
+  @override
+  String get unsavedChangesMessage =>
+      'You have unsaved changes. Do you want to discard them?';
+
+  @override
+  String get discardButton => 'Discard';
+
+  @override
+  String get stayButton => 'Stay';
+
+  @override
+  String get cardTypeLabel => 'Card Type';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get currentLogo => 'Current Logo';
+
+  @override
+  String get searchLogoHint => 'Enter company name for logo';
+
+  @override
+  String get logoSearchFailedTitle => 'Logo Search Failed';
+
+  @override
+  String get logoSearchFailedMessage =>
+      'Could not find a logo for the entered name. Please try a different name or check your internet connection.';
+
+  @override
+  String get logoDownloadFailedTitle => 'Logo Download Failed';
+
+  @override
+  String get logoDownloadFailedMessage =>
+      'Could not download the selected logo. Please check your internet connection and try again.';
+
+  @override
+  String get scanFromImageAction => 'Scan from Image';
+
+  @override
+  String get noBarcodeFoundInImage =>
+      'No barcode or QR code found in the selected image.';
+
+  @override
+  String get scanFromImageTitle => 'Scan from Image';
+
+  @override
+  String get processingImage => 'Processing image...';
+
+  @override
+  String get selectImageButton => 'Select Image';
+
+  @override
+  String get scanFromImageSubtitle => 'Select an image from your gallery';
+
+  @override
+  String get manualEntrySubtitle => 'Type in the code manually';
+
+  @override
+  String get scanFromImageInstructions =>
+      'Select an image from your gallery that contains a QR code or barcode';
 }

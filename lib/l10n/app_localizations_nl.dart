@@ -40,6 +40,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get delete => 'Verwijderen';
 
   @override
+  String get ok => 'OK';
+
+  @override
   String cardType(Object type) {
     return 'Type: $type';
   }
@@ -165,4 +168,90 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get shareAsImage => 'Delen als afbeelding';
+
+  @override
+  String get scanInstructionsTooltip => 'Plaats de barcode in het kader';
+
+  @override
+  String get companyOrNameLabel => 'Bedrijf/Naam';
+
+  @override
+  String get codeValueLabel => 'Codewaarde';
+
+  @override
+  String get searchLogoAction => 'Zoek Logo';
+
+  @override
+  String get editAction => 'Bewerken';
+
+  @override
+  String get shareAsImageAction => 'Deel als afbeelding';
+
+  @override
+  String get removeLogoButton => 'Logo Verwijderen';
+
+  @override
+  String get unsavedChangesTitle => 'Niet-opgeslagen Wijzigingen';
+
+  @override
+  String get unsavedChangesMessage =>
+      'U heeft niet-opgeslagen wijzigingen. Wilt u deze verwijderen?';
+
+  @override
+  String get discardButton => 'Verwijderen';
+
+  @override
+  String get stayButton => 'Blijven';
+
+  @override
+  String get cardTypeLabel => 'Kaarttype';
+
+  @override
+  String get save => 'Opslaan';
+
+  @override
+  String get currentLogo => 'Huidig Logo';
+
+  @override
+  String get searchLogoHint => 'Voer bedrijfsnaam in voor logo';
+
+  @override
+  String get logoSearchFailedTitle => 'Logo Zoeken Mislukt';
+
+  @override
+  String get logoSearchFailedMessage =>
+      'Kon geen logo vinden voor de ingevoerde naam. Probeer een andere naam of controleer uw internetverbinding.';
+
+  @override
+  String get logoDownloadFailedTitle => 'Logo Downloaden Mislukt';
+
+  @override
+  String get logoDownloadFailedMessage =>
+      'Kon het geselecteerde logo niet downloaden. Controleer uw internetverbinding en probeer het opnieuw.';
+
+  @override
+  String get scanFromImageAction => 'Scan vanuit Afbeelding';
+
+  @override
+  String get noBarcodeFoundInImage =>
+      'Geen barcode of QR-code gevonden in de geselecteerde afbeelding.';
+
+  @override
+  String get scanFromImageTitle => 'Scan vanuit Afbeelding';
+
+  @override
+  String get processingImage => 'Afbeelding verwerken...';
+
+  @override
+  String get selectImageButton => 'Afbeelding Selecteren';
+
+  @override
+  String get scanFromImageSubtitle => 'Selecteer een afbeelding uit je galerij';
+
+  @override
+  String get manualEntrySubtitle => 'Typ de code handmatig in';
+
+  @override
+  String get scanFromImageInstructions =>
+      'Selecteer een afbeelding uit je galerij die een QR-code of barcode bevat';
 }

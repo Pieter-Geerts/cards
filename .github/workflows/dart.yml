@@ -1,8 +1,4 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
+# This workflow builds a Flutter application, runs tests, and uploads the artifacts.
 name: Flutter CI
 
 on:
@@ -26,7 +22,6 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.29.3"
           channel: "stable"
 
       - name: Create key.properties
@@ -40,15 +35,14 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # - name: Format code
-      #   run: flutter format --set-exit-if-changed .
+      - name: Format code
+        run: dart format .
 
-      # - name: Analyze project source
-      #   run: flutter analyze
+      - name: Analyze project source
+        run: flutter analyze
 
       - name: Run tests
         run: flutter test
-
 
       # Build Android App Bundle (AAB) with symbols for Play Console
       - name: Build Android App Bundle (AAB) with symbols
