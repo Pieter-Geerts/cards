@@ -223,11 +223,12 @@ class _CardDetailPageState extends State<CardDetailPage> {
             tooltip: l10n.edit,
             onPressed: _startEditing,
           ),
-          IconButton(
-            icon: Icon(Icons.delete, color: theme.colorScheme.onSurface),
-            tooltip: l10n.delete,
-            onPressed: () => _deleteCard(context),
-          ),
+          if (widget.onDelete != null)
+            IconButton(
+              icon: Icon(Icons.delete, color: theme.colorScheme.onSurface),
+              tooltip: l10n.delete,
+              onPressed: () => _deleteCard(context),
+            ),
         ],
       ),
       body: SingleChildScrollView(
@@ -266,19 +267,20 @@ class _CardDetailPageState extends State<CardDetailPage> {
                         // Barcode or QR code
                         _buildCodeWidget(availableWidth - 56),
                         const SizedBox(height: 18),
-                        // Human-readable code value
-                        Text(
-                          _currentCard.name,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 22,
-                            letterSpacing: 1.2,
+                        // Human-readable code value (only for barcodes, not QR codes)
+                        if (_currentCard.cardType != 'QR_CODE')
+                          Text(
+                            _currentCard.name,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 22,
+                              letterSpacing: 1.2,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
                       ],
                     ),
                   ),
