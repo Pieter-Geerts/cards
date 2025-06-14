@@ -66,3 +66,7 @@ key.properties
 *.keystore
 
 lib/secrets.dart
+
+# Generated localization files (regenerated from .arb files)
+lib/l10n/app_localizations.dart
+lib/l10n/app_localizations_*.dart

@@ -59,6 +59,11 @@ log_info "Getting dependencies..."
 flutter pub get
 log_success "Dependencies updated"
 
+# Generate localization files
+log_info "Generating localization files..."
+flutter gen-l10n
+log_success "Localization files generated"
+
 # Run tests
 log_info "Running tests..."
 TEST_RESULT=$(flutter test 2>&1)

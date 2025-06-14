@@ -66,3 +66,13 @@ jobs:
         with:
           name: app-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Create secrets.dart
+        run: |
+          cp lib/secrets_template.dart lib/secrets.dart
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate localization files
+        run: flutter gen-l10n
