@@ -132,9 +132,25 @@ If you encounter compatibility issues, verify your package versions in pubspec.y
 - sqflite: ^2.2.0
 - path: ^1.8.3
 
+## 📚 Documentation
+
+For detailed documentation, development guides, and workflows, visit:
+
+**[📖 Documentation Index](docs/README.md)**
+
+### Quick Links:
+- **[Release Guide](docs/guides/RELEASE.md)** - Complete release process
+- **[Git Workflow](docs/workflows/GIT_WORKFLOW.md)** - Development workflow setup
+- **[Scripts Documentation](scripts/README.md)** - Available automation scripts
+- **[Dependency Management](docs/workflows/DEPENDENCY_MANAGEMENT.md)** - Managing dependencies
+
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please start by reading our:
+1. **[Git Workflow Guide](docs/workflows/GIT_WORKFLOW.md)** - Setup development environment
+2. **[Release Guide](docs/guides/RELEASE.md)** - Understanding the release process
+
+Feel free to submit a Pull Request following our workflow guidelines.
 
 ## License
 

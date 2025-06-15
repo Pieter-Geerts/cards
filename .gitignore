@@ -125,3 +125,13 @@ test/coverage_helper_test.dart
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Documentation - Generated files
+docs/generated/smart-release-notes-*.md
+**/smart-release-notes-*.md
+
+# Temporary documentation files
+README_MERGED.md
+*_TEMP.md
+*.patch
+*.log
