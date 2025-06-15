@@ -139,6 +139,7 @@ For detailed documentation, development guides, and workflows, visit:
 **[📖 Documentation Index](docs/README.md)**
 
 ### Quick Links:
+
 - **[Release Guide](docs/guides/RELEASE.md)** - Complete release process
 - **[Git Workflow](docs/workflows/GIT_WORKFLOW.md)** - Development workflow setup
 - **[Scripts Documentation](scripts/README.md)** - Available automation scripts
@@ -147,6 +148,7 @@ For detailed documentation, development guides, and workflows, visit:
 ## Contributing
 
 Contributions are welcome! Please start by reading our:
+
 1. **[Git Workflow Guide](docs/workflows/GIT_WORKFLOW.md)** - Setup development environment
 2. **[Release Guide](docs/guides/RELEASE.md)** - Understanding the release process
 

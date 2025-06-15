@@ -27,7 +27,7 @@ This directory contains automated scripts to make releasing your Flutter app as 
 | `generate-localizations.sh` | 🌍 Generate localization files         | `./generate-localizations.sh`               |
 | `setup-git-workflow.sh`     | 🌊 **Configure Git workflow**          | `./setup-git-workflow.sh`                   |
 | `install-git-hooks.sh`      | 🪝 **Install Git hooks**               | `./install-git-hooks.sh`                    |
-| `pre-commit-hook.sh`        | 🔍 Pre-commit quality checks           | _(auto-runs on commit)_                      |
+| `pre-commit-hook.sh`        | 🔍 Pre-commit quality checks           | _(auto-runs on commit)_                     |
 | `docs-maintenance.sh`       | 📚 **Documentation maintenance**       | `./docs-maintenance.sh`                     |
 | `smart-release-notes.sh`    | 🤖 **Smart release notes generator**   | `./smart-release-notes.sh [from] [to]`      |
 | `review-release-notes.sh`   | ✨ **Release notes reviewer & editor** | `./review-release-notes.sh [file]`          |
@@ -62,6 +62,7 @@ This directory contains automated scripts to make releasing your Flutter app as 
 Improve your development workflow with automated quality gates:
 
 ### One-time Setup
+
 ```bash
 # Configure Git settings and aliases
 ./setup-git-workflow.sh
@@ -71,6 +72,7 @@ Improve your development workflow with automated quality gates:
 ```
 
 ### What You Get
+
 - **Pre-commit hooks**: Automatic code formatting, linting, and testing
 - **Commit templates**: Conventional commit format suggestions
 - **Post-merge automation**: Dependencies and localizations auto-update
@@ -78,6 +80,7 @@ Improve your development workflow with automated quality gates:
 - **Quality gates**: Prevent broken commits
 
 ### New Git Commands
+
 ```bash
 git st                    # Short status
 git feature-start <name>  # Create feature branch
@@ -92,17 +95,20 @@ See `../GIT_WORKFLOW.md` for complete documentation.
 Keep your Flutter dependencies up to date with automated tools:
 
 ### Manual Updates
+
 ```bash
 # Interactive dependency update with safety checks
 ./update-dependencies.sh
 ```
 
 ### Automated Updates (GitHub)
+
 - **Dependabot**: Automatically creates PRs for dependency updates (configured in `.github/dependabot.yml`)
 - **Weekly Checks**: GitHub Actions workflow runs weekly to check for outdated dependencies
 - **Status in build-info**: `./build-info.sh` shows current dependency status
 
 ### Localization Files
+
 ```bash
 # Regenerate localization files from ARB sources
 ./generate-localizations.sh
