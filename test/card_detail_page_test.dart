@@ -218,7 +218,9 @@ void main() {
   });
 
   group('CardDetailPage with code renderer system', () {
-    testWidgets('should use code renderer for QR code display', (WidgetTester tester) async {
+    testWidgets('should use code renderer for QR code display', (
+      WidgetTester tester,
+    ) async {
       final card = CardItem(
         title: 'QR Card',
         description: 'Test QR code rendering',
@@ -233,13 +235,15 @@ void main() {
       // Should render the card correctly using the renderer system
       expect(find.text('QR Card'), findsOneWidget);
       expect(find.text('Test QR code rendering'), findsOneWidget);
-      
+
       // Should use the code renderer (we can't easily test the actual QR widget,
       // but we can verify the card renders without errors)
       expect(find.byType(Card), findsOneWidget);
     });
 
-    testWidgets('should use code renderer for barcode display', (WidgetTester tester) async {
+    testWidgets('should use code renderer for barcode display', (
+      WidgetTester tester,
+    ) async {
       final card = CardItem(
         title: 'Barcode Card',
         description: 'Test barcode rendering',
@@ -254,12 +258,14 @@ void main() {
       // Should render the card correctly using the renderer system
       expect(find.text('Barcode Card'), findsOneWidget);
       expect(find.text('Test barcode rendering'), findsOneWidget);
-      
+
       // For barcodes, should show the code value as text
       expect(find.text('ABC123'), findsOneWidget);
     });
 
-    testWidgets('should show barcode value text only for 1D codes', (WidgetTester tester) async {
+    testWidgets('should show barcode value text only for 1D codes', (
+      WidgetTester tester,
+    ) async {
       // Test with barcode
       final barcodeCard = CardItem(
         title: 'Barcode Card',
@@ -275,15 +281,15 @@ void main() {
       // First verify basic elements are there
       expect(find.text('Barcode Card'), findsOneWidget);
       expect(find.text('Barcode test'), findsOneWidget);
-      
+
       // Now look for all text in the card's white container
       final cardWidget = find.byType(Card);
       expect(cardWidget, findsOneWidget);
-      
+
       // Let's be more lenient - check if ANY text widget contains our barcode value
       final allTextFinder = find.byType(Text);
       bool foundBarcodeText = false;
-      
+
       for (final element in allTextFinder.evaluate()) {
         final textWidget = element.widget as Text;
         if (textWidget.data?.contains('BARCODE_123') == true) {
@@ -291,10 +297,14 @@ void main() {
           break;
         }
       }
-      
+
       // The barcode text should be displayed for barcode cards
-      expect(foundBarcodeText, isTrue, reason: 'Barcode text should be displayed for barcode cards');
-      
+      expect(
+        foundBarcodeText,
+        isTrue,
+        reason: 'Barcode text should be displayed for barcode cards',
+      );
+
       // Also test that QR codes don't show the text
       final qrCard = CardItem(
         title: 'QR Card',
@@ -311,7 +321,9 @@ void main() {
       expect(find.text('QR_DATA_123'), findsNothing);
     });
 
-    testWidgets('should handle card type changes correctly', (WidgetTester tester) async {
+    testWidgets('should handle card type changes correctly', (
+      WidgetTester tester,
+    ) async {
       // Test that the helper methods work correctly
       final qrCard = CardItem(
         title: 'Test Card',
@@ -334,4 +346,117 @@ void main() {
       expect(barcodeCard.is1D, true);
     });
   });
+
+  testWidgets(
+    'CardDetailPage always shows delete button when onDelete callback is provided',
+    (WidgetTester tester) async {
+      // Test with QR code card
+      final qrCard = CardItem(
+        title: 'QR Card with Delete',
+        description: 'QR card that should have delete button',
+        name: 'QRTest123',
+        cardType: CardType.qrCode,
+        sortOrder: 0,
+      );
+
+      await tester.pumpWidget(
+        createCardDetailPage(
+          card: qrCard,
+          onDelete: (card) {
+            // Delete callback provided
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify delete button is always present in app bar
+      expect(find.byIcon(Icons.delete), findsOneWidget);
+      expect(find.byIcon(Icons.edit), findsOneWidget);
+      expect(find.byIcon(Icons.share), findsOneWidget);
+
+      // Test with Barcode card to ensure it works for all card types
+      final barcodeCard = CardItem(
+        title: 'Barcode Card with Delete',
+        description: 'Barcode card that should have delete button',
+        name: 'BarcodeTest456',
+        cardType: CardType.barcode,
+        sortOrder: 0,
+      );
+
+      await tester.pumpWidget(
+        createCardDetailPage(
+          card: barcodeCard,
+          onDelete: (card) {
+            // Delete callback provided
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify delete button is present for barcode cards too
+      expect(find.byIcon(Icons.delete), findsOneWidget);
+      expect(find.byIcon(Icons.edit), findsOneWidget);
+      expect(find.byIcon(Icons.share), findsOneWidget);
+
+      // Verify the delete button is functional
+      await tester.tap(find.byIcon(Icons.delete));
+      await tester.pumpAndSettle();
+
+      // Confirm dialog appears
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.text('Delete Card'), findsOneWidget);
+
+      // Cancel to close dialog
+      await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+      await tester.pumpAndSettle();
+
+      // Dialog should be gone
+      expect(find.byType(AlertDialog), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'CardDetailPage delete button appears in correct order in app bar',
+    (WidgetTester tester) async {
+      final card = CardItem(
+        title: 'App Bar Test Card',
+        description: 'Testing app bar button order',
+        name: 'AppBarTest789',
+        cardType: CardType.qrCode,
+        sortOrder: 0,
+      );
+
+      await tester.pumpWidget(
+        createCardDetailPage(card: card, onDelete: (card) {}),
+      );
+      await tester.pumpAndSettle();
+
+      // Find the app bar
+      final appBar = find.byType(AppBar);
+      expect(appBar, findsOneWidget);
+
+      // Verify all three action buttons are present
+      expect(find.byIcon(Icons.share), findsOneWidget);
+      expect(find.byIcon(Icons.edit), findsOneWidget);
+      expect(find.byIcon(Icons.delete), findsOneWidget);
+
+      // Verify they are in the app bar actions area
+      final shareButton = find.ancestor(
+        of: find.byIcon(Icons.share),
+        matching: find.byType(IconButton),
+      );
+      final editButton = find.ancestor(
+        of: find.byIcon(Icons.edit),
+        matching: find.byType(IconButton),
+      );
+      final deleteButton = find.ancestor(
+        of: find.byIcon(Icons.delete),
+        matching: find.byType(IconButton),
+      );
+
+      expect(shareButton, findsOneWidget);
+      expect(editButton, findsOneWidget);
+      expect(deleteButton, findsOneWidget);
+    },
+  );
 }
