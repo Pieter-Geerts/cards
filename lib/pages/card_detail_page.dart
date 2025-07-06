@@ -3,7 +3,9 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:screen_brightness/screen_brightness.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../helpers/database_helper.dart';
@@ -27,6 +29,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
   late TextEditingController _descController;
   late CardItem _currentCard;
   final GlobalKey _imageKey = GlobalKey();
+  double? _originalBrightness;
 
   @override
   void initState() {
@@ -34,13 +37,54 @@ class _CardDetailPageState extends State<CardDetailPage> {
     _currentCard = widget.card;
     _titleController = TextEditingController(text: _currentCard.title);
     _descController = TextEditingController(text: _currentCard.description);
+    _setBrightnessToMax();
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descController.dispose();
+    _restoreOriginalBrightness();
     super.dispose();
+  }
+
+  Future<void> _setBrightnessToMax() async {
+    try {
+      // Store original brightness and set to maximum
+      final screenBrightness = ScreenBrightness();
+      _originalBrightness = await screenBrightness.current;
+      await screenBrightness.setScreenBrightness(1.0);
+
+      // Also optimize system UI for bright viewing
+      SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(
+          statusBarBrightness: Brightness.light, // Light status bar for iOS
+          statusBarIconBrightness: Brightness.dark, // Dark icons for Android
+          systemNavigationBarIconBrightness: Brightness.dark,
+        ),
+      );
+
+      debugPrint('Screen brightness set to maximum for card viewing');
+    } catch (e) {
+      debugPrint('Failed to set brightness: $e');
+    }
+  }
+
+  Future<void> _restoreOriginalBrightness() async {
+    try {
+      // Restore original brightness if we stored it
+      if (_originalBrightness != null) {
+        final screenBrightness = ScreenBrightness();
+        await screenBrightness.setScreenBrightness(_originalBrightness!);
+      }
+
+      // Restore system UI
+      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+
+      debugPrint('Screen brightness restored to original level');
+    } catch (e) {
+      debugPrint('Failed to restore brightness: $e');
+    }
   }
 
   void _startEditing() async {
