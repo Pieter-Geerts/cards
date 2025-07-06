@@ -4,7 +4,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import 'card_item.dart';
 
-
 abstract class CodeRenderer {
   Widget renderCode(String data, {double? size, double? width, double? height});
 
@@ -14,7 +13,6 @@ abstract class CodeRenderer {
 
   String get displayName;
 }
-
 
 class CodeRendererFactory {
   static final Map<CardType, CodeRenderer> _renderers = {
@@ -55,7 +53,10 @@ class QRCodeRenderer implements CodeRenderer {
       size: size ?? 200,
       backgroundColor: Colors.white,
       eyeStyle: const QrEyeStyle(color: Colors.black),
-      dataModuleStyle: const QrDataModuleStyle(color: Colors.black),
+      dataModuleStyle: const QrDataModuleStyle(
+        color: Colors.black,
+        dataModuleShape: QrDataModuleShape.square,
+      ),
     );
   }
 
@@ -66,7 +67,10 @@ class QRCodeRenderer implements CodeRenderer {
       size: size ?? 320,
       backgroundColor: Colors.white,
       eyeStyle: const QrEyeStyle(color: Colors.black),
-      dataModuleStyle: const QrDataModuleStyle(color: Colors.black),
+      dataModuleStyle: const QrDataModuleStyle(
+        color: Colors.black,
+        dataModuleShape: QrDataModuleShape.square,
+      ),
     );
   }
 

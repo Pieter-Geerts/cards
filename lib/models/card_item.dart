@@ -89,12 +89,10 @@ class CardItem {
     );
   }
 
-  /// Renders the code widget for sharing
   Widget renderForSharing({double? size}) {
     return codeRenderer.renderForSharing(name, size: size);
   }
 
-  /// Validates if the current name/data is valid for this card type
   bool get isDataValid => codeRenderer.validateData(name);
 
   Map<String, dynamic> toMap() {
@@ -117,11 +115,9 @@ class CardItem {
     if (cardTypeValue == null) {
       parsedCardType = CardType.qrCode;
     } else {
-      // Try parsing as enum name first (new format)
       try {
         parsedCardType = CardType.values.byName(cardTypeValue);
       } catch (e) {
-        // Fall back to legacy format conversion
         parsedCardType = CardTypeExtension.fromLegacyValue(cardTypeValue);
       }
     }
@@ -163,7 +159,6 @@ class CardItem {
     );
   }
 
-  // Helper method to render the card
   Widget renderCard() {
     return Card(
       child: Column(
