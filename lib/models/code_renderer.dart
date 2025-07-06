@@ -52,7 +52,10 @@ class QRCodeRenderer implements CodeRenderer {
       data: data,
       size: size ?? 200,
       backgroundColor: Colors.white,
-      eyeStyle: const QrEyeStyle(color: Colors.black),
+      eyeStyle: const QrEyeStyle(
+        color: Colors.black,
+        eyeShape: QrEyeShape.square,
+      ),
       dataModuleStyle: const QrDataModuleStyle(
         color: Colors.black,
         dataModuleShape: QrDataModuleShape.square,
@@ -66,7 +69,10 @@ class QRCodeRenderer implements CodeRenderer {
       data: data,
       size: size ?? 320,
       backgroundColor: Colors.white,
-      eyeStyle: const QrEyeStyle(color: Colors.black),
+      eyeStyle: const QrEyeStyle(
+        color: Colors.black,
+        eyeShape: QrEyeShape.square,
+      ),
       dataModuleStyle: const QrDataModuleStyle(
         color: Colors.black,
         dataModuleShape: QrDataModuleShape.square,
@@ -76,7 +82,6 @@ class QRCodeRenderer implements CodeRenderer {
 
   @override
   bool validateData(String data) {
-    // QR codes can handle most data types
     return data.isNotEmpty;
   }
 
