@@ -29,6 +29,7 @@ dependencies:
   file_selector: ^1.0.3
   flutter_svg: ^2.1.0
   path_provider: ^2.0.0
+  screen_brightness: ^1.0.1
 
 dev_dependencies:
   flutter_test:
