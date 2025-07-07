@@ -55,7 +55,7 @@ fi
 
 # Check for secrets or sensitive data
 log_info "Checking for sensitive data..."
-SECRETS_ISSUES=$(git diff --cached | grep -E "^[+][^+].*\b(password|secret|key|token|api_key)\s*[=:]" | grep -v "secrets_template" | grep -v "keystore" | grep -v ".md:" || true)
+SECRETS_ISSUES=$(git diff --cached | grep -E "^[+][^+].*\b(password|secret|api_key|access_key|private_key|auth_key|token)\s*[=:]" | grep -v "secrets_template" | grep -v "keystore" | grep -v ".md:" | grep -v "key: ValueKey" | grep -v "key: Key" | grep -v "key: GlobalKey" || true)
 if [ -n "$SECRETS_ISSUES" ]; then
     log_error "Potential secrets found in staged changes:"
     echo "$SECRETS_ISSUES"

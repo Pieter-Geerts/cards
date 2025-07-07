@@ -96,31 +96,32 @@ class _HomePageState extends State<HomePage> {
     final updated = await Navigator.push<CardItem>(
       context,
       MaterialPageRoute(
-        builder: (context) => CardDetailPage(
-          card: card,
-          onDelete: (deletedCard) async {
-            // Remove from database
-            if (deletedCard.id != null) {
-              await _dbHelper.deleteCard(deletedCard.id!);
-            }
-            
-            // Remove from displayed cards list
-            setState(() {
-              _displayedCards.removeWhere((c) => c.id == deletedCard.id);
-            });
-            
-            // Send a deletion signal to parent to refresh the main cards list
-            // We use a special signal card to trigger refresh without adding
-            final deleteSignal = CardItem(
-              title: "##DELETE_CARD_SIGNAL##",
-              description: "",
-              name: "",
-              cardType: CardType.qrCode,
-              sortOrder: -1, // Special marker
-            );
-            widget.onAddCard(deleteSignal);
-          },
-        ),
+        builder:
+            (context) => CardDetailPage(
+              card: card,
+              onDelete: (deletedCard) async {
+                // Remove from database
+                if (deletedCard.id != null) {
+                  await _dbHelper.deleteCard(deletedCard.id!);
+                }
+
+                // Remove from displayed cards list
+                setState(() {
+                  _displayedCards.removeWhere((c) => c.id == deletedCard.id);
+                });
+
+                // Send a deletion signal to parent to refresh the main cards list
+                // We use a special signal card to trigger refresh without adding
+                final deleteSignal = CardItem(
+                  title: "##DELETE_CARD_SIGNAL##",
+                  description: "",
+                  name: "",
+                  cardType: CardType.qrCode,
+                  sortOrder: -1, // Special marker
+                );
+                widget.onAddCard(deleteSignal);
+              },
+            ),
       ),
     );
     if (updated != null && updated.id != null) {

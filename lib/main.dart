@@ -108,13 +108,13 @@ class _MyAppState extends State<MyApp> {
       }
       await _dbHelper.insertCard(card);
     }
-    await _loadCards(); // Reload cards to reflect changes
+    await _loadCards();
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Cards Demo', // This could be localized too if needed
+      title: 'Just Cards', // This could be localized too if needed
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
