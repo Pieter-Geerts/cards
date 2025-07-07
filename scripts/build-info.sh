@@ -35,8 +35,8 @@ echo
 
 # Flutter Information
 echo -e "${BLUE}Development Environment:${NC}"
-FLUTTER_VERSION=$(flutter --version --machine 2>/dev/null | grep -o '"flutterVersion":"[^"]*"' | cut -d'"' -f4 || echo "Unknown")
-DART_VERSION=$(flutter --version --machine 2>/dev/null | grep -o '"dartSdkVersion":"[^"]*"' | cut -d'"' -f4 || echo "Unknown")
+FLUTTER_VERSION=$(flutter --version 2>/dev/null | head -1 | grep -o 'Flutter [0-9][^ ]*' | cut -d' ' -f2 || echo "Unknown")
+DART_VERSION=$(flutter --version 2>/dev/null | grep -o 'Dart [0-9][^ ]*' | cut -d' ' -f2 || echo "Unknown")
 echo "  Flutter: $FLUTTER_VERSION"
 echo "  Dart: $DART_VERSION"
 echo

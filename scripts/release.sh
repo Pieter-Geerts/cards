@@ -168,7 +168,7 @@ if [ -f "smart-release-notes-v$NEW_VERSION.md" ]; then
     log_info "📝 Generated release notes (copy to Google Play Console):"
     echo "────────────────────────────────────────────────────"
     # Show just the Google Play Store section
-    sed -n '/## Google Play Store Version/,/## Technical Reference/p' "smart-release-notes-v$NEW_VERSION.md" | head -n -2
+    sed -n '/## Google Play Store Version/,/## Technical Reference/p' "smart-release-notes-v$NEW_VERSION.md" | sed '$d' | sed '$d'
     echo "────────────────────────────────────────────────────"
     echo
     read -p "Would you like to review and improve these release notes? (y/N): " -n 1 -r
@@ -190,6 +190,37 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     git push
     git push --tags
     log_success "Changes and tags pushed to remote"
+fi
+
+# Optionally upload to Google Play Console
+echo
+read -p "Do you want to upload to Google Play Console automatically? (y/N): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    if command -v fastlane >/dev/null 2>&1; then
+        log_info "Uploading to Google Play Console via Fastlane..."
+        cd android
+        fastlane upload_to_play_store aab:"../$AAB_PATH" || {
+            log_error "Fastlane upload failed. You can upload manually."
+        }
+        cd ..
+    elif [ -f "scripts/upload-to-play-store.sh" ]; then
+        log_info "Uploading to Google Play Console via custom script..."
+        ./scripts/upload-to-play-store.sh "$AAB_PATH" || {
+            log_error "Upload script failed. You can upload manually."
+        }
+    else
+        log_warning "No upload method configured. Setting up manual upload instructions..."
+        echo
+        log_info "To set up automatic uploads, you can:"
+        echo "  1. Install Fastlane: gem install fastlane"
+        echo "  2. Set up Google Play Developer API access"
+        echo "  3. Configure service account credentials"
+        echo "  4. Run: fastlane init in the android/ directory"
+        echo
+        log_info "For now, upload manually to:"
+        echo "  https://play.google.com/console"
+    fi
 fi
 
 # Show final instructions
