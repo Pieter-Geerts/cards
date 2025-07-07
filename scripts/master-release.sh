@@ -35,7 +35,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_DIR"
 
-log_header "🚀 Flutter Cards App - Master Release Tool"
+log_header "🚀 Just Cards - Master Release Tool"
 
 log_info "This tool will guide you through the complete release process."
 echo
