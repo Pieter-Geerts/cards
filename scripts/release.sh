@@ -148,7 +148,12 @@ git add pubspec.yaml
 git commit -m "chore: bump version to $NEW_VERSION_FULL"
 
 log_info "Creating git tag..."
-git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
+if git tag -l | grep -q "^v$NEW_VERSION$"; then
+    log_warning "Tag v$NEW_VERSION already exists. Skipping tag creation."
+else
+    git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
+    log_success "Created tag v$NEW_VERSION"
+fi
 
 log_success "Release preparation complete!"
 echo
