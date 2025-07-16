@@ -3,10 +3,10 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:barcode_widget/barcode_widget.dart';
+import 'package:cards/widgets/logo_avatar_widget.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -388,25 +388,22 @@ class _HomePageState extends State<HomePage> {
                     ),
                     margin: const EdgeInsets.symmetric(vertical: 14.0),
                     child: Material(
-                      elevation: 8.0, // More pronounced elevation
-                      borderRadius: BorderRadius.circular(
-                        20.0,
-                      ), // Consistent rounded corners
+                      elevation: 8.0,
+                      borderRadius: BorderRadius.circular(20.0),
                       color: Theme.of(context).cardColor,
                       shadowColor:
                           Theme.of(context).brightness == Brightness.dark
-                              ? Colors
-                                  .white24 // Keep direct color for now
-                              : Colors.black26, // Keep direct color for now
+                              ? Colors.white24
+                              : Colors.black26,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(20.0),
                         onTap: () => _onCardTap(card),
                         splashColor: Theme.of(
                           context,
-                        ).colorScheme.primary.withAlpha(31), // 0.12 * 255 ≈ 31
+                        ).colorScheme.primary.withAlpha(31),
                         highlightColor: Theme.of(
                           context,
-                        ).colorScheme.primary.withAlpha(20), // 0.08 * 255 ≈ 20
+                        ).colorScheme.primary.withAlpha(20),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             vertical: 28.0,
@@ -415,7 +412,13 @@ class _HomePageState extends State<HomePage> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              buildLogoWidget(card.logoPath, title: card.title),
+                              // Use LogoAvatarWidget here
+                              LogoAvatarWidget(
+                                logoKey: card.logoPath,
+                                title: card.title,
+                                size: 48,
+                                background: Theme.of(context).cardColor,
+                              ),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
@@ -443,11 +446,10 @@ class _HomePageState extends State<HomePage> {
                                         style: Theme.of(
                                           context,
                                         ).textTheme.bodyLarge?.copyWith(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurface.withAlpha(
-                                            204,
-                                          ), // 0.8 * 255 ≈ 204
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withAlpha(204),
                                           fontSize: 16,
                                         ),
                                         maxLines: 3,
@@ -558,84 +560,4 @@ class _HomePageState extends State<HomePage> {
       ); // This will trigger a reload in main.dart and update widget.cards
     }
   }
-}
-
-// Place this in a shared file for reuse, but for now, define here for all pages
-Widget buildLogoWidget(
-  String? logoPath, {
-  double size = 48, // Default size
-  double? width, // Optional width, overrides size if provided
-  double? height, // Optional height, overrides size if provided
-  Color? background,
-  String? title, // Add title parameter for generating initials
-}) {
-  final double effectiveWidth = width ?? size;
-  final double effectiveHeight = height ?? size;
-
-  if (logoPath != null && logoPath.isNotEmpty) {
-    final file = File(logoPath);
-    final exists = file.existsSync();
-    if (exists) {
-      if (logoPath.toLowerCase().endsWith('.svg')) {
-        return CircleAvatar(
-          backgroundColor: background ?? Colors.grey[100],
-          radius: effectiveWidth / 2,
-          child: ClipOval(
-            child: SvgPicture.file(
-              file,
-              width: effectiveWidth,
-              height: effectiveHeight,
-              fit: BoxFit.contain,
-            ),
-          ),
-        );
-      } else {
-        return CircleAvatar(
-          backgroundColor: background ?? Colors.grey[100],
-          radius: effectiveWidth / 2,
-          backgroundImage: FileImage(file),
-        );
-      }
-    }
-  }
-
-  // Generate initials from title if available
-  String initials = '';
-  if (title != null && title.isNotEmpty) {
-    final words = title.trim().split(RegExp(r'\s+'));
-    if (words.isNotEmpty) {
-      if (words.length == 1) {
-        // Single word: take first two characters
-        initials =
-            words[0].length >= 2
-                ? words[0].substring(0, 2).toUpperCase()
-                : words[0].toUpperCase();
-      } else {
-        // Multiple words: take first letter of each of the first two words
-        initials =
-            words[0].substring(0, 1).toUpperCase() +
-            words[1].substring(0, 1).toUpperCase();
-      }
-    }
-  }
-
-  return CircleAvatar(
-    backgroundColor: background ?? Colors.grey[100],
-    radius: effectiveWidth / 2,
-    child:
-        initials.isNotEmpty
-            ? Text(
-              initials,
-              style: TextStyle(
-                fontSize: effectiveWidth * 0.4,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            )
-            : Icon(
-              Icons.credit_card,
-              size: effectiveWidth * 0.6,
-              color: Colors.black54,
-            ),
-  );
 }

@@ -12,7 +12,7 @@ import '../helpers/database_helper.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../pages/edit_card_page.dart';
-import '../pages/home_page.dart' show buildLogoWidget;
+import '../widgets/logo_avatar_widget.dart';
 
 class CardDetailPage extends StatefulWidget {
   final CardItem card;
@@ -72,13 +72,11 @@ class _CardDetailPageState extends State<CardDetailPage> {
 
   Future<void> _restoreOriginalBrightness() async {
     try {
-      // Restore original brightness if we stored it
       if (_originalBrightness != null) {
         final screenBrightness = ScreenBrightness();
         await screenBrightness.setScreenBrightness(_originalBrightness!);
       }
 
-      // Restore system UI
       SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
 
       debugPrint('Screen brightness restored to original level');
@@ -200,11 +198,12 @@ class _CardDetailPageState extends State<CardDetailPage> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final availableWidth = MediaQuery.of(context).size.width * 0.88;
-    final logo = buildLogoWidget(
-      _currentCard.logoPath,
+    // Use LogoAvatarWidget directly for logo rendering
+    final logo = LogoAvatarWidget(
+      logoKey: _currentCard.logoPath,
+      title: _currentCard.title,
       size: 36,
       background: theme.colorScheme.surface,
-      title: _currentCard.title,
     );
 
     return Scaffold(
