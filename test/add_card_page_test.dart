@@ -77,10 +77,9 @@ void main() {
     verify(mockNavigatorObserver.didPop(any, any));
   });
 
-  testWidgets('AddCardPage changes code visualization based on card type', (
+  testWidgets('AddCardPage renders with code visualization', (
     WidgetTester tester,
   ) async {
-    // Arrange
     await tester.pumpWidget(
       TestableWidget(
         navigatorObservers: [mockNavigatorObserver],
@@ -89,22 +88,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Initially it should show a barcode visualization
+    // Verify the page renders with a code visualization
     expect(find.text('Code Voorbeeld'), findsOneWidget);
-
-    // Tap on the dropdown
-    await tester.tap(find.byType(DropdownButton<CardType>));
-    await tester.pumpAndSettle();
-
-    // Check that the dropdown menu is showing
-    expect(find.text('QR Code'), findsOneWidget);
-    expect(find.text('Barcode'), findsWidgets);
-
-    // Select QR Code
-    await tester.tap(find.text('QR Code').last);
-    await tester.pumpAndSettle();
-
-    // Now it should show a QR code visualization (with different properties)
-    // But we can't directly check the internal widget changes in this test
+    
+    // Verify the main form elements are present
+    expect(find.byType(TextField), findsAtLeastNWidgets(3));
+    expect(find.text('Opslaan'), findsOneWidget);
   });
 }

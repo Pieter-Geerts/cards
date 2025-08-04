@@ -157,8 +157,17 @@ void main() {
 
       // Initially save button should be disabled (no changes)
       final saveButton = find.byIcon(Icons.save);
-      IconButton saveIconButton = tester.widget(saveButton);
-      expect(saveIconButton.onPressed, isNull);
+      expect(saveButton, findsOneWidget);
+      
+      // Find the IconButton that contains the save icon
+      final saveIconButton = find.ancestor(
+        of: saveButton,
+        matching: find.byType(IconButton),
+      );
+      expect(saveIconButton, findsOneWidget);
+      
+      IconButton button = tester.widget(saveIconButton);
+      expect(button.onPressed, isNull);
 
       // Change only the code value
       final codeField = find.byWidgetPredicate(
@@ -170,8 +179,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // Now save button should be enabled
-      saveIconButton = tester.widget(saveButton);
-      expect(saveIconButton.onPressed, isNotNull);
+      final updatedSaveIconButton = find.ancestor(
+        of: find.byIcon(Icons.save),
+        matching: find.byType(IconButton),
+      );
+      IconButton updatedButton = tester.widget(updatedSaveIconButton);
+      expect(updatedButton.onPressed, isNotNull);
     });
 
     test('CardItem copyWith preserves code value correctly', () {
