@@ -92,8 +92,12 @@ class _CardDetailPageState extends State<CardDetailPage> {
         builder:
             (context) => EditCardPage(
               card: _currentCard,
-              onSave: (updatedCard) {
-                Navigator.of(context).pop(updatedCard);
+              onSave: (updatedCard) async {
+                // Store navigator reference before async gap
+                final navigator = Navigator.of(context);
+                // Save the changes to the database
+                await DatabaseHelper().updateCard(updatedCard);
+                navigator.pop(updatedCard);
               },
             ),
       ),

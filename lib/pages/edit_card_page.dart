@@ -69,7 +69,7 @@ class _EditCardPageState extends State<EditCardPage> {
       bool titleChanged = _titleController.text != widget.card.title;
       bool descChanged = _descController.text != widget.card.description;
       bool nameChanged = _nameController.text != widget.card.name;
-      bool logoChanged = _logoPath != widget.card.logoPath;
+      bool logoChanged = _pendingLogoPath != widget.card.logoPath;
       bool typeChanged = _selectedCardType != widget.card.cardType;
 
       final newHasUnsavedChanges =
@@ -90,24 +90,22 @@ class _EditCardPageState extends State<EditCardPage> {
   void _removeLogo() {
     setState(() {
       _pendingLogoPath = null;
-      _onFieldChanged();
     });
+    _onFieldChanged();
   }
 
   void _save() {
-    setState(() {
-      _logoPath = _pendingLogoPath; // Only apply changes on save
-    });
     final updatedCard = widget.card.copyWith(
       title: _titleController.text.trim(),
       description: _descController.text.trim(),
       name: _nameController.text.trim(),
-      logoPath: _logoPath,
+      logoPath: _pendingLogoPath,
       cardType: _selectedCardType,
     );
     widget.onSave(updatedCard);
     if (mounted) {
       setState(() {
+        _logoPath = _pendingLogoPath; // Update the saved logo path
         _hasUnsavedChanges = false;
       });
       Navigator.of(context).pop();

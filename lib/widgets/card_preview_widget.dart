@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:cards/widgets/logo_avatar_widget.dart';
+import 'package:flutter/material.dart';
 
 class CardPreviewWidget extends StatelessWidget {
   final String? logoPath;

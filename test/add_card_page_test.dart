@@ -1,26 +1,110 @@
-import 'package:cards/l10n/app_localizations.dart';
+import 'package:cards/models/card_item.dart';
 import 'package:cards/pages/add_card_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
 
-Widget createAddCardPage() {
-  return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: const AddCardPage(),
-  );
-}
+import 'helpers/test_helpers.dart';
+import 'mocks/generate_mocks.mocks.dart';
 
 void main() {
-  testWidgets('AddCardPage renders and allows saving', (
+  late MockNavigatorObserver mockNavigatorObserver;
+
+  setUpAll(() async {
+    await setupTestEnvironment();
+  });
+
+  setUp(() {
+    mockNavigatorObserver = MockNavigatorObserver();
+  });
+
+  testWidgets('AddCardPage renders form with empty fields', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(MaterialApp(home: AddCardPage()));
-    await tester.enterText(find.byType(TextField).at(0), 'Test Card');
-    await tester.enterText(find.byType(TextField).at(1), 'Test Description');
-    await tester.enterText(find.byType(TextField).at(2), '123456');
-    await tester.tap(find.byIcon(Icons.check));
+    // Arrange
+    await tester.pumpWidget(
+      TestableWidget(
+        navigatorObservers: [mockNavigatorObserver],
+        child: const AddCardPage(),
+      ),
+    );
     await tester.pumpAndSettle();
-    // No error should occur
+
+    // Assert
+    expect(find.text('Voeg Kaart Toe'), findsOneWidget); // AppBar title
+    expect(find.byType(TextField), findsWidgets); // Input fields
+    expect(
+      find.byType(DropdownButton<CardType>),
+      findsOneWidget,
+    ); // Card type selector
+    expect(find.byIcon(Icons.check), findsOneWidget); // Save button
+  });
+
+  testWidgets('AddCardPage allows filling form and saving', (
+    WidgetTester tester,
+  ) async {
+    // Arrange
+    await tester.pumpWidget(
+      TestableWidget(
+        navigatorObservers: [mockNavigatorObserver],
+        child: const AddCardPage(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Act - fill the form
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Naam van de winkel of service'),
+      'Test Card Title',
+    );
+    await tester.enterText(
+      find.widgetWithText(
+        TextField,
+        'Extra details (bijv. lidmaatschapsnummer)',
+      ),
+      'Test Description',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, 'De code voor de QR/Barcode'),
+      '12345678',
+    );
+
+    // Save the card
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Opslaan'));
+    await tester.pumpAndSettle();
+
+    // Assert - should have popped with a card
+    verify(mockNavigatorObserver.didPop(any, any));
+  });
+
+  testWidgets('AddCardPage changes code visualization based on card type', (
+    WidgetTester tester,
+  ) async {
+    // Arrange
+    await tester.pumpWidget(
+      TestableWidget(
+        navigatorObservers: [mockNavigatorObserver],
+        child: const AddCardPage(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Initially it should show a barcode visualization
+    expect(find.text('Code Voorbeeld'), findsOneWidget);
+
+    // Tap on the dropdown
+    await tester.tap(find.byType(DropdownButton<CardType>));
+    await tester.pumpAndSettle();
+
+    // Check that the dropdown menu is showing
+    expect(find.text('QR Code'), findsOneWidget);
+    expect(find.text('Barcode'), findsWidgets);
+
+    // Select QR Code
+    await tester.tap(find.text('QR Code').last);
+    await tester.pumpAndSettle();
+
+    // Now it should show a QR code visualization (with different properties)
+    // But we can't directly check the internal widget changes in this test
   });
 }

@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:simple_icons/simple_icons.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:simple_icons/simple_icons.dart';
 
 /// Widget to display either a brand logo (SimpleIcons), SVG/file, or initials fallback.
 class LogoAvatarWidget extends StatelessWidget {

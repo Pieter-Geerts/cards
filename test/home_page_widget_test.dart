@@ -1,9 +1,9 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/material.dart';
+import 'package:cards/l10n/app_localizations.dart';
 import 'package:cards/models/card_item.dart';
 import 'package:cards/pages/home_page.dart';
-import 'package:cards/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 Widget createHomePage({
   required List<CardItem> cards,
