@@ -32,6 +32,9 @@ jobs:
         run: |
           echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 -d > android/upload-keystore.jks
 
+      - name: Create assets directory
+        run: mkdir -p assets/icons
+
       - name: Install dependencies
         run: flutter pub get
 

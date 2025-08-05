@@ -12,10 +12,7 @@ Widget createEditCardPage({
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    home: EditCardPage(
-      card: card,
-      onSave: onSave ?? (card) {},
-    ),
+    home: EditCardPage(card: card, onSave: onSave ?? (card) {}),
   );
 }
 
@@ -39,7 +36,9 @@ void main() {
       );
     });
 
-    testWidgets('should display card type dropdown with all options', (WidgetTester tester) async {
+    testWidgets('should display card type dropdown with all options', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createEditCardPage(card: testCard));
       await tester.pumpAndSettle();
 
@@ -56,9 +55,11 @@ void main() {
       expect(find.text('Barcode'), findsWidgets);
     });
 
-    testWidgets('should pre-select current card type', (WidgetTester tester) async {
+    testWidgets('should pre-select current card type', (
+      WidgetTester tester,
+    ) async {
       final barcodeCard = testCard.copyWith(cardType: CardType.barcode);
-      
+
       await tester.pumpWidget(createEditCardPage(card: barcodeCard));
       await tester.pumpAndSettle();
 
@@ -66,7 +67,9 @@ void main() {
       expect(find.text('Barcode'), findsOneWidget);
     });
 
-    testWidgets('should mark as unsaved when changing card type', (WidgetTester tester) async {
+    testWidgets('should mark as unsaved when changing card type', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createEditCardPage(card: testCard));
       await tester.pumpAndSettle();
 
@@ -90,18 +93,25 @@ void main() {
         of: find.byIcon(Icons.save),
         matching: find.byType(IconButton),
       );
-      expect(tester.widget<IconButton>(iconButtonSaveAfter).onPressed, isNotNull);
+      expect(
+        tester.widget<IconButton>(iconButtonSaveAfter).onPressed,
+        isNotNull,
+      );
     });
 
-    testWidgets('should save card with new enum type', (WidgetTester tester) async {
+    testWidgets('should save card with new enum type', (
+      WidgetTester tester,
+    ) async {
       CardItem? savedCard;
-      
-      await tester.pumpWidget(createEditCardPage(
-        card: testCard,
-        onSave: (card) {
-          savedCard = card;
-        },
-      ));
+
+      await tester.pumpWidget(
+        createEditCardPage(
+          card: testCard,
+          onSave: (card) {
+            savedCard = card;
+          },
+        ),
+      );
       await tester.pumpAndSettle();
 
       // Change title to trigger unsaved changes
@@ -141,7 +151,9 @@ void main() {
       expect(tester.widget<IconButton>(iconButtonSave).onPressed, isNull);
 
       // Change only the code value
-      final codeField = find.byType(TextField).at(2); // Assuming code field is third
+      final codeField = find
+          .byType(TextField)
+          .at(2); // Assuming code field is third
       await tester.enterText(codeField, 'UPDATED123');
       await tester.pumpAndSettle();
 
@@ -150,18 +162,25 @@ void main() {
         of: find.byIcon(Icons.save),
         matching: find.byType(IconButton),
       );
-      expect(tester.widget<IconButton>(iconButtonSaveChanged).onPressed, isNotNull);
+      expect(
+        tester.widget<IconButton>(iconButtonSaveChanged).onPressed,
+        isNotNull,
+      );
     });
 
-    testWidgets('should preserve unchanged fields when saving', (WidgetTester tester) async {
+    testWidgets('should preserve unchanged fields when saving', (
+      WidgetTester tester,
+    ) async {
       CardItem? savedCard;
-      
-      await tester.pumpWidget(createEditCardPage(
-        card: testCard,
-        onSave: (card) {
-          savedCard = card;
-        },
-      ));
+
+      await tester.pumpWidget(
+        createEditCardPage(
+          card: testCard,
+          onSave: (card) {
+            savedCard = card;
+          },
+        ),
+      );
       await tester.pumpAndSettle();
 
       // Change only the card type
@@ -187,7 +206,9 @@ void main() {
       expect(savedCard!.cardType, CardType.barcode);
     });
 
-    testWidgets('should show unsaved changes dialog when backing out', (WidgetTester tester) async {
+    testWidgets('should show unsaved changes dialog when backing out', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createEditCardPage(card: testCard));
       await tester.pumpAndSettle();
 
@@ -198,11 +219,11 @@ void main() {
 
       // Instead of testing navigation directly, let's test the unsaved changes tracking
       // The page uses PopScope, so let's verify the _hasUnsavedChanges logic works
-      
+
       // Since we made a change, the page should have unsaved changes
       // We can't easily test the PopScope callback in a unit test, so let's skip this complex test
       // and focus on testing the core functionality that unsaved changes are tracked correctly
-      
+
       // Verify that we have unsaved changes by checking if save button is enabled
       final saveIconButton = find.ancestor(
         of: find.byIcon(Icons.save),
@@ -211,7 +232,9 @@ void main() {
       expect(tester.widget<IconButton>(saveIconButton).onPressed, isNotNull);
     });
 
-    testWidgets('should not show dialog when no changes made', (WidgetTester tester) async {
+    testWidgets('should not show dialog when no changes made', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createEditCardPage(card: testCard));
       await tester.pumpAndSettle();
 
@@ -221,8 +244,8 @@ void main() {
         matching: find.byType(IconButton),
       );
       expect(tester.widget<IconButton>(saveIconButton).onPressed, isNull);
-      
-      // Since navigation testing with PopScope is complex, we'll focus on testing 
+
+      // Since navigation testing with PopScope is complex, we'll focus on testing
       // the core functionality that no unsaved changes are tracked when no edits are made
       expect(find.byType(EditCardPage), findsOneWidget);
     });
