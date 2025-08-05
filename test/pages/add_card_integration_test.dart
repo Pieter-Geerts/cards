@@ -32,7 +32,8 @@ class _TestAddCardDetailsPage extends StatefulWidget {
   });
 
   @override
-  State<_TestAddCardDetailsPage> createState() => _TestAddCardDetailsPageState();
+  State<_TestAddCardDetailsPage> createState() =>
+      _TestAddCardDetailsPageState();
 }
 
 class _TestAddCardDetailsPageState extends State<_TestAddCardDetailsPage> {
@@ -63,12 +64,12 @@ class _TestAddCardDetailsPageState extends State<_TestAddCardDetailsPage> {
     if (value == null || value.trim().isEmpty) {
       return 'Please enter a code value';
     }
-    
+
     final renderer = CodeRendererFactory.getRenderer(_selectedCardType);
     if (!renderer.validateData(value.trim())) {
       return 'Invalid ${_selectedCardType.displayName} data';
     }
-    
+
     return null;
   }
 
@@ -111,17 +112,18 @@ class _TestAddCardDetailsPageState extends State<_TestAddCardDetailsPage> {
                     ),
                   ),
                 ),
-              
+
               // Card type dropdown
               DropdownButtonFormField<CardType>(
                 decoration: const InputDecoration(labelText: 'Card Type'),
                 value: _selectedCardType,
-                items: CardType.values.map((cardType) {
-                  return DropdownMenuItem(
-                    value: cardType,
-                    child: Text(cardType.displayName),
-                  );
-                }).toList(),
+                items:
+                    CardType.values.map((cardType) {
+                      return DropdownMenuItem(
+                        value: cardType,
+                        child: Text(cardType.displayName),
+                      );
+                    }).toList(),
                 onChanged: (CardType? newValue) {
                   if (newValue != null) {
                     setState(() {
@@ -131,18 +133,22 @@ class _TestAddCardDetailsPageState extends State<_TestAddCardDetailsPage> {
                 },
               ),
               const SizedBox(height: 16),
-              
+
               // Code field
               TextFormField(
                 controller: _codeController,
                 decoration: InputDecoration(
-                  labelText: _selectedCardType == CardType.barcode ? 'Barcode Value' : 'QR Code Value',
+                  labelText:
+                      _selectedCardType == CardType.barcode
+                          ? 'Barcode Value'
+                          : 'QR Code Value',
                 ),
                 validator: _validateCode,
-                onChanged: (_) => setState(() {}), // Trigger rebuild for preview
+                onChanged:
+                    (_) => setState(() {}), // Trigger rebuild for preview
               ),
               const SizedBox(height: 16),
-              
+
               // Title field
               TextFormField(
                 controller: _titleController,
@@ -155,20 +161,17 @@ class _TestAddCardDetailsPageState extends State<_TestAddCardDetailsPage> {
                 },
               ),
               const SizedBox(height: 16),
-              
-              // Description field  
+
+              // Description field
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Description'),
                 maxLines: 3,
               ),
               const SizedBox(height: 24),
-              
+
               // Save button
-              ElevatedButton(
-                onPressed: _save,
-                child: const Text('Add Card'),
-              ),
+              ElevatedButton(onPressed: _save, child: const Text('Add Card')),
             ],
           ),
         ),
@@ -184,7 +187,9 @@ void main() {
   });
 
   group('AddCardDetailForm with new enum system', () {
-    testWidgets('should display dropdown with all card types', (WidgetTester tester) async {
+    testWidgets('should display dropdown with all card types', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createAddCardPage());
       await tester.pumpAndSettle();
 
@@ -201,7 +206,9 @@ void main() {
       expect(find.text('Barcode'), findsWidgets);
     });
 
-    testWidgets('should show QR code preview when QR type is selected', (WidgetTester tester) async {
+    testWidgets('should show QR code preview when QR type is selected', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createAddCardPage());
       await tester.pumpAndSettle();
 
@@ -214,7 +221,9 @@ void main() {
       expect(find.byType(DropdownButtonFormField<CardType>), findsOneWidget);
     });
 
-    testWidgets('should show barcode preview when barcode type is selected', (WidgetTester tester) async {
+    testWidgets('should show barcode preview when barcode type is selected', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createAddCardPage());
       await tester.pumpAndSettle();
 
@@ -234,7 +243,9 @@ void main() {
       expect(find.byType(DropdownButtonFormField<CardType>), findsOneWidget);
     });
 
-    testWidgets('should validate barcode data correctly', (WidgetTester tester) async {
+    testWidgets('should validate barcode data correctly', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createAddCardPage());
       await tester.pumpAndSettle();
 
@@ -248,11 +259,11 @@ void main() {
       // Enter invalid barcode data (too short)
       final codeField = find.byType(TextFormField).first;
       await tester.enterText(codeField, 'AB');
-      
+
       // Enter valid title
       final titleField = find.byType(TextFormField).at(1);
       await tester.enterText(titleField, 'Test Card');
-      
+
       await tester.pumpAndSettle();
 
       // Try to save (tap the Add Card button using ElevatedButton finder to be specific)
@@ -264,14 +275,18 @@ void main() {
       expect(find.textContaining('Invalid'), findsAny);
     });
 
-    testWidgets('should create card with correct enum type', (WidgetTester tester) async {
+    testWidgets('should create card with correct enum type', (
+      WidgetTester tester,
+    ) async {
       CardItem? savedCard;
-      
-      await tester.pumpWidget(createAddCardPage(
-        onAddCard: (card) {
-          savedCard = card;
-        },
-      ));
+
+      await tester.pumpWidget(
+        createAddCardPage(
+          onAddCard: (card) {
+            savedCard = card;
+          },
+        ),
+      );
       await tester.pumpAndSettle();
 
       // Change to barcode type
@@ -284,10 +299,10 @@ void main() {
       // Fill in valid data
       final codeField = find.byType(TextFormField).first;
       await tester.enterText(codeField, 'ABC123');
-      
+
       final titleField = find.byType(TextFormField).at(1);
       await tester.enterText(titleField, 'Test Barcode Card');
-      
+
       await tester.pumpAndSettle();
 
       // Save the card
@@ -302,23 +317,27 @@ void main() {
       expect(savedCard!.name, 'ABC123');
     });
 
-    testWidgets('should accept QR code data without special validation', (WidgetTester tester) async {
+    testWidgets('should accept QR code data without special validation', (
+      WidgetTester tester,
+    ) async {
       CardItem? savedCard;
-      
-      await tester.pumpWidget(createAddCardPage(
-        onAddCard: (card) {
-          savedCard = card;
-        },
-      ));
+
+      await tester.pumpWidget(
+        createAddCardPage(
+          onAddCard: (card) {
+            savedCard = card;
+          },
+        ),
+      );
       await tester.pumpAndSettle();
 
       // QR Code is default, fill in data
       final codeField = find.byType(TextFormField).first;
       await tester.enterText(codeField, 'https://example.com/path?param=value');
-      
+
       final titleField = find.byType(TextFormField).at(1);
       await tester.enterText(titleField, 'Test QR Card');
-      
+
       await tester.pumpAndSettle();
 
       // Save the card with scroll to bring button into view
@@ -334,7 +353,9 @@ void main() {
       expect(savedCard!.name, 'https://example.com/path?param=value');
     });
 
-    testWidgets('should update preview when switching card types', (WidgetTester tester) async {
+    testWidgets('should update preview when switching card types', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createAddCardPage());
       await tester.pumpAndSettle();
 
@@ -344,7 +365,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should show QR preview initially - check for any widgets at all since preview might be conditional
-      expect(find.byType(DropdownButtonFormField<CardType>), findsOneWidget); // At least verify the basic structure works
+      expect(
+        find.byType(DropdownButtonFormField<CardType>),
+        findsOneWidget,
+      ); // At least verify the basic structure works
 
       // Change to barcode
       final dropdown = find.byType(DropdownButtonFormField<CardType>);

@@ -1,168 +1,98 @@
-import 'package:cards/l10n/app_localizations.dart';
+import 'package:cards/models/card_item.dart';
 import 'package:cards/pages/add_card_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
 
-Widget createAddCardPage() {
-  return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: const AddCardPage(),
-  );
-}
+import 'helpers/test_helpers.dart';
+import 'mocks/generate_mocks.mocks.dart';
 
 void main() {
-  testWidgets('AddCardPage initial state is Scan mode', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(createAddCardPage());
-    await tester.pumpAndSettle();
-    final AppLocalizations l10n = await AppLocalizations.delegate.load(
-      const Locale('en'),
-    );
+  late MockNavigatorObserver mockNavigatorObserver;
 
-    // Check if the label for the scan mode segment is present
-    expect(find.text(l10n.scanBarcode), findsOneWidget);
-
-    // Instead, check for the scan mode label only, as icon rendering may not be reliable in widget tests
-    expect(find.text(l10n.scanBarcode), findsOneWidget);
-    // Check that manual entry form fields are not visible
-    expect(find.widgetWithText(TextFormField, l10n.title), findsNothing);
+  setUpAll(() async {
+    await setupTestEnvironment();
   });
 
-  testWidgets('AddCardPage switches to Manual Entry mode', (
+  setUp(() {
+    mockNavigatorObserver = MockNavigatorObserver();
+  });
+
+  testWidgets('AddCardPage renders form with empty fields', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(createAddCardPage());
-    await tester.pumpAndSettle();
-
-    final AppLocalizations l10n = await AppLocalizations.delegate.load(
-      const Locale('en'),
+    // Arrange
+    await tester.pumpWidget(
+      TestableWidget(
+        navigatorObservers: [mockNavigatorObserver],
+        child: const AddCardPage(),
+      ),
     );
-    // Tap the Text label of the "Manual Entry" segment
-    await tester.tap(find.text(l10n.manualEntry));
     await tester.pumpAndSettle();
 
-    // Check for manual entry form fields
-    // Initially, the _selectedCardType is QR_CODE, so the label should be qrCodeValue
+    // Assert
+    expect(find.text('Voeg Kaart Toe'), findsOneWidget); // AppBar title
+    expect(find.byType(TextField), findsWidgets); // Input fields
     expect(
+      find.byType(DropdownButton<CardType>),
+      findsOneWidget,
+    ); // Card type selector
+    expect(find.byIcon(Icons.check), findsOneWidget); // Save button
+  });
+
+  testWidgets('AddCardPage allows filling form and saving', (
+    WidgetTester tester,
+  ) async {
+    // Arrange
+    await tester.pumpWidget(
+      TestableWidget(
+        navigatorObservers: [mockNavigatorObserver],
+        child: const AddCardPage(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Act - fill the form
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Naam van de winkel of service'),
+      'Test Card Title',
+    );
+    await tester.enterText(
       find.widgetWithText(
-        TextFormField,
-        l10n.qrCodeValue,
-      ), // Corrected expected label
-      findsOneWidget,
+        TextField,
+        'Extra details (bijv. lidmaatschapsnummer)',
+      ),
+      'Test Description',
     );
-    expect(find.widgetWithText(TextFormField, l10n.title), findsOneWidget);
-    expect(
-      find.widgetWithText(TextFormField, l10n.description),
-      findsOneWidget,
+    await tester.enterText(
+      find.widgetWithText(TextField, 'De code voor de QR/Barcode'),
+      '12345678',
     );
-    expect(find.widgetWithText(ElevatedButton, l10n.addCard), findsOneWidget);
+
+    // Save the card
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Opslaan'));
+    await tester.pumpAndSettle();
+
+    // Assert - should have popped with a card
+    verify(mockNavigatorObserver.didPop(any, any));
   });
 
-  // testWidgets('AddCardPage manual entry form validation and submission', (
-  //   WidgetTester tester,
-  // ) async {
-  //   await tester.pumpWidget(createAddCardPage());
-  //   await tester.pumpAndSettle();
-  //   final AppLocalizations l10n = await AppLocalizations.delegate.load(
-  //     const Locale('en'),
-  //   );
-
-  //   // Switch to Manual Entry by tapping the Text label
-  //   await tester.tap(find.text(l10n.manualEntry));
-  //   await tester.pumpAndSettle();
-
-  //   // Find form fields
-  //   // Initially, the _selectedCardType is QR_CODE
-  //   final valueField = find.widgetWithText(
-  //     TextFormField,
-  //     l10n.qrCodeValue, // Corrected expected label
-  //   );
-  //   final titleField = find.widgetWithText(TextFormField, l10n.title);
-  //   final descriptionField = find.widgetWithText(
-  //     TextFormField,
-  //     l10n.description,
-  //   );
-  //   final addButton = find.widgetWithText(ElevatedButton, l10n.addCard);
-
-  //   // Test validation: Try to submit empty form
-  //   await tester.tap(addButton);
-  //   await tester.pumpAndSettle();
-  //   expect(
-  //     find.text(l10n.validationPleaseEnterValue),
-  //     findsOneWidget,
-  //   ); // For value field
-  //   expect(
-  //     find.text(l10n.validationTitleRequired),
-  //     findsOneWidget,
-  //   ); // For title field
-
-  //   // Enter valid data
-  //   await tester.enterText(valueField, 'ManualData123');
-  //   await tester.enterText(titleField, 'Manual Card');
-  //   await tester.enterText(descriptionField, 'A card added manually');
-  //   await tester.pumpAndSettle();
-
-  //   // Submit form
-  //   await tester.tap(addButton);
-  //   await tester.pumpAndSettle(); // Wait for navigation pop
-
-  //   // Verify that Navigator.pop was called with a CardItem
-  //   // This is harder to test directly without a mock navigator or checking the result.
-  //   // For now, we assume if no validation errors, it tried to pop.
-  //   // If you have a way to check the result of Navigator.pop in tests, use that.
-  //   // For example, if the page was pushed using `tester.pumpWidget(MaterialApp(home: TestWrapper(child: AddCardPage())))`
-  //   // where TestWrapper could capture the pop result.
-
-  //   // Check that validation messages are gone
-  //   // The widget may have popped, so skip this check if the widget is gone
-  //   if (find.text(l10n.validationPleaseEnterValue).evaluate().isNotEmpty) {
-  //     expect(find.text(l10n.validationPleaseEnterValue), findsNothing);
-  //   }
-  //   if (find.text(l10n.validationTitleRequired).evaluate().isNotEmpty) {
-  //     expect(find.text(l10n.validationTitleRequired), findsNothing);
-  //   }
-  // });
-
-  testWidgets('AddCardPage scan success UI appears', (
+  testWidgets('AddCardPage renders with code visualization', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(createAddCardPage());
-    await tester.pumpAndSettle();
-    final AppLocalizations l10n = await AppLocalizations.delegate.load(
-      const Locale('en'),
+    await tester.pumpWidget(
+      TestableWidget(
+        navigatorObservers: [mockNavigatorObserver],
+        child: const AddCardPage(),
+      ),
     );
+    await tester.pumpAndSettle();
 
-    // Simulate a scan. This is tricky. We'll manually trigger the state change
-    // that would happen after a scan. This requires access to the State object.
-    // A more robust way would be to mock the MobileScannerController if possible,
-    // or use an integration test.
-
-    // For a widget test, we can check if the form for adding details appears
-    // when _scannedData is not null.
-    // This part is hard to test in isolation without deeper mocking or refactoring.
-    // We can at least verify the initial state where the form is hidden.
-    expect(
-      find.widgetWithText(TextFormField, l10n.title),
-      findsNothing,
-    ); // Initially hidden in scan mode
-
-    // To test the UI after scan, you would typically:
-    // 1. Get the State object: final state = tester.state< _AddCardPageState>(find.byType(AddCardPage));
-    // 2. Call a method on the state or directly set state variables:
-    //    state.setState(() {
-    //      state._scannedData = "TestData";
-    //      state._detectedFormatString = "QR Code";
-    //      state._isScanning = false;
-    //    });
-    // 3. await tester.pumpAndSettle();
-    // 4. Verify the form fields and success message appear.
-    // This direct state manipulation is generally discouraged but sometimes necessary for hard-to-trigger UI states.
-    // However, _AddCardPageState fields are private.
-
-    // For now, we'll skip the direct simulation of scan success UI in this widget test
-    // due to the complexity of mocking the scanner or private state access.
-    // Focus on what's testable: the manual path and mode switching.
+    // Verify the page renders with a code visualization
+    expect(find.text('Code Voorbeeld'), findsOneWidget);
+    
+    // Verify the main form elements are present
+    expect(find.byType(TextField), findsAtLeastNWidgets(3));
+    expect(find.text('Opslaan'), findsOneWidget);
   });
 }
