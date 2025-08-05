@@ -22,8 +22,14 @@ import 'settings_page.dart';
 class HomePage extends StatefulWidget {
   final List<CardItem> cards;
   final Function(CardItem) onAddCard;
+  final Function(CardItem)? onUpdateCard;
 
-  const HomePage({super.key, required this.cards, required this.onAddCard});
+  const HomePage({
+    super.key,
+    required this.cards,
+    required this.onAddCard,
+    this.onUpdateCard,
+  });
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -330,7 +336,20 @@ class _HomePageState extends State<HomePage> {
                             card: card,
                             onSave: (updated) async {
                               await _dbHelper.updateCard(updated);
-                              widget.onAddCard(updated);
+                              // Use update callback instead of add callback
+                              if (widget.onUpdateCard != null) {
+                                widget.onUpdateCard!(updated);
+                              } else {
+                                // Fallback: update the local list
+                                setState(() {
+                                  final index = _displayedCards.indexWhere(
+                                    (c) => c.id == updated.id,
+                                  );
+                                  if (index != -1) {
+                                    _displayedCards[index] = updated;
+                                  }
+                                });
+                              }
                             },
                           ),
                     ),

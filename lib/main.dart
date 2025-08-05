@@ -90,6 +90,18 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  Future<void> _updateCard(CardItem card) async {
+    final index = _cards.indexWhere((c) => c.id == card.id);
+    if (index != -1) {
+      setState(() {
+        _cards[index] = card;
+      });
+    } else {
+      // If card not found, reload all cards to be safe
+      await _loadCards();
+    }
+  }
+
   Future<void> _addCard(CardItem card) async {
     // Remove example cards if user adds a real card
     if (card.title == "##DELETE_CARD_SIGNAL##" &&
@@ -133,7 +145,13 @@ class _MyAppState extends State<MyApp> {
       locale: _locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: HomePage(cards: _cards, onAddCard: _addCard),
+      home: HomePage(
+        cards: _cards,
+        onAddCard: _addCard,
+        onUpdateCard: _updateCard,
+      ),
     );
   }
 }
+
+// Pre-commit hook test

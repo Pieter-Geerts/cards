@@ -210,146 +210,157 @@ class _CardDetailPageState extends State<CardDetailPage> {
       background: theme.colorScheme.surface,
     );
 
-    return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      appBar: AppBar(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          Navigator.of(context).pop(_currentCard);
+        }
+      },
+      child: Scaffold(
         backgroundColor: theme.colorScheme.surface,
-        elevation: 0,
-        leading: BackButton(color: theme.colorScheme.onSurface),
-        titleSpacing: 0,
-        title: Row(
-          children: [
-            if (_currentCard.logoPath != null &&
-                _currentCard.logoPath!.isNotEmpty)
-              Padding(padding: const EdgeInsets.only(right: 12.0), child: logo),
-            Expanded(
-              child: Text(
-                _currentCard.title,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  color: theme.colorScheme.onSurface,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 26,
-                  letterSpacing: 0.5,
+        appBar: AppBar(
+          backgroundColor: theme.colorScheme.surface,
+          elevation: 0,
+          leading: BackButton(color: theme.colorScheme.onSurface),
+          titleSpacing: 0,
+          title: Row(
+            children: [
+              if (_currentCard.logoPath != null &&
+                  _currentCard.logoPath!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: logo,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              Expanded(
+                child: Text(
+                  _currentCard.title,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: theme.colorScheme.onSurface,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 26,
+                    letterSpacing: 0.5,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+            ],
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.share, color: theme.colorScheme.onSurface),
+              tooltip: l10n.shareAsImage, // Changed from l10n.share
+              onPressed: _shareCardAsImage, // Changed to call _shareCardAsImage
             ),
+            IconButton(
+              icon: Icon(Icons.edit, color: theme.colorScheme.onSurface),
+              tooltip: l10n.edit,
+              onPressed: _startEditing,
+            ),
+            if (widget.onDelete != null)
+              IconButton(
+                icon: Icon(Icons.delete, color: theme.colorScheme.onSurface),
+                tooltip: l10n.delete,
+                onPressed: () => _deleteCard(context),
+              ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.share, color: theme.colorScheme.onSurface),
-            tooltip: l10n.shareAsImage, // Changed from l10n.share
-            onPressed: _shareCardAsImage, // Changed to call _shareCardAsImage
-          ),
-          IconButton(
-            icon: Icon(Icons.edit, color: theme.colorScheme.onSurface),
-            tooltip: l10n.edit,
-            onPressed: _startEditing,
-          ),
-          if (widget.onDelete != null)
-            IconButton(
-              icon: Icon(Icons.delete, color: theme.colorScheme.onSurface),
-              tooltip: l10n.delete,
-              onPressed: () => _deleteCard(context),
-            ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // --- Prominent White Card for Code ---
-            Padding(
-              padding: const EdgeInsets.only(
-                top: 36.0,
-                left: 20,
-                right: 20,
-                bottom: 0,
-              ),
-              child: Center(
-                child: Card(
-                  color: Colors.white,
-                  elevation: isDark ? 16 : 8,
-                  shadowColor:
-                      isDark
-                          ? Colors.black.withAlpha(115) // 0.45 * 255 ≈ 115
-                          : Colors.black26,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(32),
-                  ),
-                  child: Container(
-                    width: availableWidth,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 32,
-                      horizontal: 28,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Barcode or QR code
-                        _buildCodeWidget(availableWidth - 56),
-                        const SizedBox(height: 18),
-                        // Human-readable code value (only for barcodes, not QR codes)
-                        if (_currentCard.isBarcode)
-                          Text(
-                            _currentCard.name,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 22,
-                              letterSpacing: 1.2,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // --- Description/Notes Section ---
-            if (_currentCard.description.isNotEmpty)
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // --- Prominent White Card for Code ---
               Padding(
-                padding: const EdgeInsets.fromLTRB(32, 32, 32, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.description,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        color:
-                            isDark
-                                ? theme.colorScheme.onSurface.withAlpha(
-                                  179,
-                                ) // 0.7 * 255 ≈ 179
-                                : Colors.grey[800],
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                padding: const EdgeInsets.only(
+                  top: 36.0,
+                  left: 20,
+                  right: 20,
+                  bottom: 0,
+                ),
+                child: Center(
+                  child: Card(
+                    color: Colors.white,
+                    elevation: isDark ? 16 : 8,
+                    shadowColor:
+                        isDark
+                            ? Colors.black.withAlpha(115) // 0.45 * 255 ≈ 115
+                            : Colors.black26,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    child: Container(
+                      width: availableWidth,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 32,
+                        horizontal: 28,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Barcode or QR code
+                          _buildCodeWidget(availableWidth - 56),
+                          const SizedBox(height: 18),
+                          // Human-readable code value (only for barcodes, not QR codes)
+                          if (_currentCard.isBarcode)
+                            Text(
+                              _currentCard.name,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 22,
+                                letterSpacing: 1.2,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _currentCard.description,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color:
-                            isDark
-                                ? theme.colorScheme.onSurface.withAlpha(
-                                  217,
-                                ) // 0.85 * 255 ≈ 217
-                                : Colors.grey[900],
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            const SizedBox(height: 48),
-          ],
+              // --- Description/Notes Section ---
+              if (_currentCard.description.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(32, 32, 32, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.description,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color:
+                              isDark
+                                  ? theme.colorScheme.onSurface.withAlpha(
+                                    179,
+                                  ) // 0.7 * 255 ≈ 179
+                                  : Colors.grey[800],
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _currentCard.description,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color:
+                              isDark
+                                  ? theme.colorScheme.onSurface.withAlpha(
+                                    217,
+                                  ) // 0.85 * 255 ≈ 217
+                                  : Colors.grey[900],
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 48),
+            ],
+          ),
         ),
       ),
     );
