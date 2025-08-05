@@ -16,12 +16,15 @@ void main() {
     test('should throw UnsupportedError for unregistered card type', () {
       // Since we can't create new enum values, we'll test the error handling
       // by temporarily removing a renderer and trying to get it
-      expect(() => CodeRendererFactory.getRenderer(CardType.qrCode), returnsNormally);
+      expect(
+        () => CodeRendererFactory.getRenderer(CardType.qrCode),
+        returnsNormally,
+      );
     });
 
     test('should return all supported types', () {
       final supportedTypes = CodeRendererFactory.supportedTypes;
-      
+
       expect(supportedTypes, contains(CardType.qrCode));
       expect(supportedTypes, contains(CardType.barcode));
       expect(supportedTypes.length, 2);
@@ -30,14 +33,16 @@ void main() {
     test('should allow registering new renderers', () {
       // Create a mock renderer for testing
       final mockRenderer = MockCodeRenderer();
-      
+
       // Register it for QR code (temporarily replacing the existing one)
       CodeRendererFactory.registerRenderer(CardType.qrCode, mockRenderer);
-      
+
       // Verify it was registered
-      final retrievedRenderer = CodeRendererFactory.getRenderer(CardType.qrCode);
+      final retrievedRenderer = CodeRendererFactory.getRenderer(
+        CardType.qrCode,
+      );
       expect(retrievedRenderer, equals(mockRenderer));
-      
+
       // Restore the original renderer
       CodeRendererFactory.registerRenderer(CardType.qrCode, QRCodeRenderer());
     });
@@ -63,23 +68,25 @@ void main() {
 
     testWidgets('should render code widget', (WidgetTester tester) async {
       const testData = 'Test QR Data';
-      
+
       final widget = renderer.renderCode(testData);
-      
+
       await tester.pumpWidget(MaterialApp(home: Scaffold(body: widget)));
-      
+
       // Verify that the widget renders without errors
       expect(find.byType(MaterialApp), findsOneWidget);
       expect(find.byType(Scaffold), findsOneWidget);
     });
 
-    testWidgets('should render sharing widget with correct size', (WidgetTester tester) async {
+    testWidgets('should render sharing widget with correct size', (
+      WidgetTester tester,
+    ) async {
       const testData = 'Test QR Data';
-      
+
       final widget = renderer.renderForSharing(testData, size: 400);
-      
+
       await tester.pumpWidget(MaterialApp(home: Scaffold(body: widget)));
-      
+
       expect(find.byType(MaterialApp), findsOneWidget);
       expect(find.byType(Scaffold), findsOneWidget);
     });
@@ -100,7 +107,7 @@ void main() {
       expect(renderer.validateData('ABC123'), true);
       expect(renderer.validateData('123456789'), true);
       expect(renderer.validateData('VALID123'), true);
-      
+
       expect(renderer.validateData(''), false); // empty
       expect(renderer.validateData('AB'), false); // too short
       expect(renderer.validateData('ABC@123'), false); // invalid characters
@@ -109,22 +116,24 @@ void main() {
 
     testWidgets('should render code widget', (WidgetTester tester) async {
       const testData = 'ABC123';
-      
+
       final widget = renderer.renderCode(testData);
-      
+
       await tester.pumpWidget(MaterialApp(home: Scaffold(body: widget)));
-      
+
       expect(find.byType(MaterialApp), findsOneWidget);
       expect(find.byType(Scaffold), findsOneWidget);
     });
 
-    testWidgets('should render sharing widget with correct size', (WidgetTester tester) async {
+    testWidgets('should render sharing widget with correct size', (
+      WidgetTester tester,
+    ) async {
       const testData = 'ABC123';
-      
+
       final widget = renderer.renderForSharing(testData, size: 400);
-      
+
       await tester.pumpWidget(MaterialApp(home: Scaffold(body: widget)));
-      
+
       expect(find.byType(MaterialApp), findsOneWidget);
       expect(find.byType(Scaffold), findsOneWidget);
     });
@@ -137,7 +146,12 @@ class MockCodeRenderer implements CodeRenderer {
   String get displayName => 'Mock Renderer';
 
   @override
-  Widget renderCode(String data, {double? size, double? width, double? height}) {
+  Widget renderCode(
+    String data, {
+    double? size,
+    double? width,
+    double? height,
+  }) {
     return const Text('Mock Code Widget');
   }
 

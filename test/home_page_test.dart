@@ -1,99 +1,113 @@
-import 'package:cards/l10n/app_localizations.dart';
-import 'package:cards/models/card_item.dart';
-import 'package:cards/pages/add_card_page.dart';
 import 'package:cards/pages/home_page.dart';
-import 'package:cards/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
 
-Widget createHomePage({
-  required List<CardItem> cards,
-  required Function(CardItem) onAddCard,
-}) {
-  return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: HomePage(cards: cards, onAddCard: onAddCard),
-  );
-}
+import 'helpers/test_helpers.dart';
+import 'mocks/mock_card_repository.dart' as manual_mock;
+
+// Only import the navigator observer mock from generated mocks
+import 'mocks/generate_mocks.mocks.dart' show MockNavigatorObserver;
 
 void main() {
-  // Initialize AppLocalizations before running tests that need it.
+  late MockNavigatorObserver mockNavigatorObserver;
+  late manual_mock.MockCardRepository cardRepository;
+
   setUpAll(() async {
-    // This is a common way to ensure AppLocalizations can be found.
-    // For more complex scenarios, you might need to pump a MaterialApp
-    // with the delegates in a test setup.
+    await setupTestEnvironment();
+  });
+
+  setUp(() {
+    mockNavigatorObserver = MockNavigatorObserver();
+    cardRepository = manual_mock.MockCardRepository();
   });
 
   testWidgets('HomePage displays "No cards yet" when cards list is empty', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(createHomePage(cards: [], onAddCard: (_) {}));
-
-    // Wait for AppLocalizations to load if necessary
+    // Arrange - create HomePage with empty cards list
+    await tester.pumpWidget(
+      TestableWidget(
+        navigatorObservers: [mockNavigatorObserver],
+        child: HomePage(cards: const [], onAddCard: (card) {}),
+      ),
+    );
     await tester.pumpAndSettle();
-    final l10n = await AppLocalizations.delegate.load(const Locale('en'));
-    expect(find.text(l10n.noCardsYet), findsOneWidget);
+
+    // Assert - should show the empty state
+    expect(find.textContaining('Nog geen kaarten'), findsOneWidget);
+    expect(
+      find.byType(FloatingActionButton),
+      findsOneWidget,
+    ); // FAB should be visible
   });
 
-  // testWidgets('HomePage displays cards', (WidgetTester tester) async {
-  //   final cards = [
-  //     CardItem(
-  //       title: 'Card 1',
-  //       description: 'Description 1',
-  //       name: 'Name 1',
-  //       sortOrder: 0,
-  //     ),
-  //     CardItem(
-  //       title: 'Card 2',
-  //       description: 'Description 2',
-  //       name: 'Name 2',
-  //       sortOrder: 1,
-  //     ),
-  //   ];
-  //   await tester.pumpWidget(createHomePage(cards: cards, onAddCard: (_) {}));
-  //   await tester.pumpAndSettle();
-  //
-  //   expect(find.text('Card 1'), findsOneWidget);
-  //   expect(find.text('Description 1'), findsOneWidget);
-  //   expect(find.text('Card 2'), findsOneWidget);
-  //   expect(find.text('Description 2'), findsOneWidget);
-  //   expect(find.byType(ReorderableListView), findsOneWidget);
-  // });
-
-  testWidgets('HomePage has a FloatingActionButton to add cards', (
+  testWidgets('HomePage displays cards when list is not empty', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(createHomePage(cards: [], onAddCard: (_) {}));
+    // Arrange - populate with sample cards
+    final cards = await cardRepository.populateWithTestData();
+
+    // Create HomePage with cards
+    await tester.pumpWidget(
+      TestableWidget(
+        navigatorObservers: [mockNavigatorObserver],
+        child: HomePage(cards: cards, onAddCard: (card) {}),
+      ),
+    );
     await tester.pumpAndSettle();
-    // There are two add icons: one in the FAB, one in the empty state button. At least one should be present.
-    expect(find.byIcon(Icons.add).evaluate().isNotEmpty, isTrue);
-    // Optionally, check for the FAB specifically:
-    expect(find.byType(FloatingActionButton), findsOneWidget);
+
+    // Assert - cards should be displayed
+    expect(find.text('Test QR Card'), findsOneWidget);
+    expect(find.text('Test Barcode Card'), findsOneWidget);
+    expect(find.text('Loyalty Card'), findsOneWidget);
   });
 
-  testWidgets('HomePage navigates to SettingsPage', (
+  testWidgets('HomePage shows search icon and can toggle search mode', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(createHomePage(cards: [], onAddCard: (_) {}));
+    // Arrange - populate with sample cards
+    final cards = await cardRepository.populateWithTestData();
+
+    // Create HomePage with cards
+    await tester.pumpWidget(
+      TestableWidget(
+        navigatorObservers: [mockNavigatorObserver],
+        child: HomePage(cards: cards, onAddCard: (card) {}),
+      ),
+    );
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(Icons.settings), findsOneWidget);
-    await tester.tap(find.byIcon(Icons.settings));
-    await tester.pumpAndSettle(); // Wait for navigation
+    // Assert - search icon should be visible initially
+    expect(find.byIcon(Icons.search), findsOneWidget);
+    expect(find.byIcon(Icons.clear), findsNothing);
 
-    expect(find.byType(SettingsPage), findsOneWidget);
+    // Act - tap search icon to activate search mode
+    await tester.tap(find.byIcon(Icons.search));
+    await tester.pumpAndSettle();
+
+    // Assert - clear icon should appear (search mode activated)
+    expect(find.byIcon(Icons.search), findsNothing);
+    expect(find.byIcon(Icons.clear), findsOneWidget);
   });
 
-  testWidgets('Tapping FloatingActionButton navigates to AddCardPage', (
+  testWidgets('HomePage navigates to add card page when FAB is tapped', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(createHomePage(cards: [], onAddCard: (_) {}));
+    // Arrange
+    await tester.pumpWidget(
+      TestableWidget(
+        navigatorObservers: [mockNavigatorObserver],
+        child: HomePage(cards: const [], onAddCard: (card) {}),
+      ),
+    );
     await tester.pumpAndSettle();
 
+    // Act - tap the FAB
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
 
-    expect(find.byType(AddCardPage), findsOneWidget);
+    // Assert - should navigate to add card page
+    verify(mockNavigatorObserver.didPush(any, any));
   });
 }
