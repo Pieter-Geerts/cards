@@ -158,14 +158,14 @@ void main() {
       // Initially save button should be disabled (no changes)
       final saveButton = find.byIcon(Icons.save);
       expect(saveButton, findsOneWidget);
-      
+
       // Find the IconButton that contains the save icon
       final saveIconButton = find.ancestor(
         of: saveButton,
         matching: find.byType(IconButton),
       );
       expect(saveIconButton, findsOneWidget);
-      
+
       IconButton button = tester.widget(saveIconButton);
       expect(button.onPressed, isNull);
 

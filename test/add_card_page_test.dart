@@ -90,7 +90,7 @@ void main() {
 
     // Verify the page renders with a code visualization
     expect(find.text('Code Voorbeeld'), findsOneWidget);
-    
+
     // Verify the main form elements are present
     expect(find.byType(TextField), findsAtLeastNWidgets(3));
     expect(find.text('Opslaan'), findsOneWidget);
