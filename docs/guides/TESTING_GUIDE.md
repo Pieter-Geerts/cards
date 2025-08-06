@@ -24,6 +24,116 @@ Located in `test/integration/`, testing end-to-end flows:
 
 - Complete user journeys
 - Cross-feature interactions
+- **Note**: Some integration tests are marked as 'slow' and may take several minutes
+
+## Test Execution
+
+### Running All Tests
+
+```bash
+flutter test
+```
+
+### Running Fast Tests Only (Excludes Slow Integration Tests)
+
+```bash
+flutter test --exclude-tags=slow
+```
+
+### Running Only Slow Tests
+
+```bash
+flutter test --tags=slow
+```
+
+### Running Only Integration Tests
+
+```bash
+flutter test --tags=integration
+```
+
+### Running Fast Integration Tests Only
+
+```bash
+flutter test --tags=fast
+```
+
+### Running Unit Tests Only
+
+```bash
+flutter test test/unit/
+```
+
+## Test Performance Optimization
+
+### Fast vs Slow Integration Tests
+
+To improve development workflow, integration tests are categorized into two types:
+
+#### Fast Integration Tests (`tags: ['integration', 'fast']`)
+
+- **Execution Time**: Seconds
+- **Approach**: Use mocks and simple test widgets
+- **Purpose**: Quick feedback during development
+- **Example**: `test/integration/edit_card_ui_update_test.dart`
+
+```dart
+// Fast test pattern using mocks
+testWidgets('component updates data through callback', (tester) async {
+  await tester.pumpWidget(TestableWidget(
+    child: TestCardEditWidget(card: testCard, onSave: callback),
+  ));
+  // Test individual component behavior
+});
+```
+
+#### Slow Integration Tests (`tags: ['integration', 'slow', 'e2e']`)
+
+- **Execution Time**: Minutes (3+ minutes)
+- **Approach**: Real app with actual database
+- **Purpose**: End-to-end validation before release
+- **Example**: `test/integration/edit_card_ui_update_slow_test.dart`
+
+```dart
+// Slow test pattern using real app
+testWidgets('complete user workflow', (tester) async {
+  await tester.pumpWidget(const MyApp());
+  // Full user interaction with real database
+});
+```
+
+### Performance Benefits
+
+The fast test approach provides:
+
+- ✅ **10x faster execution** (seconds vs minutes)
+- ✅ **No database setup overhead**
+- ✅ **Predictable test data**
+- ✅ **Better development feedback loop**
+
+### Recommended Workflow
+
+1. **During Development**: Run fast tests only
+
+   ```bash
+   flutter test --exclude-tags=slow
+   ```
+
+2. **Before Committing**: Run fast tests + unit tests
+
+   ```bash
+   flutter test test/unit/ && flutter test --tags=fast
+   ```
+
+3. **Before Release**: Run complete test suite
+
+   ```bash
+   flutter test
+   ```
+
+### Pre-commit Hook
+
+The pre-commit hook runs only fast unit tests (`test/unit/` and `test/mocks/`) to keep commit times reasonable. Full integration tests should be run manually or in CI.
 
 ## Mock Infrastructure
 

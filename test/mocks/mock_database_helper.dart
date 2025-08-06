@@ -46,4 +46,21 @@ class MockDatabaseHelper extends Mock implements DatabaseHelper {
     _cardsStore.clear();
     _nextId = 1;
   }
+
+  @override
+  Future<int> getNextSortOrder() async {
+    if (_cardsStore.isEmpty) {
+      return 0;
+    }
+    final maxOrder = _cardsStore.values
+        .map((card) => card.sortOrder)
+        .reduce((a, b) => a > b ? a : b);
+    return maxOrder + 1;
+  }
+
+  // Reset method for testing - clears all data and resets state
+  void reset() {
+    _cardsStore.clear();
+    _nextId = 1;
+  }
 }
