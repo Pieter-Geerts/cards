@@ -105,18 +105,28 @@ jobs:
           fi
 
       - name: Set up Android signing (if available)
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          # Decode and save keystore
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/upload-keystore.jks
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "Setting up Android signing..."
+            # Decode and save keystore
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/upload-keystore.jks
 
-          # Create key.properties
-          cat > android/key.properties << EOF
-          storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}
-          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
-          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+            # Create key.properties
+            cat > android/key.properties << EOF
+          storePassword=$ANDROID_STORE_PASSWORD
+          keyPassword=$ANDROID_KEY_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
           storeFile=upload-keystore.jks
           EOF
+            echo "Android signing configured"
+          else
+            echo "Android signing secrets not available, building unsigned APK"
+          fi
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
 
       - name: Build Android App Bundle (AAB)
         run: flutter build appbundle --release
@@ -162,7 +172,7 @@ jobs:
     name: Upload to Google Play Store
     runs-on: ubuntu-latest
     needs: [pre-checks, build-android]
-    if: ${{ inputs.upload_to_play_store && secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+    if: ${{ inputs.upload_to_play_store }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -173,7 +183,20 @@ jobs:
           name: app-release-aab-v${{ needs.pre-checks.outputs.version }}
           path: build/app/outputs/bundle/release/
 
+      - name: Check Google Play secrets
+        id: check-secrets
+        run: |
+          if [ -n "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "available=true" >> $GITHUB_OUTPUT
+          else
+            echo "available=false" >> $GITHUB_OUTPUT
+            echo "::warning::Google Play Service Account JSON not available. Skipping upload."
+          fi
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+
       - name: Upload to Google Play Store
+        if: steps.check-secrets.outputs.available == 'true'
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
@@ -218,11 +241,11 @@ jobs:
           echo "2. **Direct Install**: Download and install the APK file" >> release-notes.md
 
       - name: Create Release
-        uses: ncipollo/create-release@v1
+        uses: softprops/action-gh-release@v1
         with:
-          artifacts: "release-artifacts/*"
-          bodyFile: release-notes.md
-          tag: ${{ github.ref_name }}
+          files: "release-artifacts/*"
+          body_path: release-notes.md
+          tag_name: ${{ github.ref_name }}
           name: Release ${{ needs.pre-checks.outputs.version }}
           draft: false
           prerelease: false

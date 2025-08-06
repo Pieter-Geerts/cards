@@ -179,86 +179,87 @@ void main() {
       expect(retrievedCard!.name, 'FLOWUPDATED789');
     });
 
-    testWidgets('BUGFIX: UI updates should be reflected when cards are edited', (
-      WidgetTester tester,
-    ) async {
-      // This test demonstrates the fix for the UI update bug
-      bool updateCallbackCalled = false;
-      CardItem? updatedCardFromCallback;
+    testWidgets(
+      'BUGFIX: UI updates should be reflected when cards are edited',
+      (WidgetTester tester) async {
+        // This test demonstrates the fix for the UI update bug
+        bool updateCallbackCalled = false;
+        CardItem? updatedCardFromCallback;
 
-      final originalCard = CardItem(
-        id: 1,
-        title: 'Original Title',
-        description: 'Original Description',
-        name: 'ORIGINAL123',
-        cardType: CardType.barcode,
-        sortOrder: 0,
-      );
+        final originalCard = CardItem(
+          id: 1,
+          title: 'Original Title',
+          description: 'Original Description',
+          name: 'ORIGINAL123',
+          cardType: CardType.barcode,
+          sortOrder: 0,
+        );
 
-      // Create a HomePage-like widget that handles updates
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: Builder(
-              builder: (context) {
-                return ElevatedButton(
-                  onPressed: () async {
-                    // Simulate the fixed edit flow
-                    await Navigator.push<CardItem>(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => EditCardPage(
-                              card: originalCard,
-                              onSave: (updated) async {
-                                // This simulates the fix: proper update callback
-                                updateCallbackCalled = true;
-                                updatedCardFromCallback = updated;
-                                Navigator.of(context).pop(updated);
-                              },
-                            ),
-                      ),
-                    );
-                  },
-                  child: const Text('Edit Card'),
-                );
-              },
+        // Create a HomePage-like widget that handles updates
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: Builder(
+                builder: (context) {
+                  return ElevatedButton(
+                    onPressed: () async {
+                      // Simulate the fixed edit flow
+                      await Navigator.push<CardItem>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditCardPage(
+                            card: originalCard,
+                            onSave: (updated) async {
+                              // This simulates the fix: proper update callback
+                              updateCallbackCalled = true;
+                              updatedCardFromCallback = updated;
+                              Navigator.of(context).pop(updated);
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('Edit Card'),
+                  );
+                },
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Trigger edit
-      await tester.tap(find.text('Edit Card'));
-      await tester.pumpAndSettle();
+        // Trigger edit
+        await tester.tap(find.text('Edit Card'));
+        await tester.pumpAndSettle();
 
-      // Change title
-      final titleField = find.byType(TextField).first;
-      await tester.enterText(titleField, 'Updated Title');
-      await tester.pumpAndSettle();
+        // Change title
+        final titleField = find.byType(TextField).first;
+        await tester.enterText(titleField, 'Updated Title');
+        await tester.pumpAndSettle();
 
-      // Change code value
-      final codeField = find.byType(TextField).at(2);
-      await tester.enterText(codeField, 'UPDATED456');
-      await tester.pumpAndSettle();
+        // Change code value
+        final codeField = find.byType(TextField).at(2);
+        await tester.enterText(codeField, 'UPDATED456');
+        await tester.pumpAndSettle();
 
-      // Save
-      final saveButton = find.byIcon(Icons.save);
-      await tester.tap(saveButton);
-      await tester.pumpAndSettle();
+        // Save
+        final saveButton = find.byIcon(Icons.save);
+        await tester.tap(saveButton);
+        await tester.pumpAndSettle();
 
-      // BUGFIX VERIFICATION: Update callback should be called
-      expect(updateCallbackCalled, true);
-      expect(updatedCardFromCallback, isNotNull);
-      expect(updatedCardFromCallback!.title, 'Updated Title');
-      expect(updatedCardFromCallback!.name, 'UPDATED456');
-      expect(
-        updatedCardFromCallback!.description,
-        'Original Description',
-      ); // Preserved
-    });
+        // BUGFIX VERIFICATION: Update callback should be called
+        expect(updateCallbackCalled, true);
+        expect(updatedCardFromCallback, isNotNull);
+        expect(updatedCardFromCallback!.title, 'Updated Title');
+        expect(updatedCardFromCallback!.name, 'UPDATED456');
+        expect(
+          updatedCardFromCallback!.description,
+          'Original Description',
+        ); // Preserved
+      },
+    );
   });
 }
+Formatted 1 file (1 changed) in 0.28 seconds.

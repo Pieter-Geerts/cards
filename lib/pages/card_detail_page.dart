@@ -12,7 +12,7 @@ import '../helpers/database_helper.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../pages/edit_card_page.dart';
-import '../pages/home_page.dart' show buildLogoWidget;
+import '../widgets/logo_avatar_widget.dart';
 
 class CardDetailPage extends StatefulWidget {
   final CardItem card;
@@ -72,13 +72,11 @@ class _CardDetailPageState extends State<CardDetailPage> {
 
   Future<void> _restoreOriginalBrightness() async {
     try {
-      // Restore original brightness if we stored it
       if (_originalBrightness != null) {
         final screenBrightness = ScreenBrightness();
         await screenBrightness.setScreenBrightness(_originalBrightness!);
       }
 
-      // Restore system UI
       SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
 
       debugPrint('Screen brightness restored to original level');
@@ -91,15 +89,14 @@ class _CardDetailPageState extends State<CardDetailPage> {
     final updated = await Navigator.push<CardItem>(
       context,
       MaterialPageRoute(
-        builder:
-            (context) => EditCardPage(
-              card: _currentCard,
-              onSave: (updatedCard) async {
-                // BUGFIX: Save to database first
-                await DatabaseHelper().updateCard(updatedCard);
-                Navigator.of(context).pop(updatedCard);
-              },
-            ),
+        builder: (context) => EditCardPage(
+          card: _currentCard,
+          onSave: (updatedCard) async {
+            // BUGFIX: Save to database first
+            await DatabaseHelper().updateCard(updatedCard);
+            Navigator.of(context).pop(updatedCard);
+          },
+        ),
       ),
     );
     if (updated != null) {
@@ -117,21 +114,20 @@ class _CardDetailPageState extends State<CardDetailPage> {
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(l10n.deleteCard),
-            content: Text(l10n.deleteConfirmation),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                child: Text(l10n.delete),
-              ),
-            ],
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.deleteCard),
+        content: Text(l10n.deleteConfirmation),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
           ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
     );
 
     // Early return if widget is unmounted
@@ -183,10 +179,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
         if (byteData != null) {
           final pngBytes = byteData.buffer.asUint8List();
           final tempDir = await getTemporaryDirectory();
-          final file =
-              await File(
-                '${tempDir.path}/card_${_currentCard.id ?? _currentCard.name}.png',
-              ).create();
+          final file = await File(
+            '${tempDir.path}/card_${_currentCard.id ?? _currentCard.name}.png',
+          ).create();
           await file.writeAsBytes(pngBytes);
           await Share.shareXFiles([XFile(file.path)], text: _currentCard.title);
         }
@@ -202,11 +197,12 @@ class _CardDetailPageState extends State<CardDetailPage> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final availableWidth = MediaQuery.of(context).size.width * 0.88;
-    final logo = buildLogoWidget(
-      _currentCard.logoPath,
+    // Use LogoAvatarWidget directly for logo rendering
+    final logo = LogoAvatarWidget(
+      logoKey: _currentCard.logoPath,
+      title: _currentCard.title,
       size: 36,
       background: theme.colorScheme.surface,
-      title: _currentCard.title,
     );
 
     return PopScope(
@@ -282,10 +278,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
                   child: Card(
                     color: Colors.white,
                     elevation: isDark ? 16 : 8,
-                    shadowColor:
-                        isDark
-                            ? Colors.black.withAlpha(115) // 0.45 * 255 ≈ 115
-                            : Colors.black26,
+                    shadowColor: isDark
+                        ? Colors.black.withAlpha(115) // 0.45 * 255 ≈ 115
+                        : Colors.black26,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(32),
                     ),
@@ -331,12 +326,11 @@ class _CardDetailPageState extends State<CardDetailPage> {
                       Text(
                         l10n.description,
                         style: theme.textTheme.titleSmall?.copyWith(
-                          color:
-                              isDark
-                                  ? theme.colorScheme.onSurface.withAlpha(
-                                    179,
-                                  ) // 0.7 * 255 ≈ 179
-                                  : Colors.grey[800],
+                          color: isDark
+                              ? theme.colorScheme.onSurface.withAlpha(
+                                  179,
+                                ) // 0.7 * 255 ≈ 179
+                              : Colors.grey[800],
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                         ),
@@ -345,12 +339,11 @@ class _CardDetailPageState extends State<CardDetailPage> {
                       Text(
                         _currentCard.description,
                         style: theme.textTheme.bodyLarge?.copyWith(
-                          color:
-                              isDark
-                                  ? theme.colorScheme.onSurface.withAlpha(
-                                    217,
-                                  ) // 0.85 * 255 ≈ 217
-                                  : Colors.grey[900],
+                          color: isDark
+                              ? theme.colorScheme.onSurface.withAlpha(
+                                  217,
+                                ) // 0.85 * 255 ≈ 217
+                              : Colors.grey[900],
                           fontSize: 16,
                         ),
                       ),
@@ -475,19 +468,18 @@ class _CardEditFormState extends State<_CardEditForm> {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed:
-                      _canSave
-                          ? () {
-                            if (_formKey.currentState!.validate()) {
-                              widget.onSave(
-                                widget.card.copyWith(
-                                  title: _titleController.text.trim(),
-                                  description: _descController.text.trim(),
-                                ),
-                              );
-                            }
+                  onPressed: _canSave
+                      ? () {
+                          if (_formKey.currentState!.validate()) {
+                            widget.onSave(
+                              widget.card.copyWith(
+                                title: _titleController.text.trim(),
+                                description: _descController.text.trim(),
+                              ),
+                            );
                           }
-                          : null,
+                        }
+                      : null,
                   child: Text('Save'),
                 ),
               ],
