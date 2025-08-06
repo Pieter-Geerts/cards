@@ -4,9 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 
 import 'helpers/test_helpers.dart';
+import 'mocks/mock_card_repository.dart' as manual_mock;
+
 // Only import the navigator observer mock from generated mocks
 import 'mocks/generate_mocks.mocks.dart' show MockNavigatorObserver;
-import 'mocks/mock_card_repository.dart' as manual_mock;
 
 void main() {
   late MockNavigatorObserver mockNavigatorObserver;

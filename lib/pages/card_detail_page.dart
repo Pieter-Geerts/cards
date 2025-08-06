@@ -89,14 +89,17 @@ class _CardDetailPageState extends State<CardDetailPage> {
     final updated = await Navigator.push<CardItem>(
       context,
       MaterialPageRoute(
-        builder: (context) => EditCardPage(
-          card: _currentCard,
-          onSave: (updatedCard) async {
-            // BUGFIX: Save to database first
-            await DatabaseHelper().updateCard(updatedCard);
-            Navigator.of(context).pop(updatedCard);
-          },
-        ),
+        builder:
+            (context) => EditCardPage(
+              card: _currentCard,
+              onSave: (updatedCard) async {
+                // Store navigator reference before async gap
+                final navigator = Navigator.of(context);
+                // Save the changes to the database
+                await DatabaseHelper().updateCard(updatedCard);
+                navigator.pop(updatedCard);
+              },
+            ),
       ),
     );
     if (updated != null) {
@@ -114,20 +117,21 @@ class _CardDetailPageState extends State<CardDetailPage> {
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.deleteCard),
-        content: Text(l10n.deleteConfirmation),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l10n.cancel),
+      builder:
+          (ctx) => AlertDialog(
+            title: Text(l10n.deleteCard),
+            content: Text(l10n.deleteConfirmation),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: Text(l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: Text(l10n.delete),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.delete),
-          ),
-        ],
-      ),
     );
 
     // Early return if widget is unmounted
@@ -179,9 +183,10 @@ class _CardDetailPageState extends State<CardDetailPage> {
         if (byteData != null) {
           final pngBytes = byteData.buffer.asUint8List();
           final tempDir = await getTemporaryDirectory();
-          final file = await File(
-            '${tempDir.path}/card_${_currentCard.id ?? _currentCard.name}.png',
-          ).create();
+          final file =
+              await File(
+                '${tempDir.path}/card_${_currentCard.id ?? _currentCard.name}.png',
+              ).create();
           await file.writeAsBytes(pngBytes);
           await Share.shareXFiles([XFile(file.path)], text: _currentCard.title);
         }
@@ -278,9 +283,10 @@ class _CardDetailPageState extends State<CardDetailPage> {
                   child: Card(
                     color: Colors.white,
                     elevation: isDark ? 16 : 8,
-                    shadowColor: isDark
-                        ? Colors.black.withAlpha(115) // 0.45 * 255 ≈ 115
-                        : Colors.black26,
+                    shadowColor:
+                        isDark
+                            ? Colors.black.withAlpha(115) // 0.45 * 255 ≈ 115
+                            : Colors.black26,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(32),
                     ),
@@ -326,11 +332,12 @@ class _CardDetailPageState extends State<CardDetailPage> {
                       Text(
                         l10n.description,
                         style: theme.textTheme.titleSmall?.copyWith(
-                          color: isDark
-                              ? theme.colorScheme.onSurface.withAlpha(
-                                  179,
-                                ) // 0.7 * 255 ≈ 179
-                              : Colors.grey[800],
+                          color:
+                              isDark
+                                  ? theme.colorScheme.onSurface.withAlpha(
+                                    179,
+                                  ) // 0.7 * 255 ≈ 179
+                                  : Colors.grey[800],
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                         ),
@@ -339,11 +346,12 @@ class _CardDetailPageState extends State<CardDetailPage> {
                       Text(
                         _currentCard.description,
                         style: theme.textTheme.bodyLarge?.copyWith(
-                          color: isDark
-                              ? theme.colorScheme.onSurface.withAlpha(
-                                  217,
-                                ) // 0.85 * 255 ≈ 217
-                              : Colors.grey[900],
+                          color:
+                              isDark
+                                  ? theme.colorScheme.onSurface.withAlpha(
+                                    217,
+                                  ) // 0.85 * 255 ≈ 217
+                                  : Colors.grey[900],
                           fontSize: 16,
                         ),
                       ),
@@ -468,18 +476,19 @@ class _CardEditFormState extends State<_CardEditForm> {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: _canSave
-                      ? () {
-                          if (_formKey.currentState!.validate()) {
-                            widget.onSave(
-                              widget.card.copyWith(
-                                title: _titleController.text.trim(),
-                                description: _descController.text.trim(),
-                              ),
-                            );
+                  onPressed:
+                      _canSave
+                          ? () {
+                            if (_formKey.currentState!.validate()) {
+                              widget.onSave(
+                                widget.card.copyWith(
+                                  title: _titleController.text.trim(),
+                                  description: _descController.text.trim(),
+                                ),
+                              );
+                            }
                           }
-                        }
-                      : null,
+                          : null,
                   child: Text('Save'),
                 ),
               ],
