@@ -241,7 +241,7 @@ jobs:
           echo "2. **Direct Install**: Download and install the APK file" >> release-notes.md
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: "release-artifacts/*"
           body_path: release-notes.md
