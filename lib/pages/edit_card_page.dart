@@ -1,10 +1,10 @@
 import 'dart:async'; // Added for Timer (debouncer)
 
 import 'package:flutter/material.dart';
-import 'package:simple_icons/simple_icons.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
+import '../utils/simple_icons_mapping.dart';
 import '../widgets/logo_avatar_widget.dart';
 import '../widgets/simple_logo_selection_sheet.dart';
 
@@ -29,6 +29,7 @@ class _EditCardPageState extends State<EditCardPage> {
   late CardType _selectedCardType; // To hold current card type enum
   bool _hasUnsavedChanges = false;
   Timer? _debouncer;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -121,13 +122,25 @@ class _EditCardPageState extends State<EditCardPage> {
       logoPath: finalLogoPath,
       cardType: _selectedCardType,
     );
-    widget.onSave(updatedCard);
+    // Support sync or async onSave handlers; show saving indicator.
+    // onSave is a synchronous callback in this codebase; show a brief saving state
+    if (mounted) {
+      setState(() {
+        _isSaving = true;
+      });
+    }
+    try {
+      widget.onSave(updatedCard);
+    } catch (e) {
+      debugPrint('Error while saving card: $e');
+    }
     if (mounted) {
       setState(() {
         _logoPath = finalLogoPath; // Update the saved logo path
         _pendingLogoPath = finalLogoPath;
         _pendingLogoIcon = null; // Clear the pending icon since it's now saved
         _hasUnsavedChanges = false;
+        _isSaving = false;
       });
       Navigator.of(context).pop();
     }
@@ -135,63 +148,12 @@ class _EditCardPageState extends State<EditCardPage> {
 
   /// Converts an IconData to a Simple Icon string identifier
   String? _getSimpleIconIdentifier(IconData iconData) {
-    // Create a reverse mapping from IconData to string identifier
-    final Map<IconData, String> reverseLogoMap = {
-      SimpleIcons.amazon: 'simple_icon:amazon',
-      SimpleIcons.apple: 'simple_icon:apple',
-      SimpleIcons.google: 'simple_icon:google',
-      SimpleIcons.netflix: 'simple_icon:netflix',
-      SimpleIcons.spotify: 'simple_icon:spotify',
-      SimpleIcons.uber: 'simple_icon:uber',
-      SimpleIcons.facebook: 'simple_icon:facebook',
-      SimpleIcons.instagram: 'simple_icon:instagram',
-      SimpleIcons.youtube: 'simple_icon:youtube',
-      SimpleIcons.github: 'simple_icon:github',
-      SimpleIcons.discord: 'simple_icon:discord',
-      SimpleIcons.slack: 'simple_icon:slack',
-      SimpleIcons.zoom: 'simple_icon:zoom',
-      SimpleIcons.dropbox: 'simple_icon:dropbox',
-      SimpleIcons.paypal: 'simple_icon:paypal',
-      SimpleIcons.visa: 'simple_icon:visa',
-      SimpleIcons.mastercard: 'simple_icon:mastercard',
-      SimpleIcons.carrefour: 'simple_icon:carrefour',
-      SimpleIcons.aldinord: 'simple_icon:aldinord',
-      SimpleIcons.lidl: 'simple_icon:lidl',
-      // Add more mappings as needed
-    };
-
-    return reverseLogoMap[iconData];
+    return SimpleIconsMapping.getIdentifier(iconData);
   }
 
   /// Converts a Simple Icon string identifier to IconData
   IconData? _getIconDataFromIdentifier(String identifier) {
-    if (!identifier.startsWith('simple_icon:')) return null;
-
-    final iconName = identifier.substring('simple_icon:'.length);
-    final Map<String, IconData> iconMap = {
-      'amazon': SimpleIcons.amazon,
-      'apple': SimpleIcons.apple,
-      'google': SimpleIcons.google,
-      'netflix': SimpleIcons.netflix,
-      'spotify': SimpleIcons.spotify,
-      'uber': SimpleIcons.uber,
-      'facebook': SimpleIcons.facebook,
-      'instagram': SimpleIcons.instagram,
-      'youtube': SimpleIcons.youtube,
-      'github': SimpleIcons.github,
-      'discord': SimpleIcons.discord,
-      'slack': SimpleIcons.slack,
-      'zoom': SimpleIcons.zoom,
-      'dropbox': SimpleIcons.dropbox,
-      'paypal': SimpleIcons.paypal,
-      'visa': SimpleIcons.visa,
-      'mastercard': SimpleIcons.mastercard,
-      'carrefour': SimpleIcons.carrefour,
-      'aldinord': SimpleIcons.aldinord,
-      'lidl': SimpleIcons.lidl,
-    };
-
-    return iconMap[iconName];
+    return SimpleIconsMapping.getIcon(identifier);
   }
 
   Future<bool> _onWillPop() async {
@@ -362,16 +324,36 @@ class _EditCardPageState extends State<EditCardPage> {
         appBar: AppBar(
           title: Text(l10n.editCard),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.save),
-              onPressed:
-                  (_titleController.text.trim().isNotEmpty &&
-                          _nameController.text.trim().isNotEmpty &&
-                          _hasUnsavedChanges)
-                      ? _save
-                      : null,
-              tooltip: l10n.save,
-            ),
+            _isSaving
+                ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: SizedBox(
+                    width: 48,
+                    height: kToolbarHeight,
+                    child: Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Theme.of(context).colorScheme.onPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+                : IconButton(
+                  icon: const Icon(Icons.save),
+                  onPressed:
+                      (_titleController.text.trim().isNotEmpty &&
+                              _nameController.text.trim().isNotEmpty &&
+                              _hasUnsavedChanges)
+                          ? _save
+                          : null,
+                  tooltip: l10n.save,
+                ),
           ],
         ),
         body: Padding(
@@ -498,7 +480,7 @@ class _EditCardPageState extends State<EditCardPage> {
                                 color:
                                     Theme.of(
                                       context,
-                                    ).colorScheme.surfaceVariant,
+                                    ).colorScheme.surfaceContainerHighest,
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: Theme.of(context).colorScheme.outline,

@@ -2,9 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
-import 'package:simple_icons/simple_icons.dart';
+
+import '../utils/simple_icons_mapping.dart';
 
 /// Widget to display either a brand logo (SimpleIcons), SVG/file, or initials fallback.
 class LogoAvatarWidget extends StatelessWidget {
@@ -23,24 +22,8 @@ class LogoAvatarWidget extends StatelessWidget {
     this.background,
   });
 
-  /// Helper method to get custom SVG file
-  Future<File?> _getCustomSvgFile(String logoId) async {
-    try {
-      final appDocDir = await getApplicationDocumentsDirectory();
-      final logoPath = path.join(appDocDir.path, 'custom_logos', '$logoId.svg');
-      final file = File(logoPath);
-
-      if (await file.exists()) {
-        return file;
-      }
-    } catch (e) {
-      debugPrint('Error accessing custom SVG file: $e');
-    }
-    return null;
-  }
-
   /// Helper method to build initials fallback
-  Widget _buildInitials() {
+  Widget _buildInitials(BuildContext context) {
     String initials = '';
     if (title != null && title!.isNotEmpty) {
       final words = title!.trim().split(RegExp(r'\\s+'));
@@ -53,9 +36,33 @@ class LogoAvatarWidget extends StatelessWidget {
         initials = words[0][0].toUpperCase() + words[1][0].toUpperCase();
       }
     }
-    return CircleAvatar(
-      backgroundColor: background ?? Colors.grey[100],
-      radius: size / 2,
+
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final avatarBackground =
+        background ??
+        (isDark
+            ? theme.colorScheme.surfaceContainerHighest
+            : theme.colorScheme.surface);
+    final textColor = theme.colorScheme.onSurface;
+    final iconColor = theme.colorScheme.onSurface.withAlpha(179);
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: avatarBackground,
+        shape: BoxShape.circle,
+        border: Border.all(color: Theme.of(context).dividerColor.withAlpha(60)),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withAlpha(12),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
       child:
           initials.isNotEmpty
               ? Text(
@@ -64,126 +71,105 @@ class LogoAvatarWidget extends StatelessWidget {
                 style: TextStyle(
                   fontSize: size * 0.4,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: textColor,
                 ),
               )
-              : Icon(
-                Icons.credit_card,
-                size: size * 0.6,
-                color: Colors.black54,
-              ),
+              : Icon(Icons.credit_card, size: size * 0.6, color: iconColor),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final avatarBackground =
+        background ??
+        (isDark
+            ? theme.colorScheme.surfaceContainerHighest
+            : theme.colorScheme.surface);
+
     // Direct IconData support (highest priority)
     if (logoIcon != null) {
-      return CircleAvatar(
-        backgroundColor: background ?? Colors.grey[100],
-        radius: size / 2,
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: avatarBackground,
+          shape: BoxShape.circle,
+          border: Border.all(color: theme.dividerColor.withAlpha(60)),
+          boxShadow: [
+            BoxShadow(
+              color: theme.shadowColor.withAlpha(12),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        alignment: Alignment.center,
         child: Icon(
           logoIcon,
-          color: Theme.of(context).colorScheme.primary,
+          // Use onSurface for readable contrast on both themes
+          color: theme.colorScheme.onSurface,
           size: size * 0.7,
         ),
       );
     }
 
-    // Custom SVG support (e.g., "custom_svg:logo_id")
-    if (logoKey != null && logoKey!.startsWith('custom_svg:')) {
-      final logoId = logoKey!.substring('custom_svg:'.length);
-      return FutureBuilder<File?>(
-        future: _getCustomSvgFile(logoId),
-        builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data != null) {
-            final file = snapshot.data!;
-            return CircleAvatar(
-              backgroundColor: background ?? Colors.grey[100],
-              radius: size / 2,
-              child: ClipOval(
-                child: SvgPicture.file(
-                  file,
-                  width: size,
-                  height: size,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            );
-          } else if (snapshot.hasError) {
-            debugPrint('Error loading custom SVG: ${snapshot.error}');
-          }
-          // Fall back to initials if custom SVG not found or loading
-          return _buildInitials();
-        },
-      );
-    }
-
     // Simple Icon identifier support (e.g., "simple_icon:github")
     if (logoKey != null && logoKey!.startsWith('simple_icon:')) {
-      final iconName = logoKey!.substring('simple_icon:'.length);
-      final Map<String, IconData> iconMap = {
-        'amazon': SimpleIcons.amazon,
-        'apple': SimpleIcons.apple,
-        'google': SimpleIcons.google,
-        'netflix': SimpleIcons.netflix,
-        'spotify': SimpleIcons.spotify,
-        'uber': SimpleIcons.uber,
-        'facebook': SimpleIcons.facebook,
-        'instagram': SimpleIcons.instagram,
-        'youtube': SimpleIcons.youtube,
-        'github': SimpleIcons.github,
-        'discord': SimpleIcons.discord,
-        'slack': SimpleIcons.slack,
-        'zoom': SimpleIcons.zoom,
-        'dropbox': SimpleIcons.dropbox,
-        'paypal': SimpleIcons.paypal,
-        'visa': SimpleIcons.visa,
-        'mastercard': SimpleIcons.mastercard,
-        'carrefour': SimpleIcons.carrefour,
-        'aldinord': SimpleIcons.aldinord,
-        'lidl': SimpleIcons.lidl,
-      };
-
-      final icon = iconMap[iconName];
+      final icon = SimpleIconsMapping.getIcon(logoKey!);
       if (icon != null) {
-        return CircleAvatar(
-          backgroundColor: background ?? Colors.grey[100],
-          radius: size / 2,
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: avatarBackground,
+            shape: BoxShape.circle,
+            border: Border.all(color: theme.dividerColor.withAlpha(60)),
+            boxShadow: [
+              BoxShadow(
+                color: theme.shadowColor.withAlpha(12),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          alignment: Alignment.center,
           child: Icon(
             icon,
-            color: Theme.of(context).colorScheme.primary,
+            color: theme.colorScheme.onSurface,
             size: size * 0.7,
           ),
         );
       }
     }
 
-    // SimpleIcons support (legacy)
+    // File path support for backward compatibility (SVG/image files)
     if (logoKey != null &&
         logoKey!.isNotEmpty &&
-        SimpleIcons.values.containsKey(logoKey)) {
-      final icon = SimpleIcons.values[logoKey!];
-      return CircleAvatar(
-        backgroundColor: background ?? Colors.grey[100],
-        radius: size / 2,
-        child: Icon(
-          icon,
-          color: Colors.black,
-          size: size * 0.7,
-          semanticLabel: logoKey,
-        ),
-      );
-    }
-    // SVG/file support
-    if (logoKey != null && logoKey!.isNotEmpty) {
+        !logoKey!.startsWith('simple_icon:')) {
       try {
         final file = File(logoKey!);
         if (file.existsSync()) {
           if (logoKey!.toLowerCase().endsWith('.svg')) {
-            return CircleAvatar(
-              backgroundColor: background ?? Colors.grey[100],
-              radius: size / 2,
+            return Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                color: avatarBackground,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Theme.of(context).dividerColor.withAlpha(60),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).shadowColor.withAlpha(12),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
               child: ClipOval(
                 child: SvgPicture.file(
                   file,
@@ -194,10 +180,27 @@ class LogoAvatarWidget extends StatelessWidget {
               ),
             );
           } else {
-            return CircleAvatar(
-              backgroundColor: background ?? Colors.grey[100],
-              radius: size / 2,
-              backgroundImage: FileImage(file),
+            return Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                color: avatarBackground,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Theme.of(context).dividerColor.withAlpha(60),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).shadowColor.withAlpha(12),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+                image: DecorationImage(
+                  image: FileImage(file),
+                  fit: BoxFit.cover,
+                ),
+              ),
             );
           }
         }
@@ -205,7 +208,8 @@ class LogoAvatarWidget extends StatelessWidget {
         // If any error occurs, fallback to initials
       }
     }
+
     // Initials fallback
-    return _buildInitials();
+    return _buildInitials(context);
   }
 }

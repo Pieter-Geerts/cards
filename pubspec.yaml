@@ -13,12 +13,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  qr_flutter: ^4.1.0
   flutter_localizations:
     sdk: flutter
   intl: any
   cupertino_icons: ^1.0.8
   mobile_scanner: ^7.0.1
-  qr_flutter: ^4.0.0
   sqflite: ^2.2.0
   path: ^1.8.3
   barcode_widget: ^2.0.4

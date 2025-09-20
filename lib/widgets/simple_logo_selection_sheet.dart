@@ -2,6 +2,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 
 import '../helpers/logo_helper.dart';
+import '../l10n/app_localizations.dart';
 
 /// Modal sheet for selecting Simple Icons logos
 class LogoSelectionSheet extends StatefulWidget {
@@ -10,11 +11,11 @@ class LogoSelectionSheet extends StatefulWidget {
   final Function(IconData?) onLogoSelected;
 
   const LogoSelectionSheet({
-    Key? key,
+    super.key,
     this.currentLogo,
     required this.cardTitle,
     required this.onLogoSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<LogoSelectionSheet> createState() => _LogoSelectionSheetState();
@@ -132,7 +133,7 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
               children: [
                 Expanded(
                   child: Text(
-                    'Select Logo',
+                    AppLocalizations.of(context).selectLogo,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
@@ -150,7 +151,7 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -166,13 +167,13 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Selected Logo',
+                          AppLocalizations.of(context).selectedLogo,
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                         Text(
                           _selectedLogo == null
-                              ? 'No logo selected'
-                              : 'Simple Icon',
+                              ? AppLocalizations.of(context).removeLogo
+                              : AppLocalizations.of(context).selectedLogo,
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
@@ -182,7 +183,7 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
                     IconButton(
                       onPressed: () => _selectLogo(null),
                       icon: const Icon(Icons.clear),
-                      tooltip: 'Remove logo',
+                      tooltip: AppLocalizations.of(context).removeLogo,
                     ),
                 ],
               ),
@@ -193,10 +194,19 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
           // Tab bar
           TabBar(
             controller: _tabController,
-            tabs: const [
-              Tab(text: 'Suggested', icon: Icon(Icons.auto_awesome)),
-              Tab(text: 'Browse', icon: Icon(Icons.grid_view)),
-              Tab(text: 'Upload', icon: Icon(Icons.upload)),
+            tabs: [
+              Tab(
+                text: AppLocalizations.of(context).suggested,
+                icon: const Icon(Icons.auto_awesome),
+              ),
+              Tab(
+                text: AppLocalizations.of(context).browse,
+                icon: const Icon(Icons.grid_view),
+              ),
+              Tab(
+                text: AppLocalizations.of(context).uploadLogo,
+                icon: const Icon(Icons.upload),
+              ),
             ],
           ),
 
@@ -228,14 +238,14 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('Cancel'),
+                    child: Text(AppLocalizations.of(context).cancel),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _confirmSelection,
-                    child: Text('Confirm'),
+                    child: Text(AppLocalizations.of(context).confirm),
                   ),
                 ),
               ],
