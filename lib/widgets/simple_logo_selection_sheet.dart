@@ -121,7 +121,7 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurface.withAlpha(200),
               borderRadius: BorderRadius.circular(2),
             ),
           ),

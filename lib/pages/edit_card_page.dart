@@ -491,10 +491,9 @@ class _EditCardPageState extends State<EditCardPage> {
                               child: Icon(
                                 Icons.add_photo_alternate_outlined,
                                 size: 40,
-                                color:
-                                    Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withAlpha(200),
                               ),
                             ),
                             const SizedBox(height: 8),

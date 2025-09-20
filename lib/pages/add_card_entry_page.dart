@@ -36,7 +36,9 @@ class AddCardEntryPage extends StatelessWidget {
                   child: Text(
                     'of',
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withAlpha(200),
                     ),
                   ),
                 ),
@@ -192,7 +194,9 @@ class AddCardEntryPage extends StatelessWidget {
                       Text(
                         subtitle,
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withAlpha(200),
                           fontSize: 12,
                         ),
                       ),
@@ -201,7 +205,7 @@ class AddCardEntryPage extends StatelessWidget {
                 ),
                 Icon(
                   Icons.arrow_forward_ios,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(200),
                   size: 16,
                 ),
               ],

@@ -69,7 +69,9 @@ class AddCardLogoSelector extends StatelessWidget {
                       ),
                       child: Icon(
                         Icons.add_photo_alternate_outlined,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(200),
                         size: 24,
                       ),
                     ),

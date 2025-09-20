@@ -1043,7 +1043,7 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                         decoration: BoxDecoration(
                           color: Theme.of(
                             context,
-                          ).colorScheme.surfaceVariant.withAlpha(18),
+                          ).colorScheme.surfaceTint.withAlpha(18),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: Theme.of(context).dividerColor,
@@ -1075,12 +1075,13 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                               ),
                               tooltip: 'Kopieer code',
                               onPressed: () async {
+                                final messenger = ScaffoldMessenger.of(context);
                                 await Clipboard.setData(
                                   ClipboardData(text: codeText),
                                 );
                                 if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
+                                  messenger.showSnackBar(
+                                    const SnackBar(
                                       content: Text(
                                         'Code gekopieerd naar klembord',
                                       ),

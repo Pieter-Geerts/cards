@@ -241,7 +241,7 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
             'Geef je kaart een naam en omschrijving',
             style: TextStyle(
               fontSize: 16,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurface.withAlpha(200),
             ),
           ),
           const SizedBox(height: 24),
@@ -284,6 +284,7 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<CardType>(
+                // ignore: deprecated_member_use
                 value: _cardType,
                 isExpanded: true,
                 onChanged: (CardType? newValue) {
@@ -318,7 +319,7 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
             'Kies een logo voor je kaart',
             style: TextStyle(
               fontSize: 16,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurface.withAlpha(200),
             ),
           ),
           const SizedBox(height: 24),
@@ -365,10 +366,9 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
                             : Icon(
                               Icons.image,
                               size: 48,
-                              color:
-                                  Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withAlpha(200),
                             ),
                   ),
                   const SizedBox(height: 12),
@@ -498,7 +498,7 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
             'Voer de code in en controleer je kaart',
             style: TextStyle(
               fontSize: 16,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurface.withAlpha(200),
             ),
           ),
           const SizedBox(height: 24),
@@ -549,17 +549,17 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
                           Icon(
                             Icons.qr_code,
                             size: 48,
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withAlpha(200),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Code Voorbeeld',
                             style: TextStyle(
-                              color:
-                                  Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withAlpha(200),
                             ),
                           ),
                         ],
@@ -569,7 +569,9 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
                       child: Text(
                         'Code voorbeeld verschijnt hier',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withAlpha(200),
                         ),
                       ),
                     ),
@@ -607,7 +609,9 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
           style: TextStyle(color: theme.colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+            hintStyle: TextStyle(
+              color: theme.colorScheme.onSurface.withAlpha(200),
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(

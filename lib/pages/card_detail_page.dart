@@ -189,7 +189,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Card(
-                color: theme.colorScheme.surface,
+                color: Colors.white,
                 margin: const EdgeInsets.symmetric(vertical: 24),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),

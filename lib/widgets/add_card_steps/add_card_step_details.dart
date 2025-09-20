@@ -172,7 +172,8 @@ class AddCardStepDetails extends StatelessWidget {
                                   ),
                                   child: Icon(
                                     Icons.add_photo_alternate_outlined,
-                                    color: theme.colorScheme.onSurfaceVariant,
+                                    color: theme.colorScheme.onSurface
+                                        .withAlpha(200),
                                     size: 24,
                                   ),
                                 ),

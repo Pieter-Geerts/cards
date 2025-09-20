@@ -452,7 +452,9 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
           ),
         ),
         const SizedBox(height: 8),
+        // ignore: deprecated_member_use
         DropdownButtonFormField<CardType>(
+          // ignore: deprecated_member_use
           value: _cardType,
           decoration: InputDecoration(
             border: OutlineInputBorder(

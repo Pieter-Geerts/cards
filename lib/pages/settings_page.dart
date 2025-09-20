@@ -185,8 +185,10 @@ class _SettingsPageState extends State<SettingsPage> {
   }) {
     return ListTile(
       title: Text(languageName),
+      // ignore: deprecated_member_use
       leading: Radio<String>(
         value: languageCode,
+        // ignore: deprecated_member_use
         groupValue: _currentLanguage,
         onChanged: (value) async {
           if (value != null) {
@@ -223,8 +225,10 @@ class _SettingsPageState extends State<SettingsPage> {
     return ListTile(
       title: Text(themeModeName),
       leading: Icon(icon), // Use a specific icon for the radio button
+      // ignore: deprecated_member_use
       trailing: Radio<String>(
         value: themeModeValue,
+        // ignore: deprecated_member_use
         groupValue: _currentThemeMode,
         onChanged: (value) async {
           if (value != null) {

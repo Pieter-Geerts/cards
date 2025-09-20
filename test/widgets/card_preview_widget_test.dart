@@ -1,4 +1,5 @@
 import 'package:cards/widgets/card_preview_widget.dart';
+import 'package:cards/widgets/logo_avatar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -21,7 +22,7 @@ void main() {
     );
     expect(find.text('Test Title'), findsOneWidget);
     expect(find.text('Test Description'), findsOneWidget);
-    expect(find.byType(CircleAvatar), findsOneWidget);
+    expect(find.byType(LogoAvatarWidget), findsOneWidget);
   });
 
   testWidgets('CardPreviewWidget hides description if empty', (

@@ -413,6 +413,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<CardType>(
+                  // ignore: deprecated_member_use
                   value: _cardType,
                   isExpanded: true,
                   onChanged: (CardType? newValue) {

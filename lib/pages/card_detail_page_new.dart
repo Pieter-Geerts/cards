@@ -480,8 +480,8 @@ class _CardDetailPageState extends State<CardDetailPage> {
                                       Icon(
                                         Icons.description_outlined,
                                         size: 16,
-                                        color:
-                                            theme.colorScheme.onSurfaceVariant,
+                                        color: theme.colorScheme.onSurface
+                                            .withAlpha(200),
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
@@ -489,10 +489,8 @@ class _CardDetailPageState extends State<CardDetailPage> {
                                         style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
-                                          color:
-                                              theme
-                                                  .colorScheme
-                                                  .onSurfaceVariant,
+                                          color: theme.colorScheme.onSurface
+                                              .withAlpha(200),
                                         ),
                                       ),
                                     ],
@@ -554,7 +552,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
                               _currentCard.is2D
                                   ? Icons.qr_code_2
                                   : Icons.barcode_reader,
-                              color: theme.colorScheme.onSurfaceVariant,
+                              color: theme.colorScheme.onSurface.withAlpha(200),
                               size: 20,
                             ),
                             const SizedBox(width: 12),
@@ -665,7 +663,8 @@ class _CardDetailPageState extends State<CardDetailPage> {
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
-                                    color: theme.colorScheme.onSurfaceVariant,
+                                    color: theme.colorScheme.onSurface
+                                        .withAlpha(200),
                                   ),
                                 ),
                                 const SizedBox(height: 4),

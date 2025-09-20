@@ -256,11 +256,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    // Debug: Print logoPath for each card
-    for (final card in _displayedCards) {
-      // ignore: avoid_print
-      print('Card: \'${card.title}\' logoPath: \'${card.logoPath}\'');
-    }
+    // Debug logging removed
 
     return Scaffold(
       appBar: HomeAppBar(l10n: l10n, actions: _buildAppBarActions(l10n)),
