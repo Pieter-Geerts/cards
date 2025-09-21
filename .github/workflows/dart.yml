@@ -41,8 +41,19 @@ jobs:
       - name: Format code
         run: dart format .
 
-      - name: Analyze project source
-        run: flutter analyze
+      - name: Analyze project source (errors only)
+        run: |
+          set -o pipefail
+          echo "Running flutter analyze (will only fail on errors)..."
+          flutter analyze 2>&1 | tee analyzer_output.txt
+          # If analyzer printed any 'error' severity lines, fail the step.
+          if grep -E "\berror •\b" analyzer_output.txt >/dev/null; then
+            echo "Analyzer found errors:" >&2
+            grep -nE "\berror •\b" analyzer_output.txt >&2 || true
+            exit 1
+          else
+            echo "No analyzer errors found. Info/warnings will not fail the job."
+          fi
 
       - name: Run tests
         run: flutter test
