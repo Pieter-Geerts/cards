@@ -45,7 +45,7 @@ jobs:
         run: |
           set -o pipefail
           echo "Running flutter analyze (will only fail on errors)..."
-          flutter analyze 2>&1 | tee analyzer_output.txt
+          flutter analyze --no-fatal-infos --no-fatal-warnings 2>&1 | tee analyzer_output.txt
           # If analyzer printed any 'error' severity lines, fail the step.
           if grep -E "\berror •\b" analyzer_output.txt >/dev/null; then
             echo "Analyzer found errors:" >&2
