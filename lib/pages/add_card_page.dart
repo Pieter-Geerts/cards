@@ -273,6 +273,7 @@ class _AddCardPageState extends State<AddCardPage> {
         Text(label, style: TextStyle(fontWeight: FontWeight.w500)),
         const SizedBox(height: 6),
         DropdownButtonFormField<CardType>(
+          // ignore: deprecated_member_use
           value: value,
           items:
               CardType.values

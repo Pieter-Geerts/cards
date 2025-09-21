@@ -1,11 +1,12 @@
 import 'dart:async'; // Added for Timer (debouncer)
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
+import '../utils/simple_icons_mapping.dart';
 import '../widgets/logo_avatar_widget.dart';
+import '../widgets/simple_logo_selection_sheet.dart';
 
 class EditCardPage extends StatefulWidget {
   final CardItem card;
@@ -21,15 +22,14 @@ class _EditCardPageState extends State<EditCardPage> {
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late TextEditingController _nameController;
-  String? _logoPath; // Actual saved logo
-  String? _pendingLogoPath; // Temporary logo selection for editing
+  String? _logoPath; // Actual saved logo path
+  String? _pendingLogoPath; // Temporary logo path for editing
+  IconData? _pendingLogoIcon; // Temporary Simple Icon for editing
 
   late CardType _selectedCardType; // To hold current card type enum
   bool _hasUnsavedChanges = false;
   Timer? _debouncer;
-
-  String? _suggestedLogoAsset;
-  bool _logoSuggestionChecked = false;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -40,14 +40,23 @@ class _EditCardPageState extends State<EditCardPage> {
       text: widget.card.name,
     ); // Code value
     _logoPath = widget.card.logoPath;
-    _pendingLogoPath = _logoPath; // Start with current logo
+    _pendingLogoPath = _logoPath; // Start with current logo path
+
+    // Check if the logo path is a Simple Icon identifier
+    if (_logoPath != null && _logoPath!.startsWith('simple_icon:')) {
+      // Convert to IconData for editing
+      _pendingLogoIcon = _getIconDataFromIdentifier(_logoPath!);
+      _pendingLogoPath = null; // Clear path since we're using icon
+    } else {
+      _pendingLogoIcon = null; // No icon selected initially
+    }
+
     _selectedCardType = widget.card.cardType;
 
     // Listen for changes to mark as unsaved
     _titleController.addListener(_onFieldChanged);
     _descController.addListener(_onFieldChanged);
     _nameController.addListener(_onFieldChanged);
-    _titleController.addListener(_onTitleChanged);
   }
 
   @override
@@ -69,7 +78,8 @@ class _EditCardPageState extends State<EditCardPage> {
       bool titleChanged = _titleController.text != widget.card.title;
       bool descChanged = _descController.text != widget.card.description;
       bool nameChanged = _nameController.text != widget.card.name;
-      bool logoChanged = _pendingLogoPath != widget.card.logoPath;
+      bool logoChanged =
+          _pendingLogoPath != widget.card.logoPath || _pendingLogoIcon != null;
       bool typeChanged = _selectedCardType != widget.card.cardType;
 
       final newHasUnsavedChanges =
@@ -90,26 +100,60 @@ class _EditCardPageState extends State<EditCardPage> {
   void _removeLogo() {
     setState(() {
       _pendingLogoPath = null;
+      _pendingLogoIcon = null;
     });
     _onFieldChanged();
   }
 
   void _save() {
+    // Determine the final logo path to save
+    String? finalLogoPath = _pendingLogoPath;
+
+    // If we have a Simple Icon selected, convert it to a string identifier
+    if (_pendingLogoIcon != null) {
+      // Find the icon name from the helper's logo map
+      finalLogoPath = _getSimpleIconIdentifier(_pendingLogoIcon!);
+    }
+
     final updatedCard = widget.card.copyWith(
       title: _titleController.text.trim(),
       description: _descController.text.trim(),
       name: _nameController.text.trim(),
-      logoPath: _pendingLogoPath,
+      logoPath: finalLogoPath,
       cardType: _selectedCardType,
     );
-    widget.onSave(updatedCard);
+    // Support sync or async onSave handlers; show saving indicator.
+    // onSave is a synchronous callback in this codebase; show a brief saving state
     if (mounted) {
       setState(() {
-        _logoPath = _pendingLogoPath; // Update the saved logo path
+        _isSaving = true;
+      });
+    }
+    try {
+      widget.onSave(updatedCard);
+    } catch (e) {
+      debugPrint('Error while saving card: $e');
+    }
+    if (mounted) {
+      setState(() {
+        _logoPath = finalLogoPath; // Update the saved logo path
+        _pendingLogoPath = finalLogoPath;
+        _pendingLogoIcon = null; // Clear the pending icon since it's now saved
         _hasUnsavedChanges = false;
+        _isSaving = false;
       });
       Navigator.of(context).pop();
     }
+  }
+
+  /// Converts an IconData to a Simple Icon string identifier
+  String? _getSimpleIconIdentifier(IconData iconData) {
+    return SimpleIconsMapping.getIdentifier(iconData);
+  }
+
+  /// Converts a Simple Icon string identifier to IconData
+  IconData? _getIconDataFromIdentifier(String identifier) {
+    return SimpleIconsMapping.getIcon(identifier);
   }
 
   Future<bool> _onWillPop() async {
@@ -138,65 +182,25 @@ class _EditCardPageState extends State<EditCardPage> {
     return true;
   }
 
-  void _onTitleChanged() async {
-    final normalized = _titleController.text.trim().toLowerCase().replaceAll(
-      ' ',
-      '',
-    );
-    if (normalized.isEmpty) {
-      setState(() {
-        _suggestedLogoAsset = null;
-        _logoSuggestionChecked = false;
-      });
-      return;
-    }
-    final assetPath = 'assets/icons/$normalized.svg';
-    try {
-      await DefaultAssetBundle.of(context).load(assetPath);
-      setState(() {
-        _suggestedLogoAsset = assetPath;
-        _logoSuggestionChecked = true;
-      });
-    } catch (_) {
-      setState(() {
-        _suggestedLogoAsset = null;
-        _logoSuggestionChecked = true;
-      });
-    }
-  }
-
-  Widget _buildLogoSuggestion() {
-    if (!_logoSuggestionChecked) return SizedBox.shrink();
-    if (_suggestedLogoAsset == null) {
-      return Text(
-        'No logo suggestion found.',
-        style: TextStyle(color: Colors.grey),
-      );
-    }
-    final isSelected = _pendingLogoPath == _suggestedLogoAsset;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Suggested logo:', style: TextStyle(fontWeight: FontWeight.bold)),
-        SizedBox(height: 8),
-        SvgPicture.asset(_suggestedLogoAsset!, height: 48),
-        SizedBox(height: 8),
-        isSelected
-            ? TextButton.icon(
-              icon: const Icon(Icons.close),
-              label: Text('Remove Logo'),
-              onPressed: _removeLogo,
-            )
-            : ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _pendingLogoPath = _suggestedLogoAsset;
-                  _onFieldChanged();
-                });
-              },
-              child: Text('Use this logo'),
-            ),
-      ],
+  void _openLogoSelectionSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder:
+          (context) => LogoSelectionSheet(
+            currentLogo: _pendingLogoIcon,
+            cardTitle: _titleController.text,
+            onLogoSelected: (selectedLogo) {
+              setState(() {
+                _pendingLogoIcon = selectedLogo;
+                // Clear the path if we're using an icon
+                if (selectedLogo != null) {
+                  _pendingLogoPath = null;
+                }
+                _onFieldChanged();
+              });
+            },
+          ),
     );
   }
 
@@ -320,16 +324,36 @@ class _EditCardPageState extends State<EditCardPage> {
         appBar: AppBar(
           title: Text(l10n.editCard),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.save),
-              onPressed:
-                  (_titleController.text.trim().isNotEmpty &&
-                          _nameController.text.trim().isNotEmpty &&
-                          _hasUnsavedChanges)
-                      ? _save
-                      : null,
-              tooltip: l10n.save,
-            ),
+            _isSaving
+                ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: SizedBox(
+                    width: 48,
+                    height: kToolbarHeight,
+                    child: Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Theme.of(context).colorScheme.onPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+                : IconButton(
+                  icon: const Icon(Icons.save),
+                  onPressed:
+                      (_titleController.text.trim().isNotEmpty &&
+                              _nameController.text.trim().isNotEmpty &&
+                              _hasUnsavedChanges)
+                          ? _save
+                          : null,
+                  tooltip: l10n.save,
+                ),
           ],
         ),
         body: Padding(
@@ -394,50 +418,96 @@ class _EditCardPageState extends State<EditCardPage> {
                     ),
                   ),
                 const SizedBox(height: 24),
-                // Logo display (if exists)
-                if (_pendingLogoPath != null && _pendingLogoPath!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          l10n.currentLogo,
-                          style: Theme.of(context).textTheme.titleSmall,
+                // Logo section
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Show current logo if exists
+                      if (_pendingLogoPath != null &&
+                              _pendingLogoPath!.isNotEmpty ||
+                          _pendingLogoIcon != null)
+                        Column(
+                          children: [
+                            Text(
+                              l10n.currentLogo,
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                            const SizedBox(height: 8),
+                            LogoAvatarWidget(
+                              logoKey: _pendingLogoPath,
+                              logoIcon: _pendingLogoIcon,
+                              title: _titleController.text,
+                              size: 100,
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                TextButton.icon(
+                                  icon: const Icon(Icons.delete_outline),
+                                  label: Text(l10n.removeLogoButton),
+                                  onPressed: _removeLogo,
+                                  style: TextButton.styleFrom(
+                                    foregroundColor:
+                                        Theme.of(context).colorScheme.error,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                TextButton.icon(
+                                  icon: const Icon(Icons.edit),
+                                  label: Text('Edit Logo'),
+                                  onPressed: _openLogoSelectionSheet,
+                                ),
+                              ],
+                            ),
+                          ],
+                        )
+                      // Show add logo button if no logo exists
+                      else
+                        Column(
+                          children: [
+                            Text(
+                              'Logo',
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainerHighest,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Theme.of(context).colorScheme.outline,
+                                  style: BorderStyle.solid,
+                                  width: 2,
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.add_photo_alternate_outlined,
+                                size: 40,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withAlpha(200),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.add),
+                              label: Text('Add Logo'),
+                              onPressed: _openLogoSelectionSheet,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        LogoAvatarWidget(
-                          logoKey: _pendingLogoPath,
-                          title: _titleController.text,
-                          size: 100,
-                        ),
-                        const SizedBox(height: 8),
-                        TextButton.icon(
-                          icon: const Icon(Icons.delete_outline),
-                          label: Text(l10n.removeLogoButton),
-                          onPressed: _removeLogo,
-                          style: TextButton.styleFrom(
-                            foregroundColor:
-                                Theme.of(context).colorScheme.error,
-                          ),
-                        ),
-                        // Add Edit Logo button
-                        TextButton.icon(
-                          icon: const Icon(Icons.edit),
-                          label: Text('Edit Logo'),
-                          onPressed: () {
-                            setState(() {
-                              // Show logo suggestion UI
-                              _logoSuggestionChecked = false;
-                              _onTitleChanged();
-                            });
-                          },
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
+                ),
                 const SizedBox(height: 24),
-                _buildLogoSuggestion(),
               ],
             ),
           ),

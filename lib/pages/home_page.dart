@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:barcode_widget/barcode_widget.dart';
-import 'package:cards/widgets/logo_avatar_widget.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -14,7 +13,10 @@ import 'package:share_plus/share_plus.dart';
 import '../helpers/database_helper.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
-import 'add_card_page.dart';
+import '../services/add_card_flow_manager.dart';
+import '../widgets/card_list_widget.dart';
+import '../widgets/empty_state_widget.dart';
+import '../widgets/home_app_bar.dart';
 import 'card_detail_page.dart';
 import 'edit_card_page.dart';
 import 'settings_page.dart';
@@ -36,11 +38,32 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
-  // _originalCards will now be the source of truth, fetched ordered by sortOrder
-  late List<CardItem> _displayedCards; // This list will be reorderable
+  Future<void> _navigateToAddCardPage() async {
+    final newCard = await AddCardFlowManager.showAddCardFlow(
+      context,
+      useBottomSheet: true,
+    );
+    if (newCard != null) {
+      final nextOrder = await _dbHelper.getNextSortOrder();
+      final finalCard = CardItem(
+        title: newCard.title,
+        description: newCard.description,
+        name: newCard.name,
+        cardType: newCard.cardType,
+        createdAt: newCard.createdAt,
+        sortOrder: nextOrder,
+        logoPath: newCard.logoPath,
+      );
+      await _dbHelper.insertCard(finalCard);
+      final cards = await _dbHelper.getCards();
+      setState(() {
+        _displayedCards = cards;
+      });
+    }
+  }
 
-  // SortOption _currentSortOption = SortOption.dateNewest; // Remove
+  final DatabaseHelper _dbHelper = DatabaseHelper();
+  late List<CardItem> _displayedCards;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
   bool _isSearchActive = false;
@@ -48,10 +71,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Initialize with widget.cards, which should be loaded sorted by sortOrder from main.dart
     _displayedCards = List.from(widget.cards);
-    _applySearchFilter(); // Apply initial search filter (if any)
-
+    _applySearchFilter();
     _searchController.addListener(() {
       if (_searchController.text.isEmpty && _searchQuery.isNotEmpty) {
         setState(() {
@@ -67,9 +88,8 @@ class _HomePageState extends State<HomePage> {
     super.didUpdateWidget(oldWidget);
     if (widget.cards != oldWidget.cards) {
       setState(() {
-        // Assuming widget.cards is always the full list, sorted by sortOrder
         _displayedCards = List.from(widget.cards);
-        _applySearchFilter(); // Re-apply search filter
+        _applySearchFilter();
       });
     }
   }
@@ -81,10 +101,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _applySearchFilter() {
-    List<CardItem> filteredCards = List.from(
-      widget.cards,
-    ); // Start with the full, sorted list
-
+    List<CardItem> filteredCards = List.from(widget.cards);
     if (_searchQuery.isNotEmpty) {
       filteredCards =
           filteredCards.where((card) {
@@ -106,24 +123,18 @@ class _HomePageState extends State<HomePage> {
             (context) => CardDetailPage(
               card: card,
               onDelete: (deletedCard) async {
-                // Remove from database
                 if (deletedCard.id != null) {
                   await _dbHelper.deleteCard(deletedCard.id!);
                 }
-
-                // Remove from displayed cards list
                 setState(() {
                   _displayedCards.removeWhere((c) => c.id == deletedCard.id);
                 });
-
-                // Send a deletion signal to parent to refresh the main cards list
-                // We use a special signal card to trigger refresh without adding
                 final deleteSignal = CardItem(
                   title: "##DELETE_CARD_SIGNAL##",
                   description: "",
                   name: "",
                   cardType: CardType.qrCode,
-                  sortOrder: -1, // Special marker
+                  sortOrder: -1,
                 );
                 widget.onAddCard(deleteSignal);
               },
@@ -131,13 +142,39 @@ class _HomePageState extends State<HomePage> {
       ),
     );
     if (updated != null && updated.id != null) {
+      await _dbHelper.updateCard(updated);
+      final cards = await _dbHelper.getCards();
       setState(() {
-        final idx = _displayedCards.indexWhere((c) => c.id == updated.id);
-        if (idx != -1) {
-          _displayedCards[idx] = updated;
-        }
+        _displayedCards = cards;
       });
     }
+  }
+
+  void _onReorder(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+      final CardItem item = _displayedCards.removeAt(oldIndex);
+      _displayedCards.insert(newIndex, item);
+      List<CardItem> cardsToUpdate = [];
+      for (int i = 0; i < _displayedCards.length; i++) {
+        if (_displayedCards[i].sortOrder != i) {
+          cardsToUpdate.add(_displayedCards[i].copyWith(sortOrder: i));
+        }
+      }
+      for (int i = 0; i < cardsToUpdate.length; i++) {
+        int originalIndex = _displayedCards.indexWhere(
+          (element) => element.id == cardsToUpdate[i].id,
+        );
+        if (originalIndex != -1) {
+          _displayedCards[originalIndex] = cardsToUpdate[i];
+        }
+      }
+      if (cardsToUpdate.isNotEmpty) {
+        _dbHelper.updateCardSortOrders(cardsToUpdate);
+      }
+    });
   }
 
   List<Widget> _buildAppBarActions(AppLocalizations l10n) {
@@ -153,14 +190,12 @@ class _HomePageState extends State<HomePage> {
             try {
               final data = jsonDecode(content);
               if (data is Map<String, dynamic>) {
-                // Single card
                 final card = CardItem.fromMap(data);
                 final nextOrder = await _dbHelper.getNextSortOrder();
                 final newCard = card.copyWith(sortOrder: nextOrder);
                 await _dbHelper.insertCard(newCard);
                 widget.onAddCard(newCard);
               } else if (data is List) {
-                // Multiple cards
                 for (final item in data) {
                   if (item is Map<String, dynamic>) {
                     final card = CardItem.fromMap(item);
@@ -193,7 +228,6 @@ class _HomePageState extends State<HomePage> {
             setState(() {
               _searchController.clear();
               _searchQuery = '';
-              // _isSearchActive = false; // Keep search active until explicitly closed or search submitted
               _applySearchFilter();
             });
           },
@@ -219,37 +253,35 @@ class _HomePageState extends State<HomePage> {
     ];
   }
 
-  void _onReorder(int oldIndex, int newIndex) {
-    setState(() {
-      if (newIndex > oldIndex) {
-        newIndex -= 1;
-      }
-      final CardItem item = _displayedCards.removeAt(oldIndex);
-      _displayedCards.insert(newIndex, item);
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    // Debug logging removed
 
-      // Update sortOrder for all displayed cards and persist
-      List<CardItem> cardsToUpdate = [];
-      for (int i = 0; i < _displayedCards.length; i++) {
-        if (_displayedCards[i].sortOrder != i) {
-          cardsToUpdate.add(_displayedCards[i].copyWith(sortOrder: i));
-        }
-      }
-      // Update the _displayedCards with new sortOrder values for consistency
-      for (int i = 0; i < cardsToUpdate.length; i++) {
-        int originalIndex = _displayedCards.indexWhere(
-          (element) => element.id == cardsToUpdate[i].id,
-        );
-        if (originalIndex != -1) {
-          _displayedCards[originalIndex] = cardsToUpdate[i];
-        }
-      }
-
-      if (cardsToUpdate.isNotEmpty) {
-        _dbHelper.updateCardSortOrders(cardsToUpdate);
-      }
-    });
+    return Scaffold(
+      appBar: HomeAppBar(l10n: l10n, actions: _buildAppBarActions(l10n)),
+      body:
+          _displayedCards.isEmpty
+              ? EmptyStateWidget(onAddCard: _navigateToAddCardPage)
+              : CardListWidget(
+                cards: _displayedCards,
+                onCardTap: _onCardTap,
+                onCardActions: (card) => _showCardActions(context, card, l10n),
+                onReorder: _onReorder,
+              ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToAddCardPage,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        elevation: 6.0,
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add, size: 32),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
   }
 
+  // ...existing code...
   Future<void> _shareCardAsImage(CardItem card) async {
     final boundaryKey = GlobalKey();
     final isQr = card.isQrCode;
@@ -259,14 +291,14 @@ class _HomePageState extends State<HomePage> {
         child: RepaintBoundary(
           key: boundaryKey,
           child: Container(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             padding: const EdgeInsets.all(24),
             child:
                 isQr
                     ? QrImageView(
                       data: card.name,
                       size: 320,
-                      backgroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                       eyeStyle: const QrEyeStyle(color: Colors.black), // Added
                       dataModuleStyle: const QrDataModuleStyle(
                         color: Colors.black,
@@ -277,8 +309,8 @@ class _HomePageState extends State<HomePage> {
                       data: card.name,
                       width: 320,
                       height: 120,
-                      backgroundColor: Colors.white,
-                      color: Colors.black,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      color: Theme.of(context).colorScheme.onSurface,
                       drawText: false,
                     ),
           ),
@@ -370,213 +402,5 @@ class _HomePageState extends State<HomePage> {
         );
       },
     );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(l10n.myCards),
-        ),
-        actions: _buildAppBarActions(l10n),
-        elevation: 4.0, // More pronounced shadow
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        iconTheme: IconThemeData(
-          color: Theme.of(context).colorScheme.onSurface,
-          size: 28,
-        ),
-        toolbarHeight: 64,
-      ),
-      body:
-          _displayedCards.isEmpty
-              ? _buildEmptyState(context, l10n)
-              : ReorderableListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 16.0,
-                  horizontal: 12.0,
-                ),
-                itemCount: _displayedCards.length,
-                itemBuilder: (context, index) {
-                  final card = _displayedCards[index];
-                  return Container(
-                    key: ValueKey(
-                      card.id ?? card.name + card.createdAt.toString(),
-                    ),
-                    margin: const EdgeInsets.symmetric(vertical: 14.0),
-                    child: Material(
-                      elevation: 8.0,
-                      borderRadius: BorderRadius.circular(20.0),
-                      color: Theme.of(context).cardColor,
-                      shadowColor:
-                          Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white24
-                              : Colors.black26,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(20.0),
-                        onTap: () => _onCardTap(card),
-                        splashColor: Theme.of(
-                          context,
-                        ).colorScheme.primary.withAlpha(31),
-                        highlightColor: Theme.of(
-                          context,
-                        ).colorScheme.primary.withAlpha(20),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 28.0,
-                            horizontal: 24.0,
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Use LogoAvatarWidget here
-                              LogoAvatarWidget(
-                                logoKey: card.logoPath,
-                                title: card.title,
-                                size: 48,
-                                background: Theme.of(context).cardColor,
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      card.title,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.headlineSmall?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 24,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSurface,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    if (card.description.trim().isNotEmpty) ...[
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        card.description,
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.bodyLarge?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface
-                                              .withAlpha(204),
-                                          fontSize: 16,
-                                        ),
-                                        maxLines: 3,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap:
-                                    () => _showCardActions(context, card, l10n),
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  child: Icon(
-                                    Icons.more_vert,
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
-                                    size: 28,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-                onReorder: _onReorder,
-              ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToAddCardPage,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        elevation: 6.0,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, size: 32),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.credit_card,
-              size: 80,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              l10n.noCardsYet,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _navigateToAddCardPage,
-              icon: const Icon(Icons.add),
-              label: Text(l10n.addCard),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 14,
-                ),
-                textStyle: Theme.of(context).textTheme.titleMedium,
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 2,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _navigateToAddCardPage() async {
-    final tempCardData = await Navigator.push<CardItem>(
-      // Expecting CardItem.temp
-      context,
-      MaterialPageRoute(builder: (_) => const AddCardPage()),
-    );
-    if (tempCardData != null) {
-      final nextOrder = await _dbHelper.getNextSortOrder();
-      final newCard = CardItem(
-        title: tempCardData.title,
-        description: tempCardData.description,
-        name: tempCardData.name,
-        cardType: tempCardData.cardType,
-        createdAt: tempCardData.createdAt, // Use createdAt from temp card
-        sortOrder: nextOrder,
-        logoPath: tempCardData.logoPath, // <-- Ensure logoPath is passed!
-      );
-      widget.onAddCard(
-        newCard,
-      ); // This will trigger a reload in main.dart and update widget.cards
-    }
   }
 }

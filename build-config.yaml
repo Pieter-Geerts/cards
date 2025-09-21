@@ -1,0 +1,47 @@
+# Production Build Configuration
+
+# Flutter Build Configuration
+build:
+  release:
+    web-renderer: canvaskit # Use CanvasKit for better performance
+    target-platform: android-arm64,android-x64 # Multi-architecture support
+
+  optimization:
+    tree-shake-icons: true # Remove unused icons
+    split-debug-info: true # Separate debug symbols
+    obfuscate: true # Code obfuscation for security
+
+# Performance Settings
+performance:
+  cache:
+    logo-cache-size: 1000 # Maximum cached logos
+    cache-expiry: 21600 # 6 hours in seconds
+    preload-batch-size: 50 # Logos to preload
+
+  timeouts:
+    logo-suggestion: 10 # Logo suggestion timeout (seconds)
+    logo-loading: 15 # Logo loading timeout (seconds)
+    database-query: 5 # Database query timeout (seconds)
+
+# Resource Optimization
+resources:
+  image-compression: 85 # Image quality (1-100)
+  font-subset: true # Remove unused font glyphs
+  asset-bundling: true # Bundle assets efficiently
+
+# Security Settings
+security:
+  code-obfuscation: true # Obfuscate source code
+  asset-encryption: false # Encrypt assets (if needed)
+  debug-info-removal: true # Remove debug information
+
+# Analytics & Monitoring
+monitoring:
+  performance-tracking: true # Track performance metrics
+  error-reporting: true # Enable crash reporting
+  cache-analytics: true # Monitor cache performance
+
+# Environment Variables
+env:
+  FLUTTER_WEB_USE_SKIA: true
+  FLUTTER_WEB_AUTO_DETECT: true

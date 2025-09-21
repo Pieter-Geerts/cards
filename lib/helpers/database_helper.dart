@@ -2,6 +2,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../models/card_item.dart';
+import '../utils/simple_icons_mapping.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -147,5 +148,49 @@ class DatabaseHelper {
       return CardItem.fromMap(maps.first);
     }
     return null;
+  }
+
+  /// Dev helper: attempt to backfill `logoPath` for existing cards by
+  /// matching the card title against known SimpleIcons identifiers.
+  /// Returns the number of rows updated. This should be run manually
+  /// during a migration step or from a debug console.
+  Future<int> backfillLogoPathsFromTitles({bool dryRun = true}) async {
+    final db = await database;
+    final cards = await db.query('cards', columns: ['id', 'title', 'logoPath']);
+    int updated = 0;
+
+    for (final row in cards) {
+      final id = row['id'] as int?;
+      final title = (row['title'] as String?)?.toLowerCase() ?? '';
+      final existing = row['logoPath'] as String?;
+
+      if (id == null) continue;
+      if (existing != null && existing.isNotEmpty) continue; // already set
+
+      String? matchedIdentifier;
+      // Try simple substring matching against known identifiers / keys
+      for (final entry in SimpleIconsMapping.iconToIdentifier.entries) {
+        final identifier = entry.value; // e.g. 'simple_icon:albertheijn'
+        final key = identifier.replaceFirst('simple_icon:', '').toLowerCase();
+        if (title.contains(key)) {
+          matchedIdentifier = identifier;
+          break;
+        }
+      }
+
+      if (matchedIdentifier != null) {
+        if (!dryRun) {
+          await db.update(
+            'cards',
+            {'logoPath': matchedIdentifier},
+            where: 'id = ?',
+            whereArgs: [id],
+          );
+        }
+        updated++;
+      }
+    }
+
+    return updated;
   }
 }

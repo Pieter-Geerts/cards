@@ -15,7 +15,9 @@ class MockDatabaseHelper extends Mock implements DatabaseHelper {
 
   @override
   Future<List<CardItem>> getCards() async {
-    return _cardsStore.values.toList();
+    final cards = _cardsStore.values.toList();
+    cards.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    return cards;
   }
 
   @override
@@ -45,5 +47,33 @@ class MockDatabaseHelper extends Mock implements DatabaseHelper {
   Future<void> deleteAllCards() async {
     _cardsStore.clear();
     _nextId = 1;
+  }
+
+  /// Reset the mock database to initial state
+  void reset() {
+    _cardsStore.clear();
+    _nextId = 1;
+  }
+
+  @override
+  Future<int> getNextSortOrder() async {
+    if (_cardsStore.isEmpty) {
+      return 0;
+    }
+
+    final cards = _cardsStore.values.toList();
+    final maxOrder = cards
+        .map((c) => c.sortOrder)
+        .reduce((a, b) => a > b ? a : b);
+    return maxOrder + 1;
+  }
+
+  @override
+  Future<void> updateCardSortOrders(List<CardItem> cards) async {
+    for (var card in cards) {
+      if (card.id != null && _cardsStore.containsKey(card.id)) {
+        _cardsStore[card.id!] = card;
+      }
+    }
   }
 }
