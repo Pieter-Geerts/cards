@@ -88,19 +88,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
   void _startEditing() async {
     final updated = await Navigator.push<CardItem>(
       context,
-      MaterialPageRoute(
-        builder:
-            (context) => EditCardPage(
-              card: _currentCard,
-              onSave: (updatedCard) async {
-                // Store navigator reference before async gap
-                final navigator = Navigator.of(context);
-                // Save the changes to the database
-                await DatabaseHelper().updateCard(updatedCard);
-                navigator.pop(updatedCard);
-              },
-            ),
-      ),
+      MaterialPageRoute(builder: (context) => EditCardPage(card: _currentCard)),
     );
     if (updated != null) {
       setState(() {
