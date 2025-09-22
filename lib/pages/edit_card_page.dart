@@ -10,9 +10,9 @@ import '../widgets/simple_logo_selection_sheet.dart';
 
 class EditCardPage extends StatefulWidget {
   final CardItem card;
-  final void Function(CardItem) onSave;
+  final void Function(CardItem)? onSave;
 
-  const EditCardPage({super.key, required this.card, required this.onSave});
+  const EditCardPage({super.key, required this.card, this.onSave});
 
   @override
   State<EditCardPage> createState() => _EditCardPageState();
@@ -115,34 +115,52 @@ class _EditCardPageState extends State<EditCardPage> {
       finalLogoPath = _getSimpleIconIdentifier(_pendingLogoIcon!);
     }
 
-    final updatedCard = widget.card.copyWith(
-      title: _titleController.text.trim(),
-      description: _descController.text.trim(),
-      name: _nameController.text.trim(),
-      logoPath: finalLogoPath,
-      cardType: _selectedCardType,
-    );
-    // Support sync or async onSave handlers; show saving indicator.
-    // onSave is a synchronous callback in this codebase; show a brief saving state
+    // Show saving indicator and return the updated card to the caller.
     if (mounted) {
       setState(() {
         _isSaving = true;
       });
     }
+
     try {
-      widget.onSave(updatedCard);
+      // Update local state to reflect saved values.
+      _logoPath = finalLogoPath;
+      _pendingLogoPath = finalLogoPath;
+      _pendingLogoIcon = null;
+      _hasUnsavedChanges = false;
+
+      final result = widget.card.copyWith(
+        title: _titleController.text.trim(),
+        description: _descController.text.trim(),
+        name: _nameController.text.trim(),
+        logoPath: finalLogoPath,
+        cardType: _selectedCardType,
+      );
+
+      // Invoke onSave (best-effort) but don't rely on it for navigation.
+      try {
+        if (widget.onSave != null) {
+          widget.onSave!(result);
+        }
+      } catch (e) {
+        debugPrint('Error in onSave callback: $e');
+      }
+
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+
+      Navigator.of(context).pop<CardItem>(result);
+      return;
     } catch (e) {
       debugPrint('Error while saving card: $e');
-    }
-    if (mounted) {
-      setState(() {
-        _logoPath = finalLogoPath; // Update the saved logo path
-        _pendingLogoPath = finalLogoPath;
-        _pendingLogoIcon = null; // Clear the pending icon since it's now saved
-        _hasUnsavedChanges = false;
-        _isSaving = false;
-      });
-      Navigator.of(context).pop();
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 

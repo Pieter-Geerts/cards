@@ -93,21 +93,19 @@ class _CardDetailPageState extends State<CardDetailPage> {
           IconButton(
             icon: const Icon(Icons.edit),
             tooltip: l10n.edit,
-            onPressed: () {
-              Navigator.of(context).push(
+            onPressed: () async {
+              // Push edit page and await returned updated CardItem
+              final updated = await Navigator.of(context).push<CardItem>(
                 MaterialPageRoute(
-                  builder:
-                      (context) => EditCardPage(
-                        card: _currentCard,
-                        onSave: (updatedCard) {
-                          setState(() {
-                            _currentCard = updatedCard;
-                          });
-                          Navigator.of(context).pop();
-                        },
-                      ),
+                  builder: (context) => EditCardPage(card: _currentCard),
                 ),
               );
+
+              if (updated != null) {
+                setState(() {
+                  _currentCard = updated;
+                });
+              }
             },
           ),
           if (widget.onDelete != null)

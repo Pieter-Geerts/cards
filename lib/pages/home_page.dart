@@ -360,32 +360,35 @@ class _HomePageState extends State<HomePage> {
                 title: Text(l10n.editAction),
                 onTap: () async {
                   Navigator.of(modalContext).pop();
-                  await Navigator.push<CardItem>(
+                  final updated = await Navigator.push<CardItem>(
                     context,
                     MaterialPageRoute(
-                      builder:
-                          (context) => EditCardPage(
-                            card: card,
-                            onSave: (updated) async {
-                              await _dbHelper.updateCard(updated);
-                              // Use update callback instead of add callback
-                              if (widget.onUpdateCard != null) {
-                                widget.onUpdateCard!(updated);
-                              } else {
-                                // Fallback: update the local list
-                                setState(() {
-                                  final index = _displayedCards.indexWhere(
-                                    (c) => c.id == updated.id,
-                                  );
-                                  if (index != -1) {
-                                    _displayedCards[index] = updated;
-                                  }
-                                });
-                              }
-                            },
-                          ),
+                      builder: (context) => EditCardPage(card: card),
                     ),
                   );
+
+                  if (updated != null && updated.id != null) {
+                    // Persist updated card and update UI
+                    await _dbHelper.updateCard(updated);
+                    if (widget.onUpdateCard != null) {
+                      widget.onUpdateCard!(updated);
+                    } else {
+                      final index = _displayedCards.indexWhere(
+                        (c) => c.id == updated.id,
+                      );
+                      if (index != -1) {
+                        setState(() {
+                          _displayedCards[index] = updated;
+                        });
+                      } else {
+                        // If card not present locally, refresh list from DB
+                        final cards = await _dbHelper.getCards();
+                        setState(() {
+                          _displayedCards = cards;
+                        });
+                      }
+                    }
+                  }
                 },
               ),
               ListTile(

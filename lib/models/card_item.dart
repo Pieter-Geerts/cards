@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'code_renderer.dart';
+import '../widgets/logo_avatar_widget.dart';
 
 enum CardType { qrCode, barcode }
 
@@ -163,10 +164,18 @@ class CardItem {
     return Card(
       child: Column(
         children: [
-          if (logoPath != null) ...[
-            Image.asset(logoPath!),
-            const SizedBox(height: 8),
-          ],
+          // Use LogoAvatarWidget which understands simple_icon identifiers,
+          // file paths and provides an initials fallback when needed.
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: LogoAvatarWidget(
+              logoKey: logoPath,
+              title: title.isNotEmpty ? title : 'Kaart',
+              size: 96,
+              background: Colors.transparent,
+            ),
+          ),
+          const SizedBox(height: 8),
           Text(
             title,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -178,7 +187,7 @@ class CardItem {
             onPressed: () {
               // Handle button press
             },
-            child: Text('Action'),
+            child: const Text('Action'),
           ),
         ],
       ),
