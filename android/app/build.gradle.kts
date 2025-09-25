@@ -17,7 +17,9 @@ plugins {
 
 android {
     namespace = "com.pietergeerts.cards"  // Updated to match applicationId
-    compileSdk = flutter.compileSdkVersion
+    // mobile_scanner and some camera libraries require a newer Android SDK.
+    // Use a concrete value here to ensure the app is compiled against the required SDK.
+    compileSdk = 36
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -37,8 +39,11 @@ android {
         applicationId = "com.pietergeerts.cards"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+    // androidx.camera:camera-core requires minSdk 23 or higher.
+    // Set a concrete minSdk to avoid manifest merger failures from camera libraries.
+    minSdk = 23
+    // Target the same SDK as compile to avoid compatibility warnings from plugins.
+    targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
