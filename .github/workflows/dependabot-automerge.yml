@@ -1,0 +1,51 @@
+name: Dependabot Auto-merge
+
+on:
+  pull_request:
+    types: [labeled, unlabeled, synchronize, opened]
+
+jobs:
+  automerge:
+    if: github.actor == 'dependabot[bot]' || contains(github.event.pull_request.user.login, 'dependabot')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Validate labels and status
+        uses: actions/github-script@v7
+        id: check
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            if (!pr) return core.setFailed('No pull request found');
+            const labels = pr.labels.map(l => l.name);
+            // Only auto-merge if repo configured label exists
+            if (!labels.includes('automated')) {
+              core.info('PR does not have `automated` label — skipping auto-merge.');
+              return { shouldMerge: false };
+            }
+            // Check combined status
+            const { data: combined } = await github.repos.getCombinedStatusForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: pr.head.sha,
+            });
+            const state = combined.state; // 'success', 'failure', 'pending'
+            core.info(`combined state: ${state}`);
+            return { shouldMerge: state === 'success' };
+
+      - name: Merge PR if checks passed
+        if: steps.check.outputs.shouldMerge == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            await github.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              merge_method: 'squash',
+            });

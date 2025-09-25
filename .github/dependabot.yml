@@ -1,5 +1,58 @@
 version: 2
 updates:
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 3
+    rebase-strategy: "auto"
+    labels:
+      - "dependencies"
+      - "automated"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "github-actions"
+      - "automated"
+version: 2
+updates:
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 3
+    rebase-strategy: "auto"
+    reviewers:
+      - "Pieter-Geerts"
+    labels:
+      - "dependencies"
+      - "automated"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "github-actions"
+      - "automated"
+version: 2
+updates:
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 3
+    # Automatically rebase Dependabot PRs when the base branch changes
+    rebase-strategy: "auto"
+    # Allow automerging by a trusted GitHub Action when checks pass
+    # Note: repo-level auto-merge must be enabled in GitHub settings if desired
+version: 2
+updates:
   # Enable version updates for pub (Dart/Flutter dependencies)
   - package-ecosystem: "pub"
     directory: "/"
