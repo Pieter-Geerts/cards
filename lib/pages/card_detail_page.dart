@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 // import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
+import '../services/share_service.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
@@ -86,8 +86,8 @@ class _CardDetailPageState extends State<CardDetailPage> {
           IconButton(
             icon: const Icon(Icons.share),
             tooltip: l10n.share,
-            onPressed: () {
-              Share.share(_currentCard.name, subject: _currentCard.title);
+            onPressed: () async {
+              await ShareService.shareCardAsImageStatic(context, _currentCard);
             },
           ),
           IconButton(
