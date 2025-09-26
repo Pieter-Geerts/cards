@@ -36,7 +36,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Assert - should show the empty state
-    final l10n = AppLocalizations.of(tester.element(find.byType(MaterialApp)));
+    final l10n = lookupAppLocalizations(const Locale('nl'));
     expect(find.textContaining(l10n.noCardsYet), findsOneWidget);
     expect(
       find.byType(FloatingActionButton),

@@ -16,6 +16,7 @@ Widget createCardDetailPage({
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
+    locale: const Locale('nl'),
     home: CardDetailPage(card: card, onDelete: onDelete),
   );
 }
@@ -129,7 +130,7 @@ void main() {
 
     // Verify dialog is shown
     expect(find.byType(AlertDialog), findsOneWidget);
-    final l10n = AppLocalizations.of(tester.element(find.byType(MaterialApp)));
+    final l10n = lookupAppLocalizations(const Locale('nl'));
     expect(find.text(l10n.deleteCard), findsOneWidget); // Dialog title
     expect(find.text(l10n.deleteConfirmation), findsOneWidget);
 
@@ -423,9 +424,7 @@ void main() {
 
       // Confirm dialog appears
       expect(find.byType(AlertDialog), findsOneWidget);
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(MaterialApp)),
-      );
+      final l10n = lookupAppLocalizations(const Locale('nl'));
       expect(find.text(l10n.deleteCard), findsOneWidget);
 
       // Cancel to close dialog
