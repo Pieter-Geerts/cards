@@ -1,4 +1,5 @@
 import 'package:cards/pages/home_page.dart';
+import 'package:cards/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
@@ -35,7 +36,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // Assert - should show the empty state
-    expect(find.textContaining('Nog geen kaarten'), findsOneWidget);
+    final l10n = AppLocalizations.of(tester.element(find.byType(MaterialApp)));
+    expect(find.textContaining(l10n.noCardsYet), findsOneWidget);
     expect(
       find.byType(FloatingActionButton),
       findsOneWidget,

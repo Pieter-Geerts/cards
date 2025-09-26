@@ -475,7 +475,7 @@ class _EditCardPageState extends State<EditCardPage> {
                                 const SizedBox(width: 16),
                                 TextButton.icon(
                                   icon: const Icon(Icons.edit),
-                                  label: Text('Edit Logo'),
+                                  label: Text(l10n.editLogo),
                                   onPressed: _openLogoSelectionSheet,
                                 ),
                               ],
@@ -487,7 +487,7 @@ class _EditCardPageState extends State<EditCardPage> {
                         Column(
                           children: [
                             Text(
-                              'Logo',
+                              l10n.logoLabel,
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                             const SizedBox(height: 8),
@@ -517,7 +517,7 @@ class _EditCardPageState extends State<EditCardPage> {
                             const SizedBox(height: 8),
                             ElevatedButton.icon(
                               icon: const Icon(Icons.add),
-                              label: Text('Add Logo'),
+                              label: Text(l10n.addLogo),
                               onPressed: _openLogoSelectionSheet,
                             ),
                           ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/card_item.dart';
+import '../../l10n/app_localizations.dart';
 
 class AddCardStepCode extends StatelessWidget {
   final CardType cardType;
@@ -30,7 +31,7 @@ class AddCardStepCode extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              'Hoe wil je de code toevoegen?',
+              AppLocalizations.of(context).howAddCode,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -44,7 +45,7 @@ class AddCardStepCode extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: ElevatedButton.icon(
               icon: const Icon(Icons.qr_code_scanner_outlined),
-              label: const Text('Scan Barcode'),
+              label: Text(AppLocalizations.of(context).scanBarcodeCTA),
               onPressed: onScan,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
@@ -70,7 +71,7 @@ class AddCardStepCode extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    'of',
+                    AppLocalizations.of(context).or,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -93,7 +94,7 @@ class AddCardStepCode extends StatelessWidget {
               children: [
                 ElevatedButton.icon(
                   icon: const Icon(Icons.photo_library_outlined),
-                  label: const Text('Import uit Afbeelding'),
+                  label: Text(AppLocalizations.of(context).importFromImage),
                   onPressed: onImageImport,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.surface,
@@ -107,7 +108,7 @@ class AddCardStepCode extends StatelessWidget {
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.edit_outlined),
-                  label: const Text('Handmatige Invoer'),
+                  label: Text(AppLocalizations.of(context).manualEntryFull),
                   onPressed: onManualEntry,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.surface,
@@ -162,7 +163,7 @@ class AddCardStepCode extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'Handmatige Invoer',
+                        AppLocalizations.of(context).manualEntryFull,
                         style: Theme.of(
                           context,
                         ).textTheme.titleMedium?.copyWith(
@@ -174,7 +175,7 @@ class AddCardStepCode extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Type Kaart',
+                    AppLocalizations.of(context).cardTypeLabel,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -212,7 +213,7 @@ class AddCardStepCode extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Code',
+                    AppLocalizations.of(context).code,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -228,8 +229,8 @@ class AddCardStepCode extends StatelessWidget {
                     decoration: InputDecoration(
                       hintText:
                           cardType == CardType.qrCode
-                              ? 'QR code inhoud of URL'
-                              : 'Barcode nummer',
+                              ? AppLocalizations.of(context).qrCodeValue
+                              : AppLocalizations.of(context).barcodeValue,
                       filled: true,
                       fillColor:
                           Theme.of(context).inputDecorationTheme.fillColor ??

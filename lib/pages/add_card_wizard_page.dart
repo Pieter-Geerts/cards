@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:simple_icons/simple_icons.dart';
+import '../l10n/app_localizations.dart';
 
 import '../helpers/logo_helper.dart';
 import '../models/card_item.dart';
@@ -26,12 +27,7 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
   String? _logoPath;
   IconData? _selectedLogoIcon;
 
-  // Step titles
-  final List<String> _stepTitles = [
-    'Basis Informatie',
-    'Logo Selectie',
-    'Code & Voltooien',
-  ];
+  // Step titles are provided via localization at runtime.
 
   @override
   void dispose() {
@@ -145,13 +141,13 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_stepTitles[_currentStep]),
+        title: Text(_getStepTitle(context, _currentStep)),
         elevation: 0,
         actions: [
           if (_currentStep < 2)
             TextButton(
               onPressed: _canProceedFromStep(_currentStep) ? _nextStep : null,
-              child: const Text('Volgende'),
+              child: Text(AppLocalizations.of(context).next),
             ),
         ],
       ),
@@ -206,7 +202,7 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: _previousStep,
-                      child: const Text('Vorige'),
+                      child: Text(AppLocalizations.of(context).previous),
                     ),
                   ),
                 if (_currentStep > 0) const SizedBox(width: 16),
@@ -220,7 +216,11 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
                             : (_canProceedFromStep(_currentStep)
                                 ? _nextStep
                                 : null),
-                    child: Text(_currentStep == 2 ? 'Opslaan' : 'Volgende'),
+                    child: Text(
+                      _currentStep == 2
+                          ? AppLocalizations.of(context).save
+                          : AppLocalizations.of(context).next,
+                    ),
                   ),
                 ),
               ],
@@ -229,6 +229,20 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
         ],
       ),
     );
+  }
+
+  String _getStepTitle(BuildContext context, int step) {
+    final l = AppLocalizations.of(context);
+    switch (step) {
+      case 0:
+        return l.wizardStepBasicInfo;
+      case 1:
+        return l.wizardStepLogoSelection;
+      case 2:
+        return l.wizardStepCodeAndFinish;
+      default:
+        return '';
+    }
   }
 
   Widget _buildBasicInfoStep() {

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../models/card_item.dart';
+import '../l10n/app_localizations.dart';
 import '../services/add_card_flow_manager.dart';
 import '../services/error_handling_service.dart';
 import '../services/logo_cache_service.dart';
@@ -183,7 +184,7 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
                 icon: Icon(Icons.close, color: theme.iconTheme.color),
               ),
       title: Text(
-        _getStepTitle(),
+        _localStepTitle(context, _currentStep),
         style: theme.textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.w700,
         ),
@@ -293,7 +294,7 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Voorbeeld',
+            AppLocalizations.of(context).preview,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -319,14 +320,14 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildTextField(
-          'Titel *',
-          'Naam van de winkel of service',
+          AppLocalizations.of(context).title + ' *',
+          AppLocalizations.of(context).titleHint,
           _titleController,
         ),
         const SizedBox(height: 16),
         _buildTextField(
-          'Beschrijving',
-          'Optionele beschrijving',
+          AppLocalizations.of(context).description,
+          AppLocalizations.of(context).optionalDescription,
           _descriptionController,
           maxLines: 2,
         ),
@@ -378,7 +379,7 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Logo',
+          AppLocalizations.of(context).logoLabel,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -404,14 +405,18 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
                     size: 32,
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(child: Text('Logo geselecteerd')),
+                  Expanded(
+                    child: Text(AppLocalizations.of(context).logoSelected),
+                  ),
                 ] else ...[
                   Icon(
                     Icons.add_photo_alternate,
                     color: Theme.of(context).iconTheme.color?.withAlpha(153),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(child: Text('Selecteer een logo')),
+                  Expanded(
+                    child: Text(AppLocalizations.of(context).selectALogo),
+                  ),
                 ],
                 Icon(
                   Icons.chevron_right,
@@ -445,7 +450,7 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Type Kaart',
+          AppLocalizations.of(context).cardTypeLabel,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -485,7 +490,7 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Code',
+          AppLocalizations.of(context).code,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -497,8 +502,8 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
           decoration: InputDecoration(
             hintText:
                 _cardType == CardType.qrCode
-                    ? 'QR code inhoud'
-                    : 'Barcode nummer',
+                    ? AppLocalizations.of(context).enterQrCodeValue
+                    : AppLocalizations.of(context).enterBarcodeValue,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: Colors.grey.shade300),
@@ -528,7 +533,7 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
               Expanded(
                 child: OutlinedButton(
                   onPressed: _previousStep,
-                  child: const Text('Vorige'),
+                  child: Text(AppLocalizations.of(context).previous),
                 ),
               ),
               const SizedBox(width: 16),
@@ -546,7 +551,11 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                        : Text(_currentStep == 1 ? 'Opslaan' : 'Volgende'),
+                        : Text(
+                          _currentStep == 1
+                              ? AppLocalizations.of(context).save
+                              : AppLocalizations.of(context).next,
+                        ),
               ),
             ),
           ],
@@ -600,7 +609,9 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
   void _openLogoSelection() {
     // TODO: Implement logo selection
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Logo selectie komt binnenkort!')),
+      SnackBar(
+        content: Text(AppLocalizations.of(context).logoSelectionComingSoon),
+      ),
     );
   }
 
@@ -639,7 +650,7 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fout bij opslaan van kaart')),
+          SnackBar(content: Text(AppLocalizations.of(context).errorSavingCard)),
         );
       }
     } finally {
@@ -649,14 +660,15 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
     }
   }
 
-  String _getStepTitle() {
-    switch (_currentStep) {
+  String _localStepTitle(BuildContext context, int step) {
+    final l = AppLocalizations.of(context);
+    switch (step) {
       case 0:
-        return 'Kaart Details';
+        return l.cardDetails;
       case 1:
-        return 'Code Toevoegen';
+        return l.code;
       default:
-        return 'Nieuwe Kaart';
+        return l.addCard;
     }
   }
 }

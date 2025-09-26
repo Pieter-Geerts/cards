@@ -129,14 +129,12 @@ void main() {
 
     // Verify dialog is shown
     expect(find.byType(AlertDialog), findsOneWidget);
-    expect(find.text('Delete Card'), findsOneWidget); // Dialog title
-    expect(
-      find.text('Are you sure you want to delete this card?'),
-      findsOneWidget,
-    );
+    final l10n = AppLocalizations.of(tester.element(find.byType(MaterialApp)));
+    expect(find.text(l10n.deleteCard), findsOneWidget); // Dialog title
+    expect(find.text(l10n.deleteConfirmation), findsOneWidget);
 
     // Tap 'Delete' in dialog
-    await tester.tap(find.widgetWithText(TextButton, 'Delete'));
+    await tester.tap(find.widgetWithText(TextButton, l10n.delete));
     // await tester.pumpAndSettle(); // Dialog closes, page might pop
 
     expect(onDeleteCalled, isTrue);
@@ -425,10 +423,13 @@ void main() {
 
       // Confirm dialog appears
       expect(find.byType(AlertDialog), findsOneWidget);
-      expect(find.text('Delete Card'), findsOneWidget);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(MaterialApp)),
+      );
+      expect(find.text(l10n.deleteCard), findsOneWidget);
 
       // Cancel to close dialog
-      await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+      await tester.tap(find.widgetWithText(TextButton, l10n.cancel));
       await tester.pumpAndSettle();
 
       // Dialog should be gone

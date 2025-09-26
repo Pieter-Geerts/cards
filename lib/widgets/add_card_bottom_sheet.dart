@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../l10n/app_localizations.dart';
 
 import '../config/preset_cards.dart';
 import '../helpers/image_scan_helper.dart';
@@ -230,23 +231,22 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
       final result = await showDialog<String>(
         context: context,
         builder: (BuildContext context) {
+          final l = AppLocalizations.of(context);
           return AlertDialog(
-            title: const Text('Import uit Afbeelding'),
-            content: const Text(
-              'Kies hoe je de barcode of QR code wilt importeren:',
-            ),
+            title: Text(l.importFromImage),
+            content: Text(l.scanFromImageSubtitle),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Annuleren'),
+                child: Text(l.cancel),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop('gallery'),
-                child: const Text('Uit Galerij'),
+                child: Text(l.selectImageButton),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop('camera'),
-                child: const Text('Foto Maken'),
+                child: Text(l.choosePhotoWithBarcode),
               ),
             ],
           );
@@ -304,9 +304,11 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Fout bij importeren: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppLocalizations.of(context).importError}: $e'),
+          ),
+        );
       }
     }
   }
@@ -438,7 +440,9 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                       ),
                       // Step counter
                       Text(
-                        'Stap ${_currentStep + 1} van 3',
+                        AppLocalizations.of(
+                          context,
+                        ).stepCounter(_currentStep + 1, 3),
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -521,7 +525,7 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'Annuleren',
+                                AppLocalizations.of(context).cancel,
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -567,7 +571,7 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'Terug',
+                                AppLocalizations.of(context).previous,
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -629,7 +633,9 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              _currentStep == 2 ? 'Opslaan' : 'Volgende',
+                              _currentStep == 2
+                                  ? AppLocalizations.of(context).save
+                                  : AppLocalizations.of(context).next,
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
@@ -694,9 +700,9 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
   String _getStepTitle() {
     switch (_currentStep) {
       case 0:
-        return 'Kaart Details';
+        return AppLocalizations.of(context).wizardStepBasicInfo;
       case 1:
-        return 'Barcode Toevoegen';
+        return AppLocalizations.of(context).wizardStepCodeAndFinish;
       default:
         return '';
     }
@@ -712,7 +718,7 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              'Hoe wil je de code toevoegen?',
+              AppLocalizations.of(context).howAddCode,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -729,8 +735,8 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: AddCardPrimaryOption(
               icon: Icons.qr_code_scanner_outlined,
-              title: 'Scan Barcode',
-              subtitle: 'Gebruik je camera om een code te scannen',
+              title: AppLocalizations.of(context).scanBarcodeCTA,
+              subtitle: AppLocalizations.of(context).useCameraToScan,
               color: Theme.of(context).colorScheme.primary,
               onTap: _startScan,
             ),
@@ -752,7 +758,7 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    'of',
+                    AppLocalizations.of(context).or,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -780,8 +786,8 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                 _buildSecondaryOption(
                   context: context,
                   icon: Icons.photo_library_outlined,
-                  title: 'Import uit Afbeelding',
-                  subtitle: 'Kies een foto met een barcode of QR code',
+                  title: AppLocalizations.of(context).importFromImage,
+                  subtitle: AppLocalizations.of(context).choosePhotoWithBarcode,
                   onTap: _startImageImport,
                 ),
 
@@ -790,8 +796,8 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                 _buildSecondaryOption(
                   context: context,
                   icon: Icons.edit_outlined,
-                  title: 'Handmatige Invoer',
-                  subtitle: 'Typ de code handmatig in',
+                  title: AppLocalizations.of(context).manualEntryFull,
+                  subtitle: AppLocalizations.of(context).typeCodeManually,
                   onTap: _startManualEntry,
                 ),
               ],
@@ -841,7 +847,7 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'Handmatige Invoer',
+                        AppLocalizations.of(context).manualEntryFull,
                         style: Theme.of(
                           context,
                         ).textTheme.titleMedium?.copyWith(
@@ -854,8 +860,8 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                   const SizedBox(height: 24),
 
                   // Enhanced card type dropdown
-                  const Text(
-                    'Type Kaart',
+                  Text(
+                    AppLocalizations.of(context).cardTypeLabel,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 12),
@@ -927,7 +933,7 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
 
                   // Enhanced code input
                   Text(
-                    'Code',
+                    AppLocalizations.of(context).code,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
@@ -956,8 +962,10 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                       decoration: InputDecoration(
                         hintText:
                             _cardType == CardType.qrCode
-                                ? 'QR code inhoud of URL'
-                                : 'Barcode nummer',
+                                ? AppLocalizations.of(context).enterQrCodeValue
+                                : AppLocalizations.of(
+                                  context,
+                                ).enterBarcodeValue,
                         hintStyle: Theme.of(
                           context,
                         ).textTheme.bodyMedium?.copyWith(
@@ -1000,7 +1008,8 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                             Icons.paste_outlined,
                             color: Theme.of(context).iconTheme.color,
                           ),
-                          tooltip: 'Plak vanuit klembord',
+                          tooltip:
+                              AppLocalizations.of(context).pasteFromClipboard,
                           onPressed: () async {
                             try {
                               final clipboardData = await Clipboard.getData(
@@ -1081,9 +1090,11 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                                 );
                                 if (mounted) {
                                   messenger.showSnackBar(
-                                    const SnackBar(
+                                    SnackBar(
                                       content: Text(
-                                        'Code gekopieerd naar klembord',
+                                        AppLocalizations.of(
+                                          context,
+                                        ).codeCopiedToClipboard,
                                       ),
                                     ),
                                   );

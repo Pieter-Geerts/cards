@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:simple_icons/simple_icons.dart';
 
 import '../helpers/logo_helper.dart';
+import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../services/app_navigator.dart';
 import '../widgets/card_preview_widget.dart';
@@ -87,22 +88,22 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
   String _getModeTitle() {
     switch (widget.mode) {
       case AddCardMode.scan:
-        return 'Gescande Kaart';
+        return AppLocalizations.of(context).modeScanTitle;
       case AddCardMode.gallery:
-        return 'Afbeelding Kaart';
+        return AppLocalizations.of(context).modeGalleryTitle;
       case AddCardMode.manual:
-        return 'Nieuwe Kaart';
+        return AppLocalizations.of(context).modeManualTitle;
     }
   }
 
   String _getModeSubtitle() {
     switch (widget.mode) {
       case AddCardMode.scan:
-        return 'Controleer en bewerk de gescande gegevens';
+        return AppLocalizations.of(context).modeScanSubtitle;
       case AddCardMode.gallery:
-        return 'Controleer en bewerk de afbeelding gegevens';
+        return AppLocalizations.of(context).modeGallerySubtitle;
       case AddCardMode.manual:
-        return 'Vul alle gegevens handmatig in';
+        return AppLocalizations.of(context).modeManualSubtitle;
     }
   }
 
@@ -172,8 +173,10 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
               onPressed: () {
                 // TODO: Re-scan functionality
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Opnieuw scannen komt binnenkort!'),
+                  SnackBar(
+                    content: Text(
+                      AppLocalizations.of(context).rescanComingSoon,
+                    ),
                   ),
                 );
               },
@@ -236,9 +239,12 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
           children: [
             Row(
               children: [
-                const Text(
-                  'Voorbeeld',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                Text(
+                  AppLocalizations.of(context).preview,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const Spacer(),
                 if (_isLoadingLogo)
@@ -277,9 +283,9 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Logo',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            Text(
+              AppLocalizations.of(context).logoLabel,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
 
@@ -305,14 +311,16 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Automatisch gevonden',
+                            AppLocalizations.of(context).logoAutoFound,
                             style: TextStyle(
                               fontWeight: FontWeight.w500,
                               color: Colors.green.shade700,
                             ),
                           ),
                           Text(
-                            'Logo voor "${_titleController.text}"',
+                            AppLocalizations.of(
+                              context,
+                            ).logoForTitle(_titleController.text),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.green.shade600,
@@ -337,7 +345,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
                 Expanded(
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.store),
-                    label: const Text('Zoek Logo'),
+                    label: Text(AppLocalizations.of(context).searchLogo),
                     onPressed: _openLogoSelectionSheet,
                   ),
                 ),
@@ -350,9 +358,9 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   icon: const Icon(Icons.delete, color: Colors.red),
-                  label: const Text(
-                    'Verwijder Logo',
-                    style: TextStyle(color: Colors.red),
+                  label: Text(
+                    AppLocalizations.of(context).removeLogo,
+                    style: const TextStyle(color: Colors.red),
                   ),
                   onPressed:
                       () => setState(() {
@@ -376,18 +384,18 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
       children: [
         // Title field
         _buildLabeledField(
-          'Titel *',
+          AppLocalizations.of(context).title + ' *',
           _titleController,
-          'Naam van de winkel of service',
+          AppLocalizations.of(context).storeName,
           onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: 16),
 
         // Description field
         _buildLabeledField(
-          'Omschrijving',
+          AppLocalizations.of(context).description,
           _descriptionController,
-          'Extra details (bijv. lidmaatschapsnummer)',
+          AppLocalizations.of(context).optionalDescription,
           maxLines: 2,
         ),
         const SizedBox(height: 16),
@@ -396,8 +404,8 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Type Kaart',
+            Text(
+              AppLocalizations.of(context).cardTypeLabel,
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
@@ -437,11 +445,14 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
 
         // Code field
         _buildLabeledField(
-          'Code/Barcode *',
+          AppLocalizations.of(context).code +
+              ' / ' +
+              AppLocalizations.of(context).barcode +
+              ' *',
           _codeController,
           _cardType == CardType.qrCode
-              ? 'QR code inhoud of URL'
-              : 'Barcode nummer',
+              ? AppLocalizations.of(context).enterQrCodeValue
+              : AppLocalizations.of(context).enterBarcodeValue,
           onChanged: (_) => setState(() {}),
         ),
       ],
@@ -528,9 +539,12 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
-                'Kaart Opslaan',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              child: Text(
+                AppLocalizations.of(context).save,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -538,7 +552,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
           if (!_isFormValid()) ...[
             const SizedBox(height: 8),
             Text(
-              'Vul minimaal titel en code in om op te slaan',
+              AppLocalizations.of(context).validationPleaseEnterValue,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 12,
