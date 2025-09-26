@@ -78,7 +78,11 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
         // For now, just show a message that upload will be implemented
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Custom logo upload coming soon!')),
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context).customLogoUploadComingSoon,
+              ),
+            ),
           );
         }
       }
@@ -86,7 +90,9 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error uploading logo: ${e.toString()}'),
+            content: Text(
+              '${AppLocalizations.of(context).errorUploadingLogo}: ${e.toString()}',
+            ),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );

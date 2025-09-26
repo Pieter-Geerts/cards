@@ -1,5 +1,6 @@
 import 'package:cards/widgets/logo_avatar_widget.dart';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 class CardPreviewWidget extends StatelessWidget {
   final String? logoPath;
@@ -36,7 +37,9 @@ class CardPreviewWidget extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            title,
+            title.isNotEmpty
+                ? title
+                : AppLocalizations.of(context).cardTitleFallback,
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           if (description.isNotEmpty)

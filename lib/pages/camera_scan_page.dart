@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import '../l10n/app_localizations.dart';
 
 import '../models/card_item.dart';
 
@@ -78,7 +79,10 @@ class _CameraScanPageState extends State<CameraScanPage> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('Scan Code', style: TextStyle(color: Colors.white)),
+        title: Text(
+          AppLocalizations.of(context).scanCode,
+          style: const TextStyle(color: Colors.white),
+        ),
         actions: [
           IconButton(
             onPressed: _toggleFlash,
@@ -117,9 +121,9 @@ class _CameraScanPageState extends State<CameraScanPage> {
                 color: Colors.black.withAlpha(179),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Text(
-                'Position the barcode or QR code within the frame',
-                style: TextStyle(
+              child: Text(
+                AppLocalizations.of(context).scanInstructionsTooltip,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -147,9 +151,12 @@ class _CameraScanPageState extends State<CameraScanPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
-                'Enter Code Manually',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              child: Text(
+                AppLocalizations.of(context).manualEntryFull,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),

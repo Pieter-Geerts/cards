@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 import 'add_card_form_page.dart';
+import '../l10n/app_localizations.dart';
 
 class AddCardEntryPage extends StatelessWidget {
   const AddCardEntryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Kaart Toevoegen'), elevation: 0),
       body: Padding(
@@ -20,8 +23,8 @@ class AddCardEntryPage extends StatelessWidget {
             _buildPrimaryOption(
               context,
               icon: Icons.qr_code_scanner,
-              title: 'Scan Barcode',
-              subtitle: 'Gebruik je camera om een code te scannen',
+              title: l10n.scanBarcodeCTA,
+              subtitle: l10n.useCameraToScan,
               color: Theme.of(context).primaryColor,
               onTap: () => _navigateToForm(context, AddCardMode.scan),
             ),
@@ -34,7 +37,7 @@ class AddCardEntryPage extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    'of',
+                    l10n.or,
                     style: TextStyle(
                       color: Theme.of(
                         context,
@@ -52,8 +55,8 @@ class AddCardEntryPage extends StatelessWidget {
             _buildSecondaryOption(
               context,
               icon: Icons.image,
-              title: 'Scan vanuit Afbeelding',
-              subtitle: 'Selecteer een afbeelding uit je galerij',
+              title: l10n.importFromImage,
+              subtitle: l10n.scanFromImageSubtitle,
               onTap: () => _navigateToForm(context, AddCardMode.gallery),
             ),
 
@@ -62,8 +65,8 @@ class AddCardEntryPage extends StatelessWidget {
             _buildSecondaryOption(
               context,
               icon: Icons.edit,
-              title: 'Handmatige Invoer',
-              subtitle: 'Typ de code handmatig in',
+              title: l10n.manualEntryFull,
+              subtitle: l10n.typeCodeManually,
               onTap: () => _navigateToForm(context, AddCardMode.manual),
             ),
           ],

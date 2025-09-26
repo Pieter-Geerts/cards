@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 class AddCardLogoSelector extends StatelessWidget {
   final IconData? selectedLogoIcon;
@@ -51,7 +52,9 @@ class AddCardLogoSelector extends StatelessWidget {
                       child: Icon(selectedLogoIcon, size: 24),
                     ),
                     const SizedBox(width: 16),
-                    Expanded(child: Text('Logo geselecteerd')),
+                    Expanded(
+                      child: Text(AppLocalizations.of(context).logoSelected),
+                    ),
                     Icon(Icons.arrow_forward_ios, size: 20),
                   ],
                 )
@@ -76,7 +79,9 @@ class AddCardLogoSelector extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Expanded(child: Text('Logo kiezen')),
+                    Expanded(
+                      child: Text(AppLocalizations.of(context).selectALogo),
+                    ),
                     Icon(Icons.arrow_forward_ios, size: 20),
                   ],
                 ),

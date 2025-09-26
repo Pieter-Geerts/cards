@@ -181,7 +181,7 @@ enum AddCardFlowMode {
   String get displayName {
     switch (this) {
       case AddCardFlowMode.selection:
-        return 'Kies Methode';
+        return 'Kies Methode'; // localized usage should be done at call site
       case AddCardFlowMode.scan:
         return 'Scan Code';
       case AddCardFlowMode.manual:

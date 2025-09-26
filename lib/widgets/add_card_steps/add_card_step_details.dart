@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 class AddCardStepDetails extends StatelessWidget {
   final TextEditingController titleController;
@@ -51,7 +52,7 @@ class AddCardStepDetails extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Titel *',
+                  AppLocalizations.of(context).title + ' *',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -65,7 +66,7 @@ class AddCardStepDetails extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Naam van de kaart',
+                    hintText: AppLocalizations.of(context).companyOrNameLabel,
                     filled: true,
                     fillColor: fillColor,
                     border: OutlineInputBorder(
@@ -80,7 +81,7 @@ class AddCardStepDetails extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Beschrijving',
+                  AppLocalizations.of(context).description,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -95,7 +96,7 @@ class AddCardStepDetails extends StatelessWidget {
                   ),
                   maxLines: 3,
                   decoration: InputDecoration(
-                    hintText: 'Optionele beschrijving van de kaart',
+                    hintText: AppLocalizations.of(context).optionalDescription,
                     filled: true,
                     fillColor: fillColor,
                     border: OutlineInputBorder(
@@ -110,7 +111,7 @@ class AddCardStepDetails extends StatelessWidget {
                 ),
                 const SizedBox(height: 28),
                 Text(
-                  'Logo',
+                  AppLocalizations.of(context).logoLabel,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -178,7 +179,11 @@ class AddCardStepDetails extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 16),
-                                Expanded(child: Text('Logo kiezen')),
+                                Expanded(
+                                  child: Text(
+                                    AppLocalizations.of(context).selectALogo,
+                                  ),
+                                ),
                                 Icon(Icons.arrow_forward_ios, size: 20),
                               ],
                             ),

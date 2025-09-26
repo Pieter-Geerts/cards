@@ -181,7 +181,7 @@ class _HomePageState extends State<HomePage> {
     return [
       IconButton(
         icon: const Icon(Icons.upload_file),
-        tooltip: 'Import cards from JSON',
+        tooltip: l10n.importCardsFromJsonTooltip,
         onPressed: () async {
           final typeGroup = XTypeGroup(label: 'json', extensions: ['json']);
           final file = await openFile(acceptedTypeGroups: [typeGroup]);
@@ -209,13 +209,13 @@ class _HomePageState extends State<HomePage> {
               if (mounted) {
                 ScaffoldMessenger.of(
                   context,
-                ).showSnackBar(SnackBar(content: Text('Import successful!')));
+                ).showSnackBar(SnackBar(content: Text(l10n.importSuccessful)));
               }
             } catch (e) {
               if (mounted) {
                 ScaffoldMessenger.of(
                   context,
-                ).showSnackBar(SnackBar(content: Text('Invalid JSON file.')));
+                ).showSnackBar(SnackBar(content: Text(l10n.invalidJsonFile)));
               }
             }
           }

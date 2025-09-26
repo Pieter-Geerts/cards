@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../models/card_item.dart';
+import '../l10n/app_localizations.dart';
 
 class ImageScanPage extends StatefulWidget {
   final String imagePath;
@@ -32,11 +33,14 @@ class _ImageScanPageState extends State<ImageScanPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan from Image'),
+        title: Text(AppLocalizations.of(context).scanFromImageTitle),
         actions: [
           TextButton(
             onPressed: _canSave() ? _saveCode : null,
-            child: const Text('Save', style: TextStyle(color: Colors.white)),
+            child: Text(
+              AppLocalizations.of(context).save,
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -64,7 +68,7 @@ class _ImageScanPageState extends State<ImageScanPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              'Look at the image above and enter the barcode or QR code content below:',
+              AppLocalizations.of(context).scanFromImageInstructions,
               style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
               textAlign: TextAlign.center,
             ),
@@ -81,8 +85,8 @@ class _ImageScanPageState extends State<ImageScanPage> {
                   const SizedBox(height: 16),
 
                   // Code type selector
-                  const Text(
-                    'Code Type',
+                  Text(
+                    AppLocalizations.of(context).cardTypeLabel,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 8),
@@ -114,8 +118,8 @@ class _ImageScanPageState extends State<ImageScanPage> {
                   const SizedBox(height: 16),
 
                   // Code input field
-                  const Text(
-                    'Code Content',
+                  Text(
+                    AppLocalizations.of(context).code,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 8),
@@ -126,8 +130,8 @@ class _ImageScanPageState extends State<ImageScanPage> {
                     decoration: InputDecoration(
                       hintText:
                           _selectedType == CardType.qrCode
-                              ? 'Enter QR code content (URL, text, etc.)'
-                              : 'Enter barcode number',
+                              ? AppLocalizations.of(context).enterQrCodeValue
+                              : AppLocalizations.of(context).enterBarcodeValue,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: Colors.grey.shade300),
@@ -159,8 +163,8 @@ class _ImageScanPageState extends State<ImageScanPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        'Save Code',
+                      child: Text(
+                        AppLocalizations.of(context).save,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

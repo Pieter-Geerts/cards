@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/card_item.dart';
 import '../services/performance_monitoring_service.dart';
 import '../widgets/logo_avatar_widget.dart';
+import '../l10n/app_localizations.dart';
 
 /// High-performance card preview widget with advanced optimization
 /// Reduces rebuilds through intelligent caching and minimal state changes
@@ -153,7 +154,9 @@ class _OptimizedCardPreviewState extends State<OptimizedCardPreview> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                widget.title.isNotEmpty ? widget.title : 'Kaart Titel',
+                widget.title.isNotEmpty
+                    ? widget.title
+                    : AppLocalizations.of(context).cardTitleFallback,
                 style: titleStyle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -181,7 +184,9 @@ class _OptimizedCardPreviewState extends State<OptimizedCardPreview> {
         _buildLogoSection(),
         const SizedBox(height: 12),
         Text(
-          widget.title.isNotEmpty ? widget.title : 'Kaart Titel',
+          widget.title.isNotEmpty
+              ? widget.title
+              : AppLocalizations.of(context).cardTitleFallback,
           style: titleStyle,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
@@ -205,7 +210,10 @@ class _OptimizedCardPreviewState extends State<OptimizedCardPreview> {
     return LogoAvatarWidget(
       logoKey: widget.logoPath,
       logoIcon: widget.logoIcon,
-      title: widget.title.isNotEmpty ? widget.title : 'Kaart',
+      title:
+          widget.title.isNotEmpty
+              ? widget.title
+              : AppLocalizations.of(context).cardLabel,
       size: widget.logoSize,
       background: widget.background ?? Colors.transparent,
     );

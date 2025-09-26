@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/card_item.dart';
 import '../widgets/card_preview_widget.dart';
+import '../l10n/app_localizations.dart';
 
 class AddCardPage extends StatefulWidget {
   const AddCardPage({super.key});
@@ -65,12 +66,12 @@ class _AddCardPageState extends State<AddCardPage> {
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text('Voeg Kaart Toe'),
+        title: Text(AppLocalizations.of(context).addCard),
         centerTitle: true,
         actions: [
           IconButton(
             icon: Icon(Icons.check),
-            tooltip: 'Opslaan',
+            tooltip: AppLocalizations.of(context).save,
             onPressed: saveChanges,
           ),
         ],
@@ -98,7 +99,7 @@ class _AddCardPageState extends State<AddCardPage> {
                 children: [
                   ElevatedButton.icon(
                     icon: Icon(Icons.upload),
-                    label: Text('Upload Logo'),
+                    label: Text(AppLocalizations.of(context).uploadLogo),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
@@ -115,7 +116,7 @@ class _AddCardPageState extends State<AddCardPage> {
                   TextButton.icon(
                     icon: Icon(Icons.delete, color: Colors.red),
                     label: Text(
-                      'Verwijder Logo',
+                      AppLocalizations.of(context).removeLogo,
                       style: TextStyle(color: Colors.red),
                     ),
                     onPressed:
@@ -128,36 +129,40 @@ class _AddCardPageState extends State<AddCardPage> {
               const SizedBox(height: 24),
               // Card Details Section
               Text(
-                'Kaart Gegevens',
+                AppLocalizations.of(context).cardDetails,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
               _buildLabeledField(
-                'Titel',
+                AppLocalizations.of(context).title,
                 _titleController,
-                'Naam van de winkel of service',
+                AppLocalizations.of(context).titleHint,
               ),
               const SizedBox(height: 16),
               _buildLabeledField(
-                'Omschrijving',
+                AppLocalizations.of(context).description,
                 _descriptionController,
-                'Extra details (bijv. lidmaatschapsnummer)',
+                AppLocalizations.of(context).descriptionHint,
                 optional: true,
               ),
               const SizedBox(height: 16),
-              _buildDropdownField('Kaarttype', _selectedCardType, (val) {
-                if (val != null) setState(() => _selectedCardType = val);
-              }),
+              _buildDropdownField(
+                AppLocalizations.of(context).cardTypeLabel,
+                _selectedCardType,
+                (val) {
+                  if (val != null) setState(() => _selectedCardType = val);
+                },
+              ),
               const SizedBox(height: 16),
               _buildLabeledField(
-                'Code',
+                AppLocalizations.of(context).code,
                 _codeController,
-                'De code voor de QR/Barcode',
+                AppLocalizations.of(context).codeValueLabel,
               ),
               const SizedBox(height: 28),
               // Code Visualization Section
               Text(
-                'Code Voorbeeld',
+                AppLocalizations.of(context).codePreview,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
@@ -173,7 +178,7 @@ class _AddCardPageState extends State<AddCardPage> {
               const SizedBox(height: 12),
               ElevatedButton.icon(
                 icon: Icon(Icons.camera_alt),
-                label: Text('Scan Code'),
+                label: Text(AppLocalizations.of(context).scanCode),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
@@ -204,7 +209,7 @@ class _AddCardPageState extends State<AddCardPage> {
                   ),
                 ),
                 child: Text(
-                  'Opslaan',
+                  AppLocalizations.of(context).save,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -212,7 +217,7 @@ class _AddCardPageState extends State<AddCardPage> {
             const SizedBox(width: 16),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Annuleren'),
+              child: Text(AppLocalizations.of(context).cancel),
             ),
           ],
         ),
