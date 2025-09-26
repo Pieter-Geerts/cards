@@ -187,7 +187,10 @@ class _CardDetailPageState extends State<CardDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Card(
-                color: Colors.white,
+                // Use the theme surface variant so the card reads correctly in
+                // both light and dark modes. Avoid hard-coded white which can
+                // be too bright or clash with dark backgrounds.
+                color: theme.colorScheme.surfaceVariant,
                 margin: const EdgeInsets.symmetric(vertical: 24),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
