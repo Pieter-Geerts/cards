@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../models/card_item.dart';
 import '../l10n/app_localizations.dart';
+import '../models/card_item.dart';
 import '../services/add_card_flow_manager.dart';
 import '../services/error_handling_service.dart';
 import '../services/logo_cache_service.dart';

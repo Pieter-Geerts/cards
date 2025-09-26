@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../models/card_item.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/card_item.dart';
 
 class AddCardStepCode extends StatelessWidget {
   final CardType cardType;

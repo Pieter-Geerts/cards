@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../widgets/card_preview_widget.dart';
-import '../l10n/app_localizations.dart';
 
 class AddCardPage extends StatefulWidget {
   const AddCardPage({super.key});
