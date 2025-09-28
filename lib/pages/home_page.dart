@@ -1,19 +1,13 @@
 import 'dart:convert';
-import 'dart:io';
-import 'dart:ui' as ui;
 
-import 'package:barcode_widget/barcode_widget.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../helpers/database_helper.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../services/add_card_flow_manager.dart';
+import '../services/share_service.dart';
 import '../widgets/card_list_widget.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/home_app_bar.dart';
@@ -282,66 +276,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // ...existing code...
-  Future<void> _shareCardAsImage(CardItem card) async {
-    final boundaryKey = GlobalKey();
-    final isQr = card.isQrCode;
-    final imageWidget = Material(
-      type: MaterialType.transparency,
-      child: Center(
-        child: RepaintBoundary(
-          key: boundaryKey,
-          child: Container(
-            color: Theme.of(context).colorScheme.surface,
-            padding: const EdgeInsets.all(24),
-            child:
-                isQr
-                    ? QrImageView(
-                      data: card.name,
-                      size: 320,
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      eyeStyle: const QrEyeStyle(color: Colors.black), // Added
-                      dataModuleStyle: const QrDataModuleStyle(
-                        color: Colors.black,
-                      ),
-                    )
-                    : BarcodeWidget(
-                      barcode: Barcode.code128(),
-                      data: card.name,
-                      width: 320,
-                      height: 120,
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      color: Theme.of(context).colorScheme.onSurface,
-                      drawText: false,
-                    ),
-          ),
-        ),
-      ),
-    );
-    final overlay = OverlayEntry(builder: (_) => imageWidget);
-    Overlay.of(context).insert(overlay);
-    await Future.delayed(const Duration(milliseconds: 100));
-    try {
-      final boundary =
-          boundaryKey.currentContext?.findRenderObject()
-              as RenderRepaintBoundary?;
-      if (boundary != null) {
-        final image = await boundary.toImage(pixelRatio: 3.0);
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-        if (byteData != null) {
-          final pngBytes = byteData.buffer.asUint8List();
-          final tempDir = await getTemporaryDirectory();
-          final file =
-              await File(
-                '${tempDir.path}/card_${card.id ?? card.name}.png',
-              ).create();
-          await file.writeAsBytes(pngBytes);
-          await Share.shareXFiles([XFile(file.path)], text: card.title);
-        }
-      }
-    } finally {
-      overlay.remove();
-    }
-  }
+  // Use ShareService.shareCardAsImage to share a card consistently across the app.
 
   void _showCardActions(
     BuildContext context,
@@ -396,7 +331,7 @@ class _HomePageState extends State<HomePage> {
                 title: Text(l10n.shareAsImageAction),
                 onTap: () async {
                   Navigator.of(modalContext).pop(); // Close modal first
-                  await _shareCardAsImage(card);
+                  await ShareService.shareCardAsImageStatic(context, card);
                 },
               ),
               const SizedBox(height: 16),
