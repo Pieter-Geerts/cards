@@ -159,7 +159,7 @@
   "stepCounter": "Stap {current} van {total}",
   "@stepCounter": { "placeholders": { "current": {}, "total": {} } },
   "searchLogo": "Zoek Logo",
-  "debugCardData": "Debug Card Data",
+  
   "scan": "Scannen",
   "code": "Code",
   "addToWallet": "Toevoegen aan Wallet",
