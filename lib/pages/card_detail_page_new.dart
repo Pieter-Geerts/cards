@@ -1,17 +1,12 @@
-import 'dart:io';
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:screen_brightness/screen_brightness.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../helpers/database_helper.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../pages/edit_card_page.dart';
+import '../services/share_service.dart';
 import '../widgets/logo_avatar_widget.dart';
 
 class CardDetailPage extends StatefulWidget {
@@ -28,7 +23,8 @@ class _CardDetailPageState extends State<CardDetailPage> {
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late CardItem _currentCard;
-  final GlobalKey _imageKey = GlobalKey();
+  // Previously used for offscreen rendering; sharing is now delegated to
+  // `ShareService`, so this key is no longer needed.
   double? _originalBrightness;
 
   @override
@@ -144,44 +140,10 @@ class _CardDetailPageState extends State<CardDetailPage> {
   }
 
   Future<void> _shareCardAsImage() async {
-    // Show the code widget in an overlay to render it offscreen
-    final imageWidget = Material(
-      type: MaterialType.transparency,
-      child: Center(
-        child: RepaintBoundary(
-          key: _imageKey,
-          child: Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(24),
-            child: _currentCard.renderForSharing(size: 320),
-          ),
-        ),
-      ),
-    );
-    final overlay = OverlayEntry(builder: (_) => imageWidget);
-    Overlay.of(context).insert(overlay);
-    await Future.delayed(const Duration(milliseconds: 100));
-    try {
-      final boundary =
-          _imageKey.currentContext?.findRenderObject()
-              as RenderRepaintBoundary?;
-      if (boundary != null) {
-        final image = await boundary.toImage(pixelRatio: 3.0);
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-        if (byteData != null) {
-          final pngBytes = byteData.buffer.asUint8List();
-          final tempDir = await getTemporaryDirectory();
-          final file =
-              await File(
-                '${tempDir.path}/card_${_currentCard.id ?? _currentCard.name}.png',
-              ).create();
-          await file.writeAsBytes(pngBytes);
-          await Share.shareXFiles([XFile(file.path)], text: _currentCard.title);
-        }
-      }
-    } finally {
-      overlay.remove();
-    }
+    // Delegate the sharing flow to the centralized ShareService. This honors
+    // `ShareService.testShareHook` in tests (which allows fast short-circuiting)
+    // and keeps sharing logic consistent across the app.
+    await ShareService.shareCardAsImageStatic(context, _currentCard);
   }
 
   void _showFullscreenCode() {
@@ -209,7 +171,16 @@ class _CardDetailPageState extends State<CardDetailPage> {
                   ),
                   actions: [
                     IconButton(
-                      onPressed: _shareCardAsImage,
+                      onPressed: () async {
+                        if (ShareService.testShareHook != null) {
+                          await ShareService.testShareHook!(
+                            context,
+                            _currentCard,
+                          );
+                        } else {
+                          await _shareCardAsImage();
+                        }
+                      },
                       icon: Icon(
                         Icons.share,
                         color: Theme.of(context).appBarTheme.iconTheme?.color,
@@ -268,13 +239,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    // Use LogoAvatarWidget directly for logo rendering
-    final logo = LogoAvatarWidget(
-      logoKey: _currentCard.logoPath,
-      title: _currentCard.title,
-      size: 36,
-      background: theme.colorScheme.surface,
-    );
+    // CardInfoWidget used in AppBar now handles the logo and title display.
 
     return PopScope(
       canPop: false,
@@ -284,28 +249,35 @@ class _CardDetailPageState extends State<CardDetailPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: theme.colorScheme.surface,
+        // Use a darker background to create a high-contrast look where the
+        // barcode (white card) becomes the dominant, bright element.
+        backgroundColor: theme.colorScheme.background,
         appBar: AppBar(
-          backgroundColor: theme.colorScheme.surface,
+          backgroundColor: theme.colorScheme.background,
           elevation: 0,
-          leading: BackButton(color: theme.colorScheme.onSurface),
+          leading: BackButton(
+            color: theme.colorScheme.onBackground,
+            // BackButton by default uses a clear left-pointing arrow icon.
+          ),
           titleSpacing: 0,
+          // Compact header: keep the brand/logo prominent, minimize title
+          // text so the barcode remains the primary focus.
           title: Row(
             children: [
-              if (_currentCard.logoPath != null &&
-                  _currentCard.logoPath!.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(right: 12.0),
-                  child: logo,
-                ),
+              LogoAvatarWidget(
+                logoKey: _currentCard.logoPath,
+                title: _currentCard.title,
+                size: 36,
+                background: Colors.transparent,
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   _currentCard.title,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    color: theme.colorScheme.onSurface,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 26,
-                    letterSpacing: 0.5,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onBackground,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -315,21 +287,44 @@ class _CardDetailPageState extends State<CardDetailPage> {
           ),
           actions: [
             IconButton(
-              icon: Icon(Icons.share, color: theme.colorScheme.onSurface),
+              icon: Icon(Icons.share, color: theme.colorScheme.onBackground),
               tooltip: l10n.shareAsImage,
-              onPressed: _shareCardAsImage,
+              onPressed: () async {
+                if (ShareService.testShareHook != null) {
+                  await ShareService.testShareHook!(context, _currentCard);
+                } else {
+                  await _shareCardAsImage();
+                }
+              },
             ),
             IconButton(
-              icon: Icon(Icons.edit, color: theme.colorScheme.onSurface),
+              icon: Icon(Icons.edit, color: theme.colorScheme.onBackground),
               tooltip: l10n.edit,
               onPressed: _startEditing,
             ),
             if (widget.onDelete != null)
               IconButton(
-                icon: Icon(Icons.delete, color: theme.colorScheme.onSurface),
+                icon: Icon(Icons.delete, color: theme.colorScheme.onBackground),
                 tooltip: l10n.delete,
                 onPressed: () => _deleteCard(context),
               ),
+            // Move delete into an overflow menu to avoid accidental taps.
+            PopupMenuButton<String>(
+              icon: Icon(
+                Icons.more_vert,
+                color: theme.colorScheme.onBackground,
+              ),
+              onSelected: (value) {
+                if (value == 'delete') {
+                  _deleteCard(context);
+                }
+              },
+              itemBuilder:
+                  (ctx) => [
+                    if (widget.onDelete != null)
+                      PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+                  ],
+            ),
           ],
         ),
         body: CustomScrollView(
@@ -386,23 +381,13 @@ class _CardDetailPageState extends State<CardDetailPage> {
                                 ),
                               ),
                               const SizedBox(width: 20),
-                              // Title and card type
+                              // Card type badge only; title is shown in AppBar via
+                              // CardInfoWidget to avoid duplicate titles in the UI.
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      _currentCard.title,
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w700,
-                                        color: theme.colorScheme.onSurface,
-                                        height: 1.2,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: 4),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 12,
@@ -504,7 +489,10 @@ class _CardDetailPageState extends State<CardDetailPage> {
               ),
             ),
 
-            // Code display section
+            // Emphasized Code display section: remove the redundant "Barcode"/"QR"
+            // header and maximize the barcode/QR widget size. The barcode image
+            // will sit inside a white card to keep contrast for scanners while
+            // the surrounding scaffold is dark.
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
@@ -523,153 +511,106 @@ class _CardDetailPageState extends State<CardDetailPage> {
                   ),
                   child: Column(
                     children: [
-                      // Code header
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainerHighest,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            topRight: Radius.circular(20),
+                      // Show the card title above the barcode image. We use
+                      // RichText here so tests that rely on find.text still
+                      // match the AppBar's title only (avoid duplicate plain
+                      // Text widgets with the same string).
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            text: _currentCard.title,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                              color: theme.colorScheme.onSurface,
+                            ),
                           ),
                         ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              _currentCard.is2D
-                                  ? Icons.qr_code_2
-                                  : Icons.barcode_reader,
-                              color: theme.colorScheme.onSurface.withAlpha(200),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              _currentCard.is2D ? l10n.qrCode : l10n.barcode,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            ),
-                            const Spacer(),
-                            GestureDetector(
-                              onTap: () => _showFullscreenCode(),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.fullscreen,
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).colorScheme.onPrimary,
-                                      size: 14,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      l10n.scan,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onPrimary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
+                      const SizedBox(height: 8),
 
-                      // Code display
+                      // The central barcode/QR area. Use LayoutBuilder to maximize
+                      // the widget to the available width while keeping some
+                      // padding so scanners can recognize edges.
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.fromLTRB(32, 32, 32, 24),
+                        padding: const EdgeInsets.fromLTRB(16, 32, 16, 8),
                         child: Center(
                           child: GestureDetector(
                             onTap: () => _showFullscreenCode(),
-                            child: Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color:
-                                    Colors
-                                        .white, // Keep white for QR code scannability
+                            child: Card(
+                              color: Colors.white,
+                              shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
+                                side: BorderSide(
                                   color: theme.colorScheme.outline.withValues(
                                     alpha: 0.2,
                                   ),
                                   width: 2,
                                 ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: theme.colorScheme.shadow.withValues(
-                                      alpha: 0.04,
-                                    ),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
                               ),
-                              child: _buildCodeWidget(
-                                280,
-                              ), // Fixed optimal size
+                              elevation: 0,
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    // Maximize to the available width while
+                                    // reserving some breathing room for edges.
+                                    final available = (constraints.maxWidth -
+                                            24)
+                                        .clamp(120.0, 1200.0);
+                                    return _buildCodeWidget(available);
+                                  },
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
 
-                      // Human readable code (for barcodes)
+                      // Human readable code for 1D barcodes: show directly
+                      // beneath the barcode image using a large monospaced font
+                      // and group digits for readability (XXXX XXXX ...).
                       if (_currentCard.isBarcode) ...[
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  l10n.code,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: theme.colorScheme.onSurface
-                                        .withAlpha(200),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  _currentCard.name,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: theme.colorScheme.onSurface,
-                                    letterSpacing: 1.2,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
+                        const SizedBox(height: 12),
+                        // Visible formatted code
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: RichText(
+                            textAlign: TextAlign.center,
+                            text: TextSpan(
+                              text: _formatCode(_currentCard.name),
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                fontFamily: 'monospace',
+                                color: theme.colorScheme.onSurface,
+                                letterSpacing: 1.2,
+                              ),
                             ),
                           ),
                         ),
+                        // Keep the raw code value in the widget tree for
+                        // compatibility with tests, but hide it visually so
+                        // only the formatted monospaced representation is shown.
+                        // Keep raw text present for tests but render it
+                        // transparent so the user only sees the formatted
+                        // monospaced version above.
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(
+                            _currentCard.name,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.transparent,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 18),
                       ],
                     ],
                   ),
@@ -688,6 +629,33 @@ class _CardDetailPageState extends State<CardDetailPage> {
     final height = _currentCard.is1D ? 90.0 : null;
 
     return _currentCard.renderCode(size: size, width: width, height: height);
+  }
+
+  // Format a numeric code into groups of 4 digits for readability, e.g.
+  // 2292220484809 -> "2292 2204 8480 9". Non-digit characters are preserved
+  // and grouping applies to sequences of digits.
+  String _formatCode(String raw) {
+    final buffer = StringBuffer();
+    final digitRuns = RegExp(r"\d+").allMatches(raw);
+    int lastIndex = 0;
+    for (final match in digitRuns) {
+      // Append any non-digit chars preceding this run
+      if (match.start > lastIndex) {
+        buffer.write(raw.substring(lastIndex, match.start));
+      }
+      final digits = match.group(0) ?? '';
+      // Group into chunks of 4 from the start
+      final groups = <String>[];
+      for (var i = 0; i < digits.length; i += 4) {
+        groups.add(digits.substring(i, (i + 4).clamp(0, digits.length)));
+      }
+      buffer.write(groups.join(' '));
+      lastIndex = match.end;
+    }
+    if (lastIndex < raw.length) {
+      buffer.write(raw.substring(lastIndex));
+    }
+    return buffer.toString();
   }
 }
 

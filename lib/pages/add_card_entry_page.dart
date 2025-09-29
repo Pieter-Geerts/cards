@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'add_card_form_page.dart';
 import '../l10n/app_localizations.dart';
+import 'add_card_form_page.dart';
 
 class AddCardEntryPage extends StatelessWidget {
   const AddCardEntryPage({super.key});

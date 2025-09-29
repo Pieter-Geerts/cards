@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:simple_icons/simple_icons.dart';
-import '../l10n/app_localizations.dart';
 
 import '../helpers/logo_helper.dart';
+import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../services/app_navigator.dart';
 import '../widgets/card_preview_widget.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import '../l10n/app_localizations.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 
 class CameraScanPage extends StatefulWidget {

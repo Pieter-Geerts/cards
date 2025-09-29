@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../services/performance_monitoring_service.dart';
 import '../widgets/logo_avatar_widget.dart';
-import '../l10n/app_localizations.dart';
 
 /// High-performance card preview widget with advanced optimization
 /// Reduces rebuilds through intelligent caching and minimal state changes

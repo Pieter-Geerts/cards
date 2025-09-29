@@ -4,10 +4,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../l10n/app_localizations.dart';
 
 import '../config/preset_cards.dart';
 import '../helpers/image_scan_helper.dart';
+import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../pages/camera_scan_page.dart';
 import '../pages/image_scan_page.dart';
