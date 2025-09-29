@@ -101,22 +101,53 @@ class ShareService {
     final overlay = OverlayEntry(builder: (_) => imageWidget);
     final overlayState = Overlay.of(context);
     overlayState.insert(overlay);
-    await Future.delayed(const Duration(milliseconds: 100));
+
     try {
-      final boundary = boundaryKey.currentContext?.findRenderObject();
-      if (boundary is RenderRepaintBoundary) {
-        final image = await boundary.toImage(pixelRatio: 3.0);
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-        if (byteData != null) {
-          final pngBytes = byteData.buffer.asUint8List();
-          final tempDir = await _getTempDir();
-          final file =
-              await File(
-                '${tempDir.path}/card_${card.id ?? card.name}.png',
-              ).create();
-          await file.writeAsBytes(pngBytes);
-          await _shareFiles([XFile(file.path)], text: card.title);
+      // Wait until the RepaintBoundary is attached and has a non-zero size.
+      // QR rendering widgets can sometimes update asynchronously; poll with a
+      // short timeout to avoid racing conditions where toImage() would return
+      // an empty image.
+      RenderObject? boundary;
+      const int maxAttempts = 20;
+      int attempts = 0;
+      while (attempts < maxAttempts) {
+        boundary = boundaryKey.currentContext?.findRenderObject();
+        if (boundary is RenderRepaintBoundary) {
+          final renderBox = boundary as RenderBox;
+          if (renderBox.hasSize &&
+              renderBox.size.width > 0 &&
+              renderBox.size.height > 0) {
+            break;
+          }
         }
+        await Future.delayed(const Duration(milliseconds: 50));
+        attempts += 1;
+      }
+
+      if (boundary is RenderRepaintBoundary) {
+        try {
+          final image = await boundary.toImage(pixelRatio: 3.0);
+          final byteData = await image.toByteData(
+            format: ui.ImageByteFormat.png,
+          );
+          if (byteData != null) {
+            final pngBytes = byteData.buffer.asUint8List();
+            final tempDir = await _getTempDir();
+            final file =
+                await File(
+                  '${tempDir.path}/card_${card.id ?? card.name}.png',
+                ).create();
+            await file.writeAsBytes(pngBytes);
+            await _shareFiles([XFile(file.path)], text: card.title);
+          }
+        } catch (e) {
+          // If toImage fails for any reason, log and silently fail the share
+          // so the rest of the app isn't affected. In production we'd surface
+          // this via Sentry or a user-visible Snackbar.
+          debugPrint('Failed to capture share image: $e');
+        }
+      } else {
+        debugPrint('Failed to find a painted RepaintBoundary for sharing.');
       }
     } finally {
       overlay.remove();
