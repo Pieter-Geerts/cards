@@ -222,6 +222,7 @@ class _HomePageState extends State<HomePage> {
             setState(() {
               _searchController.clear();
               _searchQuery = '';
+              _isSearchActive = false;
               _applySearchFilter();
             });
           },
@@ -252,8 +253,33 @@ class _HomePageState extends State<HomePage> {
     final l10n = AppLocalizations.of(context);
     // Debug logging removed
 
+    // Display a TextField in the AppBar when search mode is active so the
+    // user can type queries directly. The HomeAppBar accepts an optional
+    // titleWidget which we populate here.
+    final titleWidget =
+        _isSearchActive
+            ? TextField(
+              controller: _searchController,
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: l10n.search,
+                border: InputBorder.none,
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.trim();
+                  _applySearchFilter();
+                });
+              },
+            )
+            : null;
+
     return Scaffold(
-      appBar: HomeAppBar(l10n: l10n, actions: _buildAppBarActions(l10n)),
+      appBar: HomeAppBar(
+        l10n: l10n,
+        actions: _buildAppBarActions(l10n),
+        titleWidget: titleWidget,
+      ),
       body:
           _displayedCards.isEmpty
               ? EmptyStateWidget(onAddCard: _navigateToAddCardPage)
