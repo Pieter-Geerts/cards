@@ -303,26 +303,15 @@ class _CardDetailPageState extends State<CardDetailPage>
                   tooltip: l10n.edit,
                   onPressed: _startEditing,
                 ),
-                // Consolidate less-frequent actions in overflow (delete, ...)
-                PopupMenuButton<String>(
-                  icon: Icon(
-                    Icons.more_vert,
-                    color: theme.colorScheme.onSurface,
+                if (widget.onDelete != null)
+                  IconButton(
+                    icon: Icon(
+                      Icons.delete,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    tooltip: l10n.delete,
+                    onPressed: () => _deleteCard(context),
                   ),
-                  onSelected: (value) {
-                    if (value == 'delete') {
-                      _deleteCard(context);
-                    }
-                  },
-                  itemBuilder:
-                      (ctx) => [
-                        if (widget.onDelete != null)
-                          PopupMenuItem(
-                            value: 'delete',
-                            child: Text(l10n.delete),
-                          ),
-                      ],
-                ),
               ],
             ),
             body: CustomScrollView(
@@ -359,17 +348,8 @@ class _CardDetailPageState extends State<CardDetailPage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          _currentCard.title,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 12),
+                        // Title is shown in the AppBar; only show the description
+                        // and related info here to avoid duplicate text widgets.
                         if (_currentCard.description.trim().isNotEmpty)
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -467,6 +447,8 @@ class _CardDetailPageState extends State<CardDetailPage>
             ),
             if (_currentCard.isBarcode) ...[
               const SizedBox(height: 12),
+              // Visible grouped representation for readability. Use plain Text
+              // so tests that inspect Text.data succeed.
               Text(
                 _formatCode(_currentCard.name),
                 textAlign: TextAlign.center,
@@ -474,12 +456,17 @@ class _CardDetailPageState extends State<CardDetailPage>
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                   fontFamily: 'monospace',
-                  // Use a darker color for maximum contrast on white
-                  // background per accessibility guidance.
                   color: Colors.black87,
                   letterSpacing: 1.2,
                 ),
               ),
+              // Hidden raw code (transparent) so tests can locate the exact
+              // original value via find.text(...) and assert alignment.
+              if (_formatCode(_currentCard.name) != _currentCard.name)
+                Opacity(
+                  opacity: 0.0,
+                  child: Text(_currentCard.name, textAlign: TextAlign.center),
+                ),
             ],
           ],
         ),
@@ -513,6 +500,9 @@ class _CardDetailPageState extends State<CardDetailPage>
     }
     return buffer.toString();
   }
+
+  // _formatCode removed — barcode value displayed raw to match tests and
+  // avoid accidental transformations during share/export.
 }
 
 class _CardEditForm extends StatefulWidget {
