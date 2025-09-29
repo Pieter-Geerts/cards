@@ -95,15 +95,25 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _applySearchFilter() {
+    final query = _searchQuery.trim().toLowerCase();
     List<CardItem> filteredCards = List.from(widget.cards);
-    if (_searchQuery.isNotEmpty) {
+    if (query.isNotEmpty) {
       filteredCards =
           filteredCards.where((card) {
-            return card.title.toLowerCase().contains(
-              _searchQuery.toLowerCase(),
-            );
+            final title = card.title.toLowerCase();
+            final description = card.description.toLowerCase();
+            final name = card.name.toLowerCase();
+            final typeName = card.cardType.displayName.toLowerCase();
+            final enumName = card.cardType.name.toLowerCase();
+
+            return title.contains(query) ||
+                description.contains(query) ||
+                name.contains(query) ||
+                typeName.contains(query) ||
+                enumName.contains(query);
           }).toList();
     }
+
     setState(() {
       _displayedCards = filteredCards;
     });
