@@ -95,15 +95,25 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _applySearchFilter() {
+    final query = _searchQuery.trim().toLowerCase();
     List<CardItem> filteredCards = List.from(widget.cards);
-    if (_searchQuery.isNotEmpty) {
+    if (query.isNotEmpty) {
       filteredCards =
           filteredCards.where((card) {
-            return card.title.toLowerCase().contains(
-              _searchQuery.toLowerCase(),
-            );
+            final title = card.title.toLowerCase();
+            final description = card.description.toLowerCase();
+            final name = card.name.toLowerCase();
+            final typeName = card.cardType.displayName.toLowerCase();
+            final enumName = card.cardType.name.toLowerCase();
+
+            return title.contains(query) ||
+                description.contains(query) ||
+                name.contains(query) ||
+                typeName.contains(query) ||
+                enumName.contains(query);
           }).toList();
     }
+
     setState(() {
       _displayedCards = filteredCards;
     });
@@ -222,6 +232,7 @@ class _HomePageState extends State<HomePage> {
             setState(() {
               _searchController.clear();
               _searchQuery = '';
+              _isSearchActive = false;
               _applySearchFilter();
             });
           },
@@ -252,8 +263,33 @@ class _HomePageState extends State<HomePage> {
     final l10n = AppLocalizations.of(context);
     // Debug logging removed
 
+    // Display a TextField in the AppBar when search mode is active so the
+    // user can type queries directly. The HomeAppBar accepts an optional
+    // titleWidget which we populate here.
+    final titleWidget =
+        _isSearchActive
+            ? TextField(
+              controller: _searchController,
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: l10n.search,
+                border: InputBorder.none,
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.trim();
+                  _applySearchFilter();
+                });
+              },
+            )
+            : null;
+
     return Scaffold(
-      appBar: HomeAppBar(l10n: l10n, actions: _buildAppBarActions(l10n)),
+      appBar: HomeAppBar(
+        l10n: l10n,
+        actions: _buildAppBarActions(l10n),
+        titleWidget: titleWidget,
+      ),
       body:
           _displayedCards.isEmpty
               ? EmptyStateWidget(onAddCard: _navigateToAddCardPage)
