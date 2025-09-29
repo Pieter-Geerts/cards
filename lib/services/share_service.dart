@@ -34,7 +34,9 @@ class ShareService {
     : _getTempDir = getTempDir ?? getTemporaryDirectory,
       _shareFiles =
           shareFiles ??
-          ((files, {text}) => Share.shareXFiles(files, text: text));
+          ((files, {text}) async => await SharePlus.instance.share(
+            ShareParams(files: files, text: text),
+          ));
 
   /// Share a [card] as an image. Requires a [BuildContext] that has an Overlay.
   Future<void> shareCardAsImage(BuildContext context, CardItem card) async {

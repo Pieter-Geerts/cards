@@ -1,17 +1,12 @@
-import 'dart:io';
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:screen_brightness/screen_brightness.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../helpers/database_helper.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../pages/edit_card_page.dart';
+import '../services/share_service.dart';
 import '../widgets/logo_avatar_widget.dart';
 
 class CardDetailPage extends StatefulWidget {
@@ -28,7 +23,8 @@ class _CardDetailPageState extends State<CardDetailPage> {
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late CardItem _currentCard;
-  final GlobalKey _imageKey = GlobalKey();
+  // Previously used for offscreen rendering; sharing is now delegated to
+  // `ShareService`, so this key is no longer needed.
   double? _originalBrightness;
 
   @override
@@ -144,44 +140,10 @@ class _CardDetailPageState extends State<CardDetailPage> {
   }
 
   Future<void> _shareCardAsImage() async {
-    // Show the code widget in an overlay to render it offscreen
-    final imageWidget = Material(
-      type: MaterialType.transparency,
-      child: Center(
-        child: RepaintBoundary(
-          key: _imageKey,
-          child: Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(24),
-            child: _currentCard.renderForSharing(size: 320),
-          ),
-        ),
-      ),
-    );
-    final overlay = OverlayEntry(builder: (_) => imageWidget);
-    Overlay.of(context).insert(overlay);
-    await Future.delayed(const Duration(milliseconds: 100));
-    try {
-      final boundary =
-          _imageKey.currentContext?.findRenderObject()
-              as RenderRepaintBoundary?;
-      if (boundary != null) {
-        final image = await boundary.toImage(pixelRatio: 3.0);
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-        if (byteData != null) {
-          final pngBytes = byteData.buffer.asUint8List();
-          final tempDir = await getTemporaryDirectory();
-          final file =
-              await File(
-                '${tempDir.path}/card_${_currentCard.id ?? _currentCard.name}.png',
-              ).create();
-          await file.writeAsBytes(pngBytes);
-          await Share.shareXFiles([XFile(file.path)], text: _currentCard.title);
-        }
-      }
-    } finally {
-      overlay.remove();
-    }
+    // Delegate the sharing flow to the centralized ShareService. This honors
+    // `ShareService.testShareHook` in tests (which allows fast short-circuiting)
+    // and keeps sharing logic consistent across the app.
+    await ShareService.shareCardAsImageStatic(context, _currentCard);
   }
 
   void _showFullscreenCode() {
@@ -209,7 +171,16 @@ class _CardDetailPageState extends State<CardDetailPage> {
                   ),
                   actions: [
                     IconButton(
-                      onPressed: _shareCardAsImage,
+                      onPressed: () async {
+                        if (ShareService.testShareHook != null) {
+                          await ShareService.testShareHook!(
+                            context,
+                            _currentCard,
+                          );
+                        } else {
+                          await _shareCardAsImage();
+                        }
+                      },
                       icon: Icon(
                         Icons.share,
                         color: Theme.of(context).appBarTheme.iconTheme?.color,
@@ -318,7 +289,13 @@ class _CardDetailPageState extends State<CardDetailPage> {
             IconButton(
               icon: Icon(Icons.share, color: theme.colorScheme.onBackground),
               tooltip: l10n.shareAsImage,
-              onPressed: _shareCardAsImage,
+              onPressed: () async {
+                if (ShareService.testShareHook != null) {
+                  await ShareService.testShareHook!(context, _currentCard);
+                } else {
+                  await _shareCardAsImage();
+                }
+              },
             ),
             IconButton(
               icon: Icon(Icons.edit, color: theme.colorScheme.onBackground),

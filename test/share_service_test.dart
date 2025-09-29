@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:cards/models/card_item.dart';
+import 'package:cards/services/logo_cache_service.dart';
 import 'package:cards/services/share_service.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:cards/services/logo_cache_service.dart';
 
 void main() {
   testWidgets('ShareService places image and calls share function', (
