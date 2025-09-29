@@ -164,7 +164,7 @@
   "stepCounter": "Step {current} of {total}",
   "@stepCounter": { "placeholders": { "current": {}, "total": {} } },
   "searchLogo": "Search Logo",
-  "debugCardData": "Debug Card Data",
+  
   "scan": "Scan",
   "code": "Code",
   "addToWallet": "Add to Wallet",
