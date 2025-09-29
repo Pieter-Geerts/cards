@@ -30,6 +30,9 @@ class LogoCacheService {
   // Loading states to prevent duplicate requests
   final Set<String> _loadingSuggestions = {};
   bool _loadingAvailableLogos = false;
+  // Background timer for periodic cleanup. Stored so it can be cancelled
+  // (useful for tests to avoid keeping the process alive).
+  Timer? _cleanupTimer;
 
   /// Get suggested logo with performance monitoring and enhanced caching
   Future<IconData?> getSuggestedLogo(String title) async {
@@ -261,7 +264,7 @@ class LogoCacheService {
   /// Initializes the cache service with background cleanup
   void initialize() {
     // Set up periodic cache cleanup
-    Timer.periodic(const Duration(hours: 1), (_) {
+    _cleanupTimer = Timer.periodic(const Duration(hours: 1), (_) {
       cleanupExpiredEntries();
     });
 
@@ -273,5 +276,13 @@ class LogoCacheService {
         debugPrint('Failed to preload logos: $e');
       }
     });
+  }
+
+  /// Dispose resources started by this service (timers, isolates, etc.).
+  /// Tests should call this when they want to ensure no background
+  /// asynchronous handles remain.
+  void dispose() {
+    _cleanupTimer?.cancel();
+    _cleanupTimer = null;
   }
 }
