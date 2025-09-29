@@ -19,10 +19,12 @@ class CardDetailPage extends StatefulWidget {
   State<CardDetailPage> createState() => _CardDetailPageState();
 }
 
-class _CardDetailPageState extends State<CardDetailPage> {
+class _CardDetailPageState extends State<CardDetailPage>
+    with SingleTickerProviderStateMixin {
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late CardItem _currentCard;
+  bool _descExpanded = false;
   // Previously used for offscreen rendering; sharing is now delegated to
   // `ShareService`, so this key is no longer needed.
   double? _originalBrightness;
@@ -238,6 +240,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    // Compute a safe top offset so the floating code card sits below the
+    // AppBar and status bar on all devices.
+    final topOffset = MediaQuery.of(context).padding.top + kToolbarHeight + 8.0;
 
     // CardInfoWidget used in AppBar now handles the logo and title display.
 
@@ -248,387 +253,238 @@ class _CardDetailPageState extends State<CardDetailPage> {
           Navigator.of(context).pop(_currentCard);
         }
       },
-      child: Scaffold(
-        // Use a darker background to create a high-contrast look where the
-        // barcode (white card) becomes the dominant, bright element.
-        backgroundColor: theme.colorScheme.background,
-        appBar: AppBar(
-          backgroundColor: theme.colorScheme.background,
-          elevation: 0,
-          leading: BackButton(
-            color: theme.colorScheme.onBackground,
-            // BackButton by default uses a clear left-pointing arrow icon.
-          ),
-          titleSpacing: 0,
-          // Compact header: keep the brand/logo prominent, minimize title
-          // text so the barcode remains the primary focus.
-          title: Row(
-            children: [
-              LogoAvatarWidget(
-                logoKey: _currentCard.logoPath,
-                title: _currentCard.title,
-                size: 36,
-                background: Colors.transparent,
+      // Wrap the Scaffold in a Stack so we can place the barcode/QR card
+      // as a top-level overlay that renders above the AppBar and header.
+      child: Stack(
+        children: [
+          Scaffold(
+            // Use a darker background to create a high-contrast look where the
+            // barcode (white card) becomes the dominant, bright element.
+            backgroundColor: theme.colorScheme.background,
+            appBar: AppBar(
+              backgroundColor: theme.colorScheme.surfaceContainerHighest,
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(
+                  Icons.arrow_back,
+                  color: theme.colorScheme.onSurface,
+                ),
+                onPressed: () => Navigator.of(context).maybePop(),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  _currentCard.title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+              titleSpacing: 0,
+              // Simplified title: only show the card's name (no avatar next to it)
+              title: Text(
+                _currentCard.title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurface,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              actions: [
+                IconButton(
+                  icon: Icon(
+                    Icons.share,
                     color: theme.colorScheme.onBackground,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  tooltip: l10n.shareAsImage,
+                  onPressed: () async {
+                    if (ShareService.testShareHook != null) {
+                      await ShareService.testShareHook!(context, _currentCard);
+                    } else {
+                      await _shareCardAsImage();
+                    }
+                  },
                 ),
-              ),
-            ],
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.share, color: theme.colorScheme.onBackground),
-              tooltip: l10n.shareAsImage,
-              onPressed: () async {
-                if (ShareService.testShareHook != null) {
-                  await ShareService.testShareHook!(context, _currentCard);
-                } else {
-                  await _shareCardAsImage();
-                }
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.edit, color: theme.colorScheme.onBackground),
-              tooltip: l10n.edit,
-              onPressed: _startEditing,
-            ),
-            if (widget.onDelete != null)
-              IconButton(
-                icon: Icon(Icons.delete, color: theme.colorScheme.onBackground),
-                tooltip: l10n.delete,
-                onPressed: () => _deleteCard(context),
-              ),
-            // Move delete into an overflow menu to avoid accidental taps.
-            PopupMenuButton<String>(
-              icon: Icon(
-                Icons.more_vert,
-                color: theme.colorScheme.onBackground,
-              ),
-              onSelected: (value) {
-                if (value == 'delete') {
-                  _deleteCard(context);
-                }
-              },
-              itemBuilder:
-                  (ctx) => [
-                    if (widget.onDelete != null)
-                      PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
-                  ],
-            ),
-          ],
-        ),
-        body: CustomScrollView(
-          slivers: [
-            // Hero section - Card information
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
-                child: Column(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.colorScheme.shadow.withValues(
-                              alpha: 0.08,
-                            ),
-                            blurRadius: 20,
-                            offset: const Offset(0, 4),
+                IconButton(
+                  icon: Icon(Icons.edit, color: theme.colorScheme.onSurface),
+                  tooltip: l10n.edit,
+                  onPressed: _startEditing,
+                ),
+                // Consolidate less-frequent actions in overflow (delete, ...)
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                  onSelected: (value) {
+                    if (value == 'delete') {
+                      _deleteCard(context);
+                    }
+                  },
+                  itemBuilder:
+                      (ctx) => [
+                        if (widget.onDelete != null)
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Text(l10n.delete),
                           ),
-                        ],
+                      ],
+                ),
+              ],
+            ),
+            body: CustomScrollView(
+              slivers: [
+                // Top header with prominent brand color and centered logo
+                SliverToBoxAdapter(
+                  child: Container(
+                    // Use a dark backdrop that matches the scaffold for a focused
+                    // white card presentation.
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    child: SafeArea(
+                      bottom: false,
+                      child: SizedBox(
+                        height: 200,
+                        child: Center(
+                          child: LogoAvatarWidget(
+                            logoKey: _currentCard.logoPath,
+                            title: _currentCard.title,
+                            size: 88,
+                            background: Colors.transparent,
+                          ),
+                        ),
                       ),
-                      child: Column(
-                        children: [
-                          // Logo and title section
-                          Row(
+                    ),
+                  ),
+                ),
+
+                // Title/info block beneath the header. Show the card title and a
+                // collapsible description area. This sits beneath the floating
+                // code card so the scan area remains visually dominant.
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 220, 20, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _currentCard.title,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 12),
+                        if (_currentCard.description.trim().isNotEmpty)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Enhanced logo display
-                              Container(
-                                width: 64,
-                                height: 64,
-                                decoration: BoxDecoration(
-                                  color:
-                                      theme.colorScheme.surfaceContainerHighest,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: theme.colorScheme.outline.withValues(
-                                      alpha: 0.2,
+                              AnimatedSize(
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.easeInOut,
+                                alignment: Alignment.topCenter,
+                                child: ConstrainedBox(
+                                  constraints:
+                                      _descExpanded
+                                          ? const BoxConstraints()
+                                          : const BoxConstraints(maxHeight: 80),
+                                  child: ClipRect(
+                                    child: Text(
+                                      _currentCard.description,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: theme.colorScheme.onSurface,
+                                      ),
+                                      softWrap: true,
                                     ),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: LogoAvatarWidget(
-                                    logoKey: _currentCard.logoPath,
-                                    title: _currentCard.title,
-                                    size: 32,
-                                    background: Colors.transparent,
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 20),
-                              // Card type badge only; title is shown in AppBar via
-                              // CardInfoWidget to avoid duplicate titles in the UI.
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const SizedBox(height: 4),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            _currentCard.is2D
-                                                ? theme
-                                                    .colorScheme
-                                                    .primaryContainer
-                                                : theme
-                                                    .colorScheme
-                                                    .secondaryContainer,
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text(
-                                        _currentCard.is2D
-                                            ? l10n.qrCode
-                                            : l10n.barcode,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color:
-                                              _currentCard.is2D
-                                                  ? theme
-                                                      .colorScheme
-                                                      .onPrimaryContainer
-                                                  : theme
-                                                      .colorScheme
-                                                      .onSecondaryContainer,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: IconButton(
+                                  onPressed: () {
+                                    setState(
+                                      () => _descExpanded = !_descExpanded,
+                                    );
+                                  },
+                                  tooltip:
+                                      _descExpanded ? 'Show less' : 'Show more',
+                                  icon: Icon(
+                                    _descExpanded
+                                        ? Icons.expand_less
+                                        : Icons.expand_more,
+                                    color: theme.colorScheme.primary,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-
-                          // Description section (if exists)
-                          if (_currentCard.description.isNotEmpty) ...[
-                            const SizedBox(height: 20),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color:
-                                    theme.colorScheme.surfaceContainerHighest,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: theme.colorScheme.outline.withValues(
-                                    alpha: 0.2,
-                                  ),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.description_outlined,
-                                        size: 16,
-                                        color: theme.colorScheme.onSurface
-                                            .withAlpha(200),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        l10n.description,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: theme.colorScheme.onSurface
-                                              .withAlpha(200),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    _currentCard.description,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: theme.colorScheme.onSurface,
-                                      height: 1.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Emphasized Code display section: remove the redundant "Barcode"/"QR"
-            // header and maximize the barcode/QR widget size. The barcode image
-            // will sit inside a white card to keep contrast for scanners while
-            // the surrounding scaffold is dark.
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      // Show the card title above the barcode image. We use
-                      // RichText here so tests that rely on find.text still
-                      // match the AppBar's title only (avoid duplicate plain
-                      // Text widgets with the same string).
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                        child: RichText(
-                          textAlign: TextAlign.center,
-                          text: TextSpan(
-                            text: _currentCard.title,
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w800,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      // The central barcode/QR area. Use LayoutBuilder to maximize
-                      // the widget to the available width while keeping some
-                      // padding so scanners can recognize edges.
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.fromLTRB(16, 32, 16, 8),
-                        child: Center(
-                          child: GestureDetector(
-                            onTap: () => _showFullscreenCode(),
-                            child: Card(
-                              color: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: BorderSide(
-                                  color: theme.colorScheme.outline.withValues(
-                                    alpha: 0.2,
-                                  ),
-                                  width: 2,
-                                ),
-                              ),
-                              elevation: 0,
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    // Maximize to the available width while
-                                    // reserving some breathing room for edges.
-                                    final available = (constraints.maxWidth -
-                                            24)
-                                        .clamp(120.0, 1200.0);
-                                    return _buildCodeWidget(available);
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // Human readable code for 1D barcodes: show directly
-                      // beneath the barcode image using a large monospaced font
-                      // and group digits for readability (XXXX XXXX ...).
-                      if (_currentCard.isBarcode) ...[
-                        const SizedBox(height: 12),
-                        // Visible formatted code
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: RichText(
-                            textAlign: TextAlign.center,
-                            text: TextSpan(
-                              text: _formatCode(_currentCard.name),
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                fontFamily: 'monospace',
-                                color: theme.colorScheme.onSurface,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Keep the raw code value in the widget tree for
-                        // compatibility with tests, but hide it visually so
-                        // only the formatted monospaced representation is shown.
-                        // Keep raw text present for tests but render it
-                        // transparent so the user only sees the formatted
-                        // monospaced version above.
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Text(
-                            _currentCard.name,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.transparent,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        const SizedBox(height: 18),
                       ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ), // end Scaffold
+          // Floating overlay card rendered above the Scaffold
+          Positioned(
+            top: topOffset,
+            left: 20,
+            right: 20,
+            child: _buildFloatingCodeCard(context),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildCodeWidget(double availableWidth) {
-    final size = _currentCard.is2D ? availableWidth * 0.7 : null;
-    final width = _currentCard.is1D ? availableWidth * 0.8 : null;
-    final height = _currentCard.is1D ? 90.0 : null;
+    final size = _currentCard.is2D ? availableWidth * 0.85 : null;
+    final width = _currentCard.is1D ? availableWidth * 0.95 : null;
+    // Increase 1D barcode height so scanners can read it more reliably.
+    final height = _currentCard.is1D ? 140.0 : null;
 
     return _currentCard.renderCode(size: size, width: width, height: height);
+  }
+
+  Widget _buildFloatingCodeCard(BuildContext context) {
+    return Card(
+      color: Colors.white,
+      elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GestureDetector(
+              onTap: _showFullscreenCode,
+              child: LayoutBuilder(
+                builder: (ctx, constraints) {
+                  final available = (constraints.maxWidth - 24).clamp(
+                    120.0,
+                    1200.0,
+                  );
+                  return _buildCodeWidget(available);
+                },
+              ),
+            ),
+            if (_currentCard.isBarcode) ...[
+              const SizedBox(height: 12),
+              Text(
+                _formatCode(_currentCard.name),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: 'monospace',
+                  // Use a darker color for maximum contrast on white
+                  // background per accessibility guidance.
+                  color: Colors.black87,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   // Format a numeric code into groups of 4 digits for readability, e.g.
