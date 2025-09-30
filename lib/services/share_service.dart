@@ -23,20 +23,25 @@ typedef ShareFilesFunction =
 class ShareService {
   final TempDirGetter _getTempDir;
   final ShareFilesFunction _shareFiles;
+  final Widget Function(BuildContext context, CardItem card)? _codeBuilder;
 
   // Test hook: when set, this function will be used instead of the full
   // rendering-and-sharing flow. This allows fast tests to assert the
   // share was triggered without doing widget-to-image work.
-  static Future<void> Function(BuildContext context, CardItem card)?
+  static Future<void> Function(BuildContext? context, CardItem card)?
   testShareHook;
 
-  ShareService({TempDirGetter? getTempDir, ShareFilesFunction? shareFiles})
-    : _getTempDir = getTempDir ?? getTemporaryDirectory,
-      _shareFiles =
-          shareFiles ??
-          ((files, {text}) async => await SharePlus.instance.share(
-            ShareParams(files: files, text: text),
-          ));
+  ShareService({
+    TempDirGetter? getTempDir,
+    ShareFilesFunction? shareFiles,
+    Widget Function(BuildContext context, CardItem card)? codeBuilder,
+  }) : _getTempDir = getTempDir ?? getTemporaryDirectory,
+       _shareFiles =
+           shareFiles ??
+           ((files, {text}) async => await SharePlus.instance.share(
+             ShareParams(files: files, text: text),
+           )),
+       _codeBuilder = codeBuilder;
 
   /// Share a [card] as an image. Requires a [BuildContext] that has an Overlay.
   Future<void> shareCardAsImage(BuildContext context, CardItem card) async {
@@ -72,25 +77,30 @@ class ShareService {
                       ),
                     ),
                   ),
-                isQr
-                    ? QrImageView(
-                      data: card.name,
-                      size: 320,
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      eyeStyle: const QrEyeStyle(color: Colors.black),
-                      dataModuleStyle: const QrDataModuleStyle(
-                        color: Colors.black,
-                      ),
-                    )
-                    : BarcodeWidget(
-                      barcode: Barcode.code128(),
-                      data: card.name,
-                      width: 320,
-                      height: 120,
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      color: Theme.of(context).colorScheme.onSurface,
-                      drawText: false,
+                // Allow injecting a custom code widget for tests; otherwise
+                // render the real QR or barcode widgets.
+                if (_codeBuilder != null)
+                  _codeBuilder(context, card)
+                else if (isQr)
+                  QrImageView(
+                    data: card.name,
+                    size: 320,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    eyeStyle: const QrEyeStyle(color: Colors.black),
+                    dataModuleStyle: const QrDataModuleStyle(
+                      color: Colors.black,
                     ),
+                  )
+                else
+                  BarcodeWidget(
+                    barcode: Barcode.code128(),
+                    data: card.name,
+                    width: 320,
+                    height: 120,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    drawText: false,
+                  ),
               ],
             ),
           ),
