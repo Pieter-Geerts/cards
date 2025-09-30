@@ -3,8 +3,10 @@
 This folder contains helper scripts used by the project for releases, testing and documentation.
 
 Purpose
+
 - Keep scripts discoverable and documented.
 - Provide a helper to normalize shebangs and make scripts executable safely.
+
 # scripts/
 
 This folder contains helper scripts used by the project for releases, testing and documentation.
@@ -55,21 +57,21 @@ If you see scripts with inconsistent shebangs or missing execute bits, run the h
 
 This section lists common release and automation scripts found in this directory.
 
-| Script                      | Purpose                                | Usage                                       |
-| --------------------------- | -------------------------------------- | ------------------------------------------- |
-| `master-release.sh`         | Guided release process                 | `./master-release.sh`                       |
-| `quick-release.sh`          | Quick patch release                    | `./quick-release.sh`                        |
-| `release.sh`                | Full release with options              | `./release.sh [patch\|minor\|major\|X.Y.Z]` |
-| `update-dependencies.sh`    | Update Flutter dependencies            | `./update-dependencies.sh`                  |
-| `generate-localizations.sh` | Generate localization files            | `./generate-localizations.sh`               |
-| `install-git-hooks.sh`      | Install Git hooks                      | `./install-git-hooks.sh`                    |
-| `docs-maintenance.sh`       | Documentation maintenance              | `./docs-maintenance.sh`                     |
-| `smart-release-notes.sh`    | Smart release notes generator          | `./smart-release-notes.sh [from] [to]`      |
-| `generate-release-notes.sh` | Basic release notes from commits       | `./generate-release-notes.sh [from] [to]`   |
-| `review-release-notes.sh`   | Release notes reviewer & editor        | `./review-release-notes.sh [file]`          |
-| `build-info.sh`             | Show app and build status              | `./build-info.sh`                           |
-| `run-tests.sh`              | Run the project's tests                | `./run-tests.sh`                            |
-| `bump-version.sh`           | Version management helper              | `./bump-version.sh [type\|version]`         |
+| Script                      | Purpose                          | Usage                                       |
+| --------------------------- | -------------------------------- | ------------------------------------------- |
+| `master-release.sh`         | Guided release process           | `./master-release.sh`                       |
+| `quick-release.sh`          | Quick patch release              | `./quick-release.sh`                        |
+| `release.sh`                | Full release with options        | `./release.sh [patch\|minor\|major\|X.Y.Z]` |
+| `update-dependencies.sh`    | Update Flutter dependencies      | `./update-dependencies.sh`                  |
+| `generate-localizations.sh` | Generate localization files      | `./generate-localizations.sh`               |
+| `install-git-hooks.sh`      | Install Git hooks                | `./install-git-hooks.sh`                    |
+| `docs-maintenance.sh`       | Documentation maintenance        | `./docs-maintenance.sh`                     |
+| `smart-release-notes.sh`    | Smart release notes generator    | `./smart-release-notes.sh [from] [to]`      |
+| `generate-release-notes.sh` | Basic release notes from commits | `./generate-release-notes.sh [from] [to]`   |
+| `review-release-notes.sh`   | Release notes reviewer & editor  | `./review-release-notes.sh [file]`          |
+| `build-info.sh`             | Show app and build status        | `./build-info.sh`                           |
+| `run-tests.sh`              | Run the project's tests          | `./run-tests.sh`                            |
+| `bump-version.sh`           | Version management helper        | `./bump-version.sh [type\|version]`         |
 
 ## Typical workflow
 
@@ -86,7 +88,6 @@ This section lists common release and automation scripts found in this directory
 ---
 
 Happy releasing!
-
 
 See `../GIT_WORKFLOW.md` for complete documentation.
 

@@ -76,4 +76,3 @@ Refer to `TEST_COVERAGE.md` in the backup for a detailed mapping of tests to fea
 
 - Remove legacy testing docs (done)
 - Keep `docs/guides/TESTING.md` as the single source of truth
-

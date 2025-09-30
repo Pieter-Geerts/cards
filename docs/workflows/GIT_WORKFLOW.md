@@ -15,6 +15,7 @@ Your project now has a comprehensive Git workflow system with:
 ## 🛠️ Setup
 
 ### Quick Setup
+
 ```bash
 # Set up the complete workflow
 ./scripts/setup-git-workflow.sh
@@ -22,6 +23,7 @@ Your project now has a comprehensive Git workflow system with:
 ```
 
 ### Manual Setup
+
 ```bash
 # Configure Git settings and aliases
 ./scripts/setup-git-workflow.sh
@@ -33,6 +35,7 @@ Your project now has a comprehensive Git workflow system with:
 ## 🔄 Daily Workflow
 
 ### Starting New Work
+
 ```bash
 # Create feature branch
 git feature-start my-new-feature
@@ -41,6 +44,7 @@ git checkout main && git pull && git checkout -b feature/my-new-feature
 ```
 
 ### Making Changes
+
 ```bash
 # Your normal development workflow
 # Edit files, test, etc.
@@ -57,7 +61,9 @@ git commit -m "feat: add new card scanning feature"
 ```
 
 ### Pre-commit Quality Gates
+
 When you commit, these checks run automatically:
+
 - ✅ **Sensitive data detection** - Prevents accidental secrets
 - ✅ **Code formatting** - Ensures consistent style
 - ✅ **Static analysis** - Catches potential issues
@@ -65,6 +71,7 @@ When you commit, these checks run automatically:
 - ✅ **Localization** - Regenerates if ARB files changed
 
 ### Finishing Work
+
 ```bash
 # Push feature branch
 git push -u origin feature/my-new-feature
@@ -81,6 +88,7 @@ git branch -d feature/my-new-feature
 ## 📝 Commit Message Format
 
 ### Conventional Commits
+
 The workflow encourages conventional commit format:
 
 ```
@@ -92,6 +100,7 @@ The workflow encourages conventional commit format:
 ```
 
 ### Types
+
 - **feat:** New feature
 - **fix:** Bug fix
 - **docs:** Documentation changes
@@ -105,6 +114,7 @@ The workflow encourages conventional commit format:
 - **revert:** Revert previous commit
 
 ### Examples
+
 ```bash
 git commit -m "feat(auth): add biometric login support"
 git commit -m "fix(ui): resolve card alignment on small screens"
@@ -115,6 +125,7 @@ git commit -m "test(models): add unit tests for CardItem validation"
 ## 🚀 Git Aliases
 
 ### Status and History
+
 ```bash
 git st          # Short status
 git lg          # Pretty log with graph
@@ -123,6 +134,7 @@ git br          # Verbose branch listing
 ```
 
 ### Branch Management
+
 ```bash
 git co <branch>           # Checkout branch
 git cob <name>           # Create and checkout new branch
@@ -131,6 +143,7 @@ git feature-finish <name> # Merge feature branch to main
 ```
 
 ### Staging and Committing
+
 ```bash
 git aa              # Add all files
 git unstage <file>  # Unstage file
@@ -138,6 +151,7 @@ git undo           # Undo last commit (soft reset)
 ```
 
 ### Flutter-specific
+
 ```bash
 git flutter-check   # Run analyze + test
 git release-check   # Run pre-release checks
@@ -147,7 +161,9 @@ git build-info      # Show build status
 ## 🔧 Git Hooks
 
 ### Pre-commit Hook
+
 Runs before every commit:
+
 - Checks for sensitive data
 - Formats Dart code
 - Runs static analysis
@@ -155,15 +171,20 @@ Runs before every commit:
 - Regenerates localizations
 
 ### Prepare-commit-msg Hook
+
 Provides commit message templates and suggestions for conventional commit format.
 
 ### Post-merge Hook
+
 Runs after `git pull` or merge:
+
 - Updates dependencies if `pubspec.yaml` changed
 - Regenerates localizations if ARB files changed
 
 ### Commit-msg Hook
+
 Validates commit messages:
+
 - Minimum length requirement
 - Suggests conventional format
 - Warns about overly long first lines
@@ -171,7 +192,9 @@ Validates commit messages:
 ## 🛡️ Quality Gates
 
 ### Automatic Checks
+
 Every commit is automatically checked for:
+
 - **Code style** - Dart formatter compliance
 - **Static analysis** - No linting errors
 - **Test coverage** - All tests pass
@@ -179,7 +202,9 @@ Every commit is automatically checked for:
 - **Dependencies** - Up to date after merges
 
 ### Manual Checks
+
 Run these commands when needed:
+
 ```bash
 git flutter-check    # Quick quality check
 git release-check     # Comprehensive pre-release checks
@@ -189,16 +214,19 @@ git release-check     # Comprehensive pre-release checks
 ## 🌿 Branching Strategy
 
 ### Main Branch
+
 - **Protected** - No direct pushes
 - **Always deployable** - All checks pass
 - **Release ready** - Can create releases anytime
 
 ### Feature Branches
+
 - **Short-lived** - Merge quickly
 - **Descriptive names** - `feature/add-barcode-scanning`
 - **Single purpose** - One feature per branch
 
 ### Recommended Flow
+
 ```bash
 main
 ├── feature/add-dark-mode
@@ -210,12 +238,14 @@ main
 ## 🚨 Troubleshooting
 
 ### Skip Pre-commit Checks
+
 ```bash
 # Emergency commits only!
 git commit --no-verify -m "emergency fix"
 ```
 
 ### Fix Formatting Issues
+
 ```bash
 # Format all Dart files
 dart format .
@@ -226,6 +256,7 @@ git commit -m "style: fix code formatting"
 ```
 
 ### Resolve Merge Conflicts
+
 ```bash
 # During merge conflicts:
 git status  # See conflicted files
@@ -235,6 +266,7 @@ git commit  # Complete the merge
 ```
 
 ### Reset Working Directory
+
 ```bash
 # Discard all changes
 git reset --hard HEAD
@@ -249,18 +281,21 @@ git undo  # Alias for: git reset --soft HEAD~1
 ## 📊 Workflow Benefits
 
 ### Developer Experience
+
 - ✅ **Consistent code style** across the team
 - ✅ **Early error detection** before CI/CD
 - ✅ **Automated maintenance** tasks
 - ✅ **Helpful commit templates**
 
 ### Code Quality
+
 - ✅ **No broken commits** to main branch
 - ✅ **Comprehensive testing** before merge
 - ✅ **Static analysis** enforcement
 - ✅ **Dependency freshness**
 
 ### Team Collaboration
+
 - ✅ **Clear commit history** with conventional format
 - ✅ **Predictable workflow** for all developers
 - ✅ **Automated quality gates**
@@ -269,6 +304,7 @@ git undo  # Alias for: git reset --soft HEAD~1
 ## 🎛️ Configuration
 
 ### Disable/Enable Hooks
+
 ```bash
 # Disable all hooks temporarily
 mv .git/hooks .git/hooks.disabled
@@ -281,13 +317,17 @@ chmod -x .git/hooks/pre-commit
 ```
 
 ### Customize Pre-commit Checks
+
 Edit `scripts/pre-commit-hook.sh` to:
+
 - Skip certain checks
 - Add custom validations
 - Modify formatting rules
 
 ### Update Git Configuration
+
 Edit `scripts/setup-git-workflow.sh` to:
+
 - Add new aliases
 - Modify Git settings
 - Enhance .gitattributes
@@ -302,6 +342,7 @@ keep your repository clean. For day-to-day usage, see the 'Daily Workflow' and
 ## 📈 Advanced Usage
 
 ### Release Workflow Integration
+
 ```bash
 # Complete release with quality checks
 git checkout main
@@ -310,12 +351,14 @@ git pull
 ```
 
 ### Dependency Management
+
 ```bash
 # Update dependencies safely
 ./scripts/update-dependencies.sh  # Includes tests and rollback
 ```
 
 ### Continuous Integration
+
 The pre-commit hooks align with your CI/CD pipeline, ensuring local checks match remote validation.
 
 ---
