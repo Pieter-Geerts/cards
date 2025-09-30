@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Smart Release Notes Generator with AI-like suggestions
 # Converts technical commit messages to user-friendly release notes

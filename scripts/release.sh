@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Flutter App Release Script
 # Makes releasing to Google Play as easy as possible

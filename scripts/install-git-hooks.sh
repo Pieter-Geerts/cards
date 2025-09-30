@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Install Git hooks for Flutter Cards app
 # This sets up automated quality checks in your Git workflow

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Update Flutter dependencies and check for issues
 # This script updates dependencies and runs comprehensive checks

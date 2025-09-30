@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Production Build Script for Cards App
 # Optimized for performance and production deployment

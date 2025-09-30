@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Interactive Release Checklist
 # Helps ensure you don't forget important steps

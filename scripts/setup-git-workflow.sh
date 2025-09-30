@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Configure Git settings and aliases for optimal Flutter development workflow
 # This sets up Git configuration optimized for your Flutter Cards app

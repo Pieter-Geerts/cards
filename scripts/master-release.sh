@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Master Release Script - The Ultimate Easy Release Tool
 # This script guides you through the entire release process step by step

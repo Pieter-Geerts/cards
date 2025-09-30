@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Google Play Store Upload Script
 # Uploads AAB file to Google Play Console using Google Play Developer API

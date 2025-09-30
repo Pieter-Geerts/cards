@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Documentation maintenance script
 # Helps keep documentation organized and up-to-date

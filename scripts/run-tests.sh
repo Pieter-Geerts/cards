@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Generate mocks with Mockito
 echo "Generating mocks..."
