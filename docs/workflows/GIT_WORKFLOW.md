@@ -292,6 +292,13 @@ Edit `scripts/setup-git-workflow.sh` to:
 - Modify Git settings
 - Enhance .gitattributes
 
+## Summary (migrated from GIT_WORKFLOW_SUMMARY.md)
+
+This project includes production-grade Git workflow features: pre-commit
+quality gates, helpful git aliases (e.g., `git st`, `git aa`), and automation to
+keep your repository clean. For day-to-day usage, see the 'Daily Workflow' and
+'Branching Strategy' sections above.
+
 ## 📈 Advanced Usage
 
 ### Release Workflow Integration
