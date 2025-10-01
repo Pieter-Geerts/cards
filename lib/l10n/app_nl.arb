@@ -143,7 +143,9 @@
   "logoAutoFound": "Automatisch gevonden",
   "logoForTitle": "Logo voor \"{title}\"",
   "@logoForTitle": {
-    "placeholders": { "title": {} }
+    "placeholders": {
+      "title": {}
+    }
   },
   "rescanComingSoon": "Opnieuw scannen komt binnenkort!",
   "cardDetails": "Kaart Gegevens",
@@ -157,9 +159,13 @@
   "codeCopiedToClipboard": "Code gekopieerd naar klembord",
   "howAddCode": "Hoe wil je de code toevoegen?",
   "stepCounter": "Stap {current} van {total}",
-  "@stepCounter": { "placeholders": { "current": {}, "total": {} } },
+  "@stepCounter": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
   "searchLogo": "Zoek Logo",
-  
   "scan": "Scannen",
   "code": "Code",
   "addToWallet": "Toevoegen aan Wallet",

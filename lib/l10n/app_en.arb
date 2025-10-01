@@ -148,7 +148,9 @@
   "logoAutoFound": "Automatically found",
   "logoForTitle": "Logo for \"{title}\"",
   "@logoForTitle": {
-    "placeholders": { "title": {} }
+    "placeholders": {
+      "title": {}
+    }
   },
   "rescanComingSoon": "Rescan coming soon!",
   "cardDetails": "Card details",
@@ -162,9 +164,13 @@
   "codeCopiedToClipboard": "Code copied to clipboard",
   "howAddCode": "How would you like to add the code?",
   "stepCounter": "Step {current} of {total}",
-  "@stepCounter": { "placeholders": { "current": {}, "total": {} } },
+  "@stepCounter": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
   "searchLogo": "Search Logo",
-  
   "scan": "Scan",
   "code": "Code",
   "addToWallet": "Add to Wallet",

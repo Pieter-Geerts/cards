@@ -56,7 +56,7 @@ void main() {
       // test remains fast and deterministic. The hook will call our
       // fakeShare function directly. We invoke the hook inside the same
       // runAsync zone so there is no zone-crossing.
-      ShareService.testShareHook = (BuildContext ctx, CardItem c) async {
+      ShareService.testShareHook = (BuildContext? ctx, CardItem c) async {
         await fakeShare([
           XFile('${tempDir.path}/card_${c.id ?? c.name}.png'),
         ], text: c.title);
