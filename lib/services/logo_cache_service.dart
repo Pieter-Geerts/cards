@@ -1,9 +1,15 @@
 import 'dart:async';
 
+// dart:convert is not required here after YAML usage
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:yaml/yaml.dart';
 
 import '../helpers/logo_helper.dart';
+import '../utils/simple_icons_mapping.dart';
 
 /// High-performance caching service for logo operations
 /// Implements intelligent preloading, memory management, and batch operations
@@ -33,6 +39,128 @@ class LogoCacheService {
   // Background timer for periodic cleanup. Stored so it can be cancelled
   // (useful for tests to avoid keeping the process alive).
   Timer? _cleanupTimer;
+
+  // Configurable whitelist for shop logos. Defaults to a curated set.
+  // Can be overridden at runtime via `setShopWhitelist` or modified with
+  // `addShopToWhitelist` / `removeShopFromWhitelist`.
+  final Set<String> _shopWhitelist = {
+    'carrefour',
+    'aldinord',
+    'lidl',
+    'walmart',
+    'target',
+    'tesco',
+    'albertheijn',
+    'ikea',
+    'nike',
+    'adidas',
+    'puma',
+    'zara',
+    'amazon',
+    'ebay',
+    'etsy',
+    'shopify',
+  };
+
+  // Whether we've attempted to load a configurable whitelist from assets.
+  bool _whitelistLoaded = false;
+
+  // Optional override for asset bundle (useful in tests)
+  AssetBundle? _assetBundle;
+
+  /// Attempt to load a JSON array from assets/config/logo_whitelist.json.
+  /// If present and valid, this replaces the in-code whitelist.
+  /// Attempt to load a YAML configuration from `build-config.yaml`.
+  /// If present and contains a top-level `logo_whitelist` list, it will
+  /// replace the in-code whitelist. This is attempted only once per process
+  /// unless `reloadWhitelistFromAssets()` is called.
+  Future<void> _ensureWhitelistLoaded() async {
+    _whitelistLoaded = true; // mark so we only try once per process
+    try {
+      // Check persisted user whitelist first
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final stored = prefs.getStringList('logo_shop_whitelist');
+        if (stored != null && stored.isNotEmpty) {
+          setShopWhitelist(stored.toSet());
+          return;
+        }
+      } catch (e) {
+        if (kDebugMode) debugPrint('Failed to read persisted whitelist: $e');
+      }
+
+      final bundle = _assetBundle ?? rootBundle;
+      final data = await bundle.loadString('build-config.yaml');
+
+      final doc = loadYaml(data);
+      if (doc is YamlMap) {
+        final dynamic wl = doc['logo_whitelist'];
+        if (wl is YamlList) {
+          final parsed = <String>{};
+          for (final item in wl) {
+            if (item is String) parsed.add(item);
+          }
+          if (parsed.isNotEmpty) setShopWhitelist(parsed);
+        }
+      }
+    } catch (e) {
+      // No asset present or parsing failed — silently continue with default
+      if (kDebugMode) debugPrint('No external whitelist loaded: $e');
+    }
+  }
+
+  /// Set a custom [AssetBundle] for the service. Intended for tests only.
+  void setAssetBundleForTesting(AssetBundle bundle) {
+    _assetBundle = bundle;
+    // When the bundle changes we should allow reloading from assets
+    _whitelistLoaded = false;
+    _availableLogosCache.clear();
+  }
+
+  /// Force reloading the whitelist from assets. Useful in tests or when the
+  /// configuration may have changed at runtime.
+  Future<void> reloadWhitelistFromAssets() async {
+    _whitelistLoaded = false;
+    await _ensureWhitelistLoaded();
+  }
+
+  /// Returns a copy of the current shop whitelist.
+  Set<String> getShopWhitelist() => Set<String>.from(_shopWhitelist);
+
+  /// Replace the current shop whitelist with a new set of identifiers.
+  void setShopWhitelist(Set<String> newWhitelist) {
+    _shopWhitelist
+      ..clear()
+      ..addAll(newWhitelist);
+
+    // Invalidate cache so consumers pick up the new filtering immediately
+    _availableLogosCache.clear();
+    // Persist the whitelist asynchronously
+    _persistWhitelist();
+  }
+
+  /// Add a single shop identifier to the whitelist.
+  void addShopToWhitelist(String identifier) {
+    _shopWhitelist.add(identifier);
+    _availableLogosCache.clear();
+    _persistWhitelist();
+  }
+
+  /// Remove a single shop identifier from the whitelist.
+  void removeShopFromWhitelist(String identifier) {
+    _shopWhitelist.remove(identifier);
+    _availableLogosCache.clear();
+    _persistWhitelist();
+  }
+
+  Future<void> _persistWhitelist() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('logo_shop_whitelist', _shopWhitelist.toList());
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to persist whitelist: $e');
+    }
+  }
 
   /// Get suggested logo with performance monitoring and enhanced caching
   Future<IconData?> getSuggestedLogo(String title) async {
@@ -108,6 +236,12 @@ class LogoCacheService {
 
   /// Gets all available logos with intelligent caching
   Future<List<IconData>> getAllAvailableLogos() async {
+    // Try to load a configurable whitelist from assets once. If the
+    // asset is not present or loading fails, we fall back to the default
+    // in-code whitelist.
+    if (!_whitelistLoaded) {
+      await _ensureWhitelistLoaded();
+    }
     // Return cached results if available
     if (_availableLogosCache.isNotEmpty) {
       return List.from(_availableLogosCache);
@@ -125,11 +259,23 @@ class LogoCacheService {
 
     try {
       final logos = await LogoHelper.getAllAvailableLogos();
+
+      // Filter: only show logos that correspond to shops/retail.
+      // We use the SimpleIcons identifier (e.g. 'simple_icon:amazon') to
+      // determine the name and apply the configurable whitelist.
+      final filtered = <IconData>[];
+      for (final icon in logos) {
+        final ident = SimpleIconsMapping.getIdentifier(icon);
+        if (ident == null) continue;
+        final name = ident.substring('simple_icon:'.length);
+        if (_shopWhitelist.contains(name)) filtered.add(icon);
+      }
+
       _availableLogosCache.clear();
-      _availableLogosCache.addAll(logos);
+      _availableLogosCache.addAll(filtered);
 
       // Preload first batch for immediate availability
-      _preloadBatch(logos.take(preloadBatchSize).toList());
+      _preloadBatch(filtered.take(preloadBatchSize).toList());
 
       return List.from(_availableLogosCache);
     } finally {
