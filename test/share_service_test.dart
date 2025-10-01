@@ -45,12 +45,13 @@ void main() {
 
       bool shareCalled = false;
       List<String> sharedPaths = [];
-      final fakeShare = (List<XFile> files, {String? text}) async {
+
+      Future<void> fakeShare(List<XFile> files, {String? text}) async {
         shareCalled = true;
         for (final f in files) {
           sharedPaths.add(f.path);
         }
-      };
+      }
 
       // Short-circuit the heavy overlay rendering using the test hook so the
       // test remains fast and deterministic. The hook will call our

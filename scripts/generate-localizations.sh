@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Generate localization files from ARB sources
 # This ensures consistent localization files across all environments

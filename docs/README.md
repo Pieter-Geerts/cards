@@ -10,35 +10,39 @@ Welcome to the Cards QR Scanner documentation! This guide will help you navigate
 ## 🔧 Development Workflows
 
 ### Git & Version Control
+
 - **[Git Workflow Guide](workflows/GIT_WORKFLOW.md)** - Complete Git workflow automation setup
-- **[Git Workflow Summary](workflows/GIT_WORKFLOW_SUMMARY.md)** - Quick reference for Git commands and processes
 
 ### Dependencies & Updates
+
 - **[Dependency Management](workflows/DEPENDENCY_MANAGEMENT.md)** - Managing Flutter dependencies and updates
 - **[Localization Workflow](workflows/LOCALIZATION_WORKFLOW.md)** - Managing app translations and localizations
 
 ## 📖 Development Guides
 
 ### Release Management
+
 - **[Release Guide](guides/RELEASE.md)** - Complete guide for creating and publishing releases
 - **[Scripts Documentation](../scripts/README.md)** - All available automation scripts
 - **[Scripts Release Notes Guide](../scripts/RELEASE_NOTES_GUIDE.md)** - Release notes automation
 
 ### Quality Assurance
-- **[Test Coverage](guides/TEST_COVERAGE.md)** - Testing strategy and coverage information
-- **[Refactoring Guide](guides/REFACTORING_COMPLETE.md)** - Code refactoring history and patterns
+
+- **[Testing Guide](guides/TESTING.md)** - Testing strategy and how-to (consolidated)
 
 ## 🤖 Generated Documentation
 
-*Automatically generated files - do not edit manually*
+_Automatically generated files - do not edit manually_
 
 ### Release Notes
-- **[Release Notes v1.0.2](generated/smart-release-notes-v1.0.2.md)** - Generated release notes for version 1.0.2
-- **[Release Notes v1.0.3](generated/smart-release-notes-v1.0.3.md)** - Generated release notes for version 1.0.3
+
+- **[Release Notes v1.0.2](archive/release-notes/smart-release-notes-v1.0.2.md)** - Generated release notes for version 1.0.2
+- **[Release Notes v1.0.3](archive/release-notes/smart-release-notes-v1.0.3.md)** - Generated release notes for version 1.0.3
 
 ## 🛠️ Tools & Scripts
 
 ### Available Scripts
+
 All development scripts are located in the [`scripts/`](../scripts/) directory:
 
 - **Release Management**: `master-release.sh`, `quick-release.sh`, `release.sh`
@@ -84,4 +88,4 @@ cards/
 
 **Happy developing! 🎉**
 
-*Last updated: 2025-06-15
+\*Last updated: 2025-09-30

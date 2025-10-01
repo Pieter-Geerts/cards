@@ -6,9 +6,6 @@ import 'models/card_item_test.dart' as card_item_tests;
 import 'models/code_renderer_test.dart' as code_renderer_tests;
 import 'unit/database_helper_unit_test.dart' as unit_tests;
 
-/// This file imports and runs all tests in the codebase.
-/// Run with: flutter test test/all_tests.dart
-
 void main() {
   group('Database Tests', database_tests.main);
   group('Database Unit Tests', unit_tests.main);

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Quick Release - One command to rule them all
 # Usage: ./scripts/quick-release.sh

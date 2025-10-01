@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Auto Release Notes Generator
 # Generates release notes from git commits between versions

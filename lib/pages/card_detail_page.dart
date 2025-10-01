@@ -1,4 +1,7 @@
-// This file now re-exports the newer implementation to ensure all existing
-// imports that reference `card_detail_page.dart` will pick up the updated
-// `CardDetailPage` implementation from `card_detail_page_new.dart`.
+// Backwards-compatible export for the newer CardDetailPage implementation.
+// Some files (and tests) still import `pages/card_detail_page.dart`.
 export 'card_detail_page_new.dart';
+
+// This file re-exports the newer implementation so imports referencing
+// `pages/card_detail_page.dart` get `CardDetailPage` from
+// `card_detail_page_new.dart`.

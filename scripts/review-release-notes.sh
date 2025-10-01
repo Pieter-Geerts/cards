@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Release Notes Reviewer and Editor
 # Interactive tool to review and improve generated release notes

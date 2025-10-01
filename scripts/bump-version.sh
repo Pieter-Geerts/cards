@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Version bump utility for pubspec.yaml
 # Usage: ./scripts/bump-version.sh [patch|minor|major|X.Y.Z]

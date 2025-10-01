@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Pre-release checks to ensure app quality
 # Run this before releasing to catch issues early
