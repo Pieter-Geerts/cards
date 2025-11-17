@@ -23,6 +23,25 @@ performance:
     logo-loading: 15 # Logo loading timeout (seconds)
     database-query: 5 # Database query timeout (seconds)
 
+# Default logo whitelist (identifiers matching SimpleIcons names)
+logo_whitelist:
+  - carrefour
+  - aldinord
+  - lidl
+  - walmart
+  - target
+  - tesco
+  - albertheijn
+  - ikea
+  - nike
+  - adidas
+  - puma
+  - zara
+  - amazon
+  - ebay
+  - etsy
+  - shopify
+
 # Resource Optimization
 resources:
   image-compression: 85 # Image quality (1-100)

@@ -94,25 +94,10 @@ class _AddCardPageState extends State<AddCardPage> {
                 background: Colors.white,
               ),
               const SizedBox(height: 16),
+              // Upload from file has been intentionally hidden.
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton.icon(
-                    icon: Icon(Icons.upload),
-                    label: Text(AppLocalizations.of(context).uploadLogo),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
-                    onPressed: () {
-                      // TODO: implement image picker/camera
-                    },
-                  ),
-                  const SizedBox(width: 12),
                   TextButton.icon(
                     icon: Icon(Icons.delete, color: Colors.red),
                     label: Text(
