@@ -21,6 +21,12 @@ class _LogoWhitelistSettingsPageState extends State<LogoWhitelistSettingsPage> {
     _loadWhitelist();
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadWhitelist() async {
     // Ask the service to ensure loaded, so we see persisted or asset values
     await LogoCacheService.instance.reloadWhitelistFromAssets();
@@ -41,10 +47,28 @@ class _LogoWhitelistSettingsPageState extends State<LogoWhitelistSettingsPage> {
   }
 
   void _remove(String item) {
-    setState(() {
-      _whitelist.remove(item);
-    });
-    LogoCacheService.instance.removeShopFromWhitelist(item);
+    showDialog<void>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Remove entry'),
+            content: Text('Remove "$item" from the whitelist?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  setState(() => _whitelist.remove(item));
+                  LogoCacheService.instance.removeShopFromWhitelist(item);
+                },
+                child: const Text('Remove'),
+              ),
+            ],
+          ),
+    );
   }
 
   @override
@@ -77,20 +101,24 @@ class _LogoWhitelistSettingsPageState extends State<LogoWhitelistSettingsPage> {
                     ),
                     const SizedBox(height: 12),
                     Expanded(
-                      child: ListView(
-                        children:
-                            _whitelist
-                                .toList()
-                                .map(
-                                  (e) => ListTile(
-                                    title: Text(e),
-                                    trailing: IconButton(
-                                      icon: const Icon(Icons.delete),
-                                      onPressed: () => _remove(e),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
+                      child: Builder(
+                        builder: (context) {
+                          final items = _whitelist.toList()..sort();
+                          return ListView(
+                            children:
+                                items
+                                    .map(
+                                      (e) => ListTile(
+                                        title: Text(e),
+                                        trailing: IconButton(
+                                          icon: const Icon(Icons.delete),
+                                          onPressed: () => _remove(e),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                          );
+                        },
                       ),
                     ),
                   ],
