@@ -64,7 +64,7 @@ jobs:
 
       # Archive the AAB and symbols for download
       - name: Upload AAB and symbols artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: app-bundle-and-symbols
           path: |
@@ -76,7 +76,7 @@ jobs:
         run: flutter build apk --release
 
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: app-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
