@@ -384,7 +384,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
       children: [
         // Title field
         _buildLabeledField(
-          AppLocalizations.of(context).title + ' *',
+          '${AppLocalizations.of(context).title} *',
           _titleController,
           AppLocalizations.of(context).storeName,
           onChanged: (_) => setState(() {}),
@@ -445,10 +445,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
 
         // Code field
         _buildLabeledField(
-          AppLocalizations.of(context).code +
-              ' / ' +
-              AppLocalizations.of(context).barcode +
-              ' *',
+          '${AppLocalizations.of(context).code} / ${AppLocalizations.of(context).barcode} *',
           _codeController,
           _cardType == CardType.qrCode
               ? AppLocalizations.of(context).enterQrCodeValue

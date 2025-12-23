@@ -6,7 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../utils/simple_icons_mapping.dart';
 import '../widgets/logo_avatar_widget.dart';
-import '../widgets/simple_logo_selection_sheet.dart';
+import '../widgets/logo_selection_sheet.dart';
 
 class EditCardPage extends StatefulWidget {
   final CardItem card;

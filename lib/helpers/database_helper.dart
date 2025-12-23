@@ -3,8 +3,9 @@ import 'package:sqflite/sqflite.dart';
 
 import '../models/card_item.dart';
 import '../utils/simple_icons_mapping.dart';
+import 'i_database_helper.dart';
 
-class DatabaseHelper {
+class DatabaseHelper implements IDatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   factory DatabaseHelper() => _instance;
 

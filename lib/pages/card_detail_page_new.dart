@@ -2,18 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
-import '../helpers/database_helper.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../pages/edit_card_page.dart';
+import '../repositories/card_repository_interface.dart';
+import '../repositories/sqlite_card_repository.dart';
 import '../services/share_service.dart';
 import '../widgets/logo_avatar_widget.dart';
 
 class CardDetailPage extends StatefulWidget {
   final CardItem card;
   final Function(CardItem)? onDelete;
+  final CardRepository? cardRepository;
 
-  const CardDetailPage({super.key, required this.card, this.onDelete});
+  const CardDetailPage({
+    super.key,
+    required this.card,
+    this.onDelete,
+    this.cardRepository,
+  });
 
   @override
   State<CardDetailPage> createState() => _CardDetailPageState();
@@ -127,7 +134,15 @@ class _CardDetailPageState extends State<CardDetailPage>
     if (confirmed == true) {
       // Delete from database if card has an ID
       if (_currentCard.id != null) {
-        await DatabaseHelper().deleteCard(_currentCard.id!);
+        final repo = widget.cardRepository ?? SqliteCardRepository();
+        final res = await repo.deleteCard(_currentCard.id!);
+        if (res.isError && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(res.failure?.message ?? 'Failed to delete card.'),
+            ),
+          );
+        }
 
         // Check again if widget is still mounted after async operation
         if (!mounted) return;

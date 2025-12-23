@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 
 import 'config/app_localization.dart';
 import 'config/app_theme.dart';
-import 'helpers/database_helper.dart';
-// import 'l10n/app_localizations.dart';
 import 'models/card_item.dart';
 import 'pages/home_page.dart';
+import 'repositories/card_repository_interface.dart';
+import 'repositories/sqlite_card_repository.dart';
 import 'utils/app_settings.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AppSettings.init(); // Initialize settings
-
+  await AppSettings.init();
   runApp(const MyApp());
 }
 
@@ -23,7 +22,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  late final CardRepository _cardRepository;
   List<CardItem> _cards = [];
   Locale _locale = Locale(AppSettings.getLanguageCode());
   ThemeMode _themeMode = _getThemeModeFromString(AppSettings.getThemeMode());
@@ -43,6 +42,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    _cardRepository = SqliteCardRepository();
     _loadCards();
     // Listen to settings changes
     AppSettings.addStaticListener(_onSettingsChanged);
@@ -62,12 +62,18 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _loadCards() async {
-    final cards = await _dbHelper.getCards();
+    final res = await _cardRepository.getCards();
     if (mounted) {
-      // Check if the widget is still in the tree
-      setState(() {
-        _cards = cards;
-      });
+      if (res.isOk) {
+        setState(() => _cards = res.value ?? []);
+      } else {
+        // Reported already via ErrorHandlingService; show friendly message
+        final message = res.failure?.message ?? 'Failed to load cards.';
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      }
     }
   }
 
@@ -86,13 +92,13 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _addCard(CardItem card) async {
-    if (card.title == "##DELETE_CARD_SIGNAL##" &&
-        card.id == null &&
-        card.sortOrder == -1) {
-      // This is the delete signal, do not insert it.
-      // Proceed to load cards to refresh the list.
-    } else {
-      await _dbHelper.insertCard(card);
+    // Avoid sentinel-based delete signal; rely on explicit delete API.
+    final res = await _cardRepository.insertCard(card);
+    if (res.isError) {
+      final message = res.failure?.message ?? 'Failed to add card.';
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     }
     await _loadCards();
   }

@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import '../helpers/database_helper.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
+import '../repositories/card_repository_interface.dart';
+import '../repositories/sqlite_card_repository.dart';
 import '../services/add_card_flow_manager.dart';
 import '../services/share_service.dart';
 import '../widgets/card_list_widget.dart';
@@ -19,12 +21,14 @@ class HomePage extends StatefulWidget {
   final List<CardItem> cards;
   final Function(CardItem) onAddCard;
   final Function(CardItem)? onUpdateCard;
+  final CardRepository? cardRepository;
 
   const HomePage({
     super.key,
     required this.cards,
     required this.onAddCard,
     this.onUpdateCard,
+    this.cardRepository,
   });
 
   @override
@@ -38,7 +42,8 @@ class _HomePageState extends State<HomePage> {
       useBottomSheet: true,
     );
     if (newCard != null) {
-      final nextOrder = await _dbHelper.getNextSortOrder();
+      final nextOrderRes = await _cardRepository.getNextSortOrder();
+      final nextOrder = nextOrderRes.isOk ? (nextOrderRes.value ?? 0) : 0;
       final finalCard = CardItem(
         title: newCard.title,
         description: newCard.description,
@@ -48,15 +53,24 @@ class _HomePageState extends State<HomePage> {
         sortOrder: nextOrder,
         logoPath: newCard.logoPath,
       );
-      await _dbHelper.insertCard(finalCard);
-      final cards = await _dbHelper.getCards();
-      setState(() {
-        _displayedCards = cards;
-      });
+      final ins = await _cardRepository.insertCard(finalCard);
+      if (ins.isError && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(ins.failure?.message ?? 'Failed to add card.'),
+          ),
+        );
+      }
+      final cardsRes = await _cardRepository.getCards();
+      if (cardsRes.isOk) {
+        setState(() {
+          _displayedCards = cardsRes.value ?? [];
+        });
+      }
     }
   }
 
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  late final CardRepository _cardRepository;
   late List<CardItem> _displayedCards;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -67,6 +81,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _displayedCards = List.from(widget.cards);
     _applySearchFilter();
+    _cardRepository = widget.cardRepository ?? SqliteCardRepository();
     _searchController.addListener(() {
       if (_searchController.text.isEmpty && _searchQuery.isNotEmpty) {
         setState(() {
@@ -128,7 +143,16 @@ class _HomePageState extends State<HomePage> {
               card: card,
               onDelete: (deletedCard) async {
                 if (deletedCard.id != null) {
-                  await _dbHelper.deleteCard(deletedCard.id!);
+                  final del = await _cardRepository.deleteCard(deletedCard.id!);
+                  if (del.isError && mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          del.failure?.message ?? 'Failed to delete card.',
+                        ),
+                      ),
+                    );
+                  }
                 }
                 setState(() {
                   _displayedCards.removeWhere((c) => c.id == deletedCard.id);
@@ -146,22 +170,29 @@ class _HomePageState extends State<HomePage> {
       ),
     );
     if (updated != null && updated.id != null) {
-      await _dbHelper.updateCard(updated);
-      final cards = await _dbHelper.getCards();
-      setState(() {
-        _displayedCards = cards;
-      });
+      final upd = await _cardRepository.updateCard(updated);
+      if (upd.isError && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(upd.failure?.message ?? 'Failed to update card.'),
+          ),
+        );
+      }
+      final cardsRes = await _cardRepository.getCards();
+      if (cardsRes.isOk && mounted) {
+        setState(() => _displayedCards = cardsRes.value ?? []);
+      }
     }
   }
 
-  void _onReorder(int oldIndex, int newIndex) {
+  void _onReorder(int oldIndex, int newIndex) async {
+    List<CardItem> cardsToUpdate = [];
     setState(() {
       if (newIndex > oldIndex) {
         newIndex -= 1;
       }
       final CardItem item = _displayedCards.removeAt(oldIndex);
       _displayedCards.insert(newIndex, item);
-      List<CardItem> cardsToUpdate = [];
       for (int i = 0; i < _displayedCards.length; i++) {
         if (_displayedCards[i].sortOrder != i) {
           cardsToUpdate.add(_displayedCards[i].copyWith(sortOrder: i));
@@ -175,10 +206,17 @@ class _HomePageState extends State<HomePage> {
           _displayedCards[originalIndex] = cardsToUpdate[i];
         }
       }
-      if (cardsToUpdate.isNotEmpty) {
-        _dbHelper.updateCardSortOrders(cardsToUpdate);
-      }
     });
+    if (cardsToUpdate.isNotEmpty) {
+      final res = await _cardRepository.updateCardSortOrders(cardsToUpdate);
+      if (res.isError && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res.failure?.message ?? 'Failed to update order.'),
+          ),
+        );
+      }
+    }
   }
 
   List<Widget> _buildAppBarActions(AppLocalizations l10n) {
@@ -195,17 +233,40 @@ class _HomePageState extends State<HomePage> {
               final data = jsonDecode(content);
               if (data is Map<String, dynamic>) {
                 final card = CardItem.fromMap(data);
-                final nextOrder = await _dbHelper.getNextSortOrder();
+                final nextOrderRes = await _cardRepository.getNextSortOrder();
+                final nextOrder =
+                    nextOrderRes.isOk ? (nextOrderRes.value ?? 0) : 0;
                 final newCard = card.copyWith(sortOrder: nextOrder);
-                await _dbHelper.insertCard(newCard);
+                final ins = await _cardRepository.insertCard(newCard);
+                if (ins.isError && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        ins.failure?.message ?? 'Failed to add card.',
+                      ),
+                    ),
+                  );
+                }
                 widget.onAddCard(newCard);
               } else if (data is List) {
                 for (final item in data) {
                   if (item is Map<String, dynamic>) {
                     final card = CardItem.fromMap(item);
-                    final nextOrder = await _dbHelper.getNextSortOrder();
+                    final nextOrderRes =
+                        await _cardRepository.getNextSortOrder();
+                    final nextOrder =
+                        nextOrderRes.isOk ? (nextOrderRes.value ?? 0) : 0;
                     final newCard = card.copyWith(sortOrder: nextOrder);
-                    await _dbHelper.insertCard(newCard);
+                    final ins = await _cardRepository.insertCard(newCard);
+                    if (ins.isError && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            ins.failure?.message ?? 'Failed to add card.',
+                          ),
+                        ),
+                      );
+                    }
                     widget.onAddCard(newCard);
                   }
                 }
@@ -340,7 +401,16 @@ class _HomePageState extends State<HomePage> {
 
                   if (updated != null && updated.id != null) {
                     // Persist updated card and update UI
-                    await _dbHelper.updateCard(updated);
+                    final upd = await _cardRepository.updateCard(updated);
+                    if (upd.isError && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            upd.failure?.message ?? 'Failed to update card.',
+                          ),
+                        ),
+                      );
+                    }
                     if (widget.onUpdateCard != null) {
                       widget.onUpdateCard!(updated);
                     } else {
@@ -353,10 +423,12 @@ class _HomePageState extends State<HomePage> {
                         });
                       } else {
                         // If card not present locally, refresh list from DB
-                        final cards = await _dbHelper.getCards();
-                        setState(() {
-                          _displayedCards = cards;
-                        });
+                        final cardsRes = await _cardRepository.getCards();
+                        if (cardsRes.isOk && mounted) {
+                          setState(() {
+                            _displayedCards = cardsRes.value ?? [];
+                          });
+                        }
                       }
                     }
                   }
