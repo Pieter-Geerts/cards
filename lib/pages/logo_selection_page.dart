@@ -115,16 +115,15 @@ class _LogoSelectionPageState extends State<LogoSelectionPage>
       // Use the optimized cache service with timeout
       final cacheService = LogoCacheService.instance;
 
-      // Load suggestion and available logos concurrently with timeout
-      final results = await Future.wait([
-        cacheService
-            .getSuggestedLogo(widget.cardTitle)
-            .timeout(const Duration(seconds: 10), onTimeout: () => null),
-        cacheService.getAllAvailableLogos().timeout(
-          const Duration(seconds: 15),
-          onTimeout: () => <IconData>[],
-        ),
-      ]);
+      // Load suggestion and available logos concurrently. Avoid using
+      // explicit Future.timeouts here because the underlying implementation
+      // may schedule timers that remain pending in the test environment
+      // (causing FakeAsync timer assertions). Individual service methods
+      // already implement their own timeouts where needed.
+      final suggestionFuture = cacheService.getSuggestedLogo(widget.cardTitle);
+      final availableFuture = cacheService.getAllAvailableLogos();
+
+      final results = await Future.wait([suggestionFuture, availableFuture]);
 
       if (!mounted) return;
 

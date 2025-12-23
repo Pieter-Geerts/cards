@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../widgets/card_preview_widget.dart';
+import '../widgets/labeled_field.dart';
 
 class AddCardPage extends StatefulWidget {
   const AddCardPage({super.key});
@@ -76,8 +77,7 @@ class _AddCardPageState extends State<AddCardPage> {
           ),
         ],
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -94,25 +94,10 @@ class _AddCardPageState extends State<AddCardPage> {
                 background: Colors.white,
               ),
               const SizedBox(height: 16),
+              // Upload from file has been intentionally hidden.
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton.icon(
-                    icon: Icon(Icons.upload),
-                    label: Text(AppLocalizations.of(context).uploadLogo),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
-                    onPressed: () {
-                      // TODO: implement image picker/camera
-                    },
-                  ),
-                  const SizedBox(width: 12),
                   TextButton.icon(
                     icon: Icon(Icons.delete, color: Colors.red),
                     label: Text(
@@ -133,16 +118,16 @@ class _AddCardPageState extends State<AddCardPage> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
-              _buildLabeledField(
-                AppLocalizations.of(context).title,
-                _titleController,
-                AppLocalizations.of(context).titleHint,
+              LabeledField(
+                label: AppLocalizations.of(context).title,
+                controller: _titleController,
+                hint: AppLocalizations.of(context).titleHint,
               ),
               const SizedBox(height: 16),
-              _buildLabeledField(
-                AppLocalizations.of(context).description,
-                _descriptionController,
-                AppLocalizations.of(context).descriptionHint,
+              LabeledField(
+                label: AppLocalizations.of(context).description,
+                controller: _descriptionController,
+                hint: AppLocalizations.of(context).descriptionHint,
                 optional: true,
               ),
               const SizedBox(height: 16),
@@ -154,10 +139,18 @@ class _AddCardPageState extends State<AddCardPage> {
                 },
               ),
               const SizedBox(height: 16),
-              _buildLabeledField(
-                AppLocalizations.of(context).code,
-                _codeController,
-                AppLocalizations.of(context).codeValueLabel,
+              LabeledField(
+                label: AppLocalizations.of(context).code,
+                controller: _codeController,
+                hint: AppLocalizations.of(context).codeValueLabel,
+                keyboardType:
+                    _selectedCardType == CardType.barcode
+                        ? TextInputType.number
+                        : null,
+                inputFormatters:
+                    _selectedCardType == CardType.barcode
+                        ? [FilteringTextInputFormatter.digitsOnly]
+                        : null,
               ),
               const SizedBox(height: 28),
               // Code Visualization Section
@@ -250,6 +243,11 @@ class _AddCardPageState extends State<AddCardPage> {
         const SizedBox(height: 6),
         TextField(
           controller: controller,
+          keyboardType:
+              hint == AppLocalizations.of(context).codeValueLabel &&
+                      _selectedCardType == CardType.barcode
+                  ? TextInputType.number
+                  : null,
           decoration: InputDecoration(
             hintText: hint,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),

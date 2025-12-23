@@ -11,7 +11,7 @@ class AddCardEntryPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Kaart Toevoegen'), elevation: 0),
+      appBar: AppBar(title: Text(l10n.addCard), elevation: 0),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(

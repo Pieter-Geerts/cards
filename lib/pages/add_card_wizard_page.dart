@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:simple_icons/simple_icons.dart';
+import 'package:flutter/services.dart';
 
 import '../helpers/logo_helper.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../services/app_navigator.dart';
+import '../utils/simple_icons_mapping.dart';
 import '../widgets/card_preview_widget.dart';
+import '../widgets/labeled_field.dart';
 
 class AddCardWizardPage extends StatefulWidget {
   const AddCardWizardPage({super.key});
@@ -112,29 +114,7 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
   }
 
   String? _getSimpleIconIdentifier(IconData icon) {
-    final iconMap = {
-      SimpleIcons.carrefour: 'simple_icon:carrefour',
-      SimpleIcons.aldinord: 'simple_icon:aldinord',
-      SimpleIcons.lidl: 'simple_icon:lidl',
-      SimpleIcons.walmart: 'simple_icon:walmart',
-      SimpleIcons.target: 'simple_icon:target',
-      SimpleIcons.tesco: 'simple_icon:tesco',
-      SimpleIcons.ikea: 'simple_icon:ikea',
-      SimpleIcons.nike: 'simple_icon:nike',
-      SimpleIcons.adidas: 'simple_icon:adidas',
-      SimpleIcons.puma: 'simple_icon:puma',
-      SimpleIcons.zara: 'simple_icon:zara',
-      SimpleIcons.amazon: 'simple_icon:amazon',
-      SimpleIcons.ebay: 'simple_icon:ebay',
-      SimpleIcons.etsy: 'simple_icon:etsy',
-      SimpleIcons.shopify: 'simple_icon:shopify',
-      SimpleIcons.mcdonalds: 'simple_icon:mcdonalds',
-      SimpleIcons.burgerking: 'simple_icon:burgerking',
-      SimpleIcons.kfc: 'simple_icon:kfc',
-      SimpleIcons.starbucks: 'simple_icon:starbucks',
-      SimpleIcons.tacobell: 'simple_icon:tacobell',
-    };
-    return iconMap[icon];
+    return SimpleIconsMapping.getIdentifier(icon);
   }
 
   @override
@@ -260,18 +240,18 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
           ),
           const SizedBox(height: 24),
 
-          _buildLabeledField(
-            'Titel *',
-            _titleController,
-            'Naam van de winkel of service',
+          LabeledField(
+            label: 'Titel *',
+            controller: _titleController,
+            hint: 'Naam van de winkel of service',
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 20),
 
-          _buildLabeledField(
-            'Omschrijving',
-            _descriptionController,
-            'Extra details (bijv. lidmaatschapsnummer)',
+          LabeledField(
+            label: 'Omschrijving',
+            controller: _descriptionController,
+            hint: 'Extra details (bijv. lidmaatschapsnummer)',
             maxLines: 3,
           ),
           const SizedBox(height: 20),
@@ -538,6 +518,14 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
                 ? 'QR code inhoud of URL'
                 : 'Barcode nummer',
             onChanged: (_) => setState(() {}),
+            keyboardType:
+                _cardType == CardType.barcode
+                    ? TextInputType.number
+                    : TextInputType.url,
+            inputFormatters:
+                _cardType == CardType.barcode
+                    ? [FilteringTextInputFormatter.digitsOnly]
+                    : null,
           ),
           const SizedBox(height: 16),
 
