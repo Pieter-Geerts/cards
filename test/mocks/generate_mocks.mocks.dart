@@ -24,6 +24,7 @@ import 'package:sqflite/sqflite.dart' as _i2;
 // ignore_for_file: unnecessary_parenthesis
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
+// ignore_for_file: invalid_use_of_internal_member
 
 class _FakeDatabase_0 extends _i1.SmartFake implements _i2.Database {
   _FakeDatabase_0(Object parent, Invocation parentInvocation)
@@ -120,6 +121,17 @@ class MockDatabaseHelper extends _i1.Mock implements _i3.DatabaseHelper {
             returnValueForMissingStub: _i4.Future<_i5.CardItem?>.value(),
           )
           as _i4.Future<_i5.CardItem?>);
+
+  @override
+  _i4.Future<int> backfillLogoPathsFromTitles({bool? dryRun = true}) =>
+      (super.noSuchMethod(
+            Invocation.method(#backfillLogoPathsFromTitles, [], {
+              #dryRun: dryRun,
+            }),
+            returnValue: _i4.Future<int>.value(0),
+            returnValueForMissingStub: _i4.Future<int>.value(0),
+          )
+          as _i4.Future<int>);
 }
 
 /// A class which mocks [NavigatorObserver].

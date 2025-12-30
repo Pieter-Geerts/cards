@@ -79,6 +79,7 @@ class DatabaseHelper implements IDatabaseHelper {
     );
   }
 
+  @override
   Future<int> insertCard(CardItem card) async {
     final db = await database;
     // The card object passed here should already have its sortOrder set.
@@ -86,6 +87,7 @@ class DatabaseHelper implements IDatabaseHelper {
     return db.insert('cards', card.toMap());
   }
 
+  @override
   Future<List<CardItem>> getCards() async {
     final db = await database;
     // Fetch cards ordered by their sortOrder
@@ -93,6 +95,7 @@ class DatabaseHelper implements IDatabaseHelper {
     return List.generate(maps.length, (i) => CardItem.fromMap(maps[i]));
   }
 
+  @override
   Future<int> getNextSortOrder() async {
     final db = await database;
     final result = await db.rawQuery(
@@ -105,6 +108,7 @@ class DatabaseHelper implements IDatabaseHelper {
     return 0; // If no cards, start with 0
   }
 
+  @override
   Future<void> updateCardSortOrders(List<CardItem> cards) async {
     final db = await database;
     Batch batch = db.batch();
@@ -121,11 +125,13 @@ class DatabaseHelper implements IDatabaseHelper {
     await batch.commit(noResult: true);
   }
 
+  @override
   Future<int> deleteCard(int id) async {
     final db = await database;
     return db.delete('cards', where: 'id = ?', whereArgs: [id]);
   }
 
+  @override
   Future<int> updateCard(CardItem card) async {
     final db = await database;
     if (card.id == null) return 0;
@@ -137,11 +143,13 @@ class DatabaseHelper implements IDatabaseHelper {
     );
   }
 
+  @override
   Future<void> deleteAllCards() async {
     final db = await database;
     await db.delete('cards');
   }
 
+  @override
   Future<CardItem?> getCard(int id) async {
     final db = await database;
     final maps = await db.query('cards', where: 'id = ?', whereArgs: [id]);
@@ -155,6 +163,7 @@ class DatabaseHelper implements IDatabaseHelper {
   /// matching the card title against known SimpleIcons identifiers.
   /// Returns the number of rows updated. This should be run manually
   /// during a migration step or from a debug console.
+  @override
   Future<int> backfillLogoPathsFromTitles({bool dryRun = true}) async {
     final db = await database;
     final cards = await db.query('cards', columns: ['id', 'title', 'logoPath']);

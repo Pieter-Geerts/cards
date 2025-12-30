@@ -136,22 +136,27 @@ class _CardDetailPageState extends State<CardDetailPage>
       if (_currentCard.id != null) {
         final repo = widget.cardRepository ?? SqliteCardRepository();
         final res = await repo.deleteCard(_currentCard.id!);
-        if (res.isError && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(res.failure?.message ?? 'Failed to delete card.'),
-            ),
-          );
+        res.fold(
+          (failure) {
+            if (mounted) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(failure.message)));
+            }
+          },
+          (_) {
+            widget.onDelete?.call(_currentCard);
+            if (mounted) {
+              navigator.pop();
+            }
+          },
+        );
+      } else {
+        // If card has no ID, it's not in the DB, just pop
+        widget.onDelete?.call(_currentCard);
+        if (mounted) {
+          navigator.pop();
         }
-
-        // Check again if widget is still mounted after async operation
-        if (!mounted) return;
-      }
-
-      widget.onDelete?.call(_currentCard);
-
-      if (mounted) {
-        navigator.pop();
       }
     }
   }
