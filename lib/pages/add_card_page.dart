@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
@@ -215,53 +216,6 @@ class _AddCardPageState extends State<AddCardPage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildLabeledField(
-    String label,
-    TextEditingController controller,
-    String hint, {
-    bool optional = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(label, style: TextStyle(fontWeight: FontWeight.w500)),
-            if (optional)
-              Padding(
-                padding: const EdgeInsets.only(left: 4),
-                child: Text(
-                  '(Optioneel)',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          keyboardType:
-              hint == AppLocalizations.of(context).codeValueLabel &&
-                      _selectedCardType == CardType.barcode
-                  ? TextInputType.number
-                  : null,
-          decoration: InputDecoration(
-            hintText: hint,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.primary,
-                width: 2,
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
