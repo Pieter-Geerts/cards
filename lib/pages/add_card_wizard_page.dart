@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../helpers/logo_helper.dart';
 import '../l10n/app_localizations.dart';
@@ -241,17 +240,17 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
           const SizedBox(height: 24),
 
           LabeledField(
-            label: 'Titel *',
+            label: AppLocalizations.of(context).title + ' *',
             controller: _titleController,
-            hint: 'Naam van de winkel of service',
+            hint: AppLocalizations.of(context).storeName,
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 20),
 
           LabeledField(
-            label: 'Omschrijving',
+            label: AppLocalizations.of(context).description,
             controller: _descriptionController,
-            hint: 'Extra details (bijv. lidmaatschapsnummer)',
+            hint: AppLocalizations.of(context).optionalDescription,
             maxLines: 3,
           ),
           const SizedBox(height: 20),
@@ -511,21 +510,14 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
           const SizedBox(height: 24),
 
           // Code input
-          _buildLabeledField(
-            'Code *',
-            _codeController,
-            _cardType == CardType.qrCode
-                ? 'QR code inhoud of URL'
-                : 'Barcode nummer',
+          LabeledField(
+            label: AppLocalizations.of(context).code + ' *',
+            controller: _codeController,
+            hint:
+                _cardType == CardType.qrCode
+                    ? AppLocalizations.of(context).enterQrCodeValue
+                    : AppLocalizations.of(context).enterBarcodeValue,
             onChanged: (_) => setState(() {}),
-            keyboardType:
-                _cardType == CardType.barcode
-                    ? TextInputType.number
-                    : TextInputType.url,
-            inputFormatters:
-                _cardType == CardType.barcode
-                    ? [FilteringTextInputFormatter.digitsOnly]
-                    : null,
           ),
           const SizedBox(height: 16),
 
@@ -580,62 +572,6 @@ class _AddCardWizardPageState extends State<AddCardWizardPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildLabeledField(
-    String label,
-    TextEditingController controller,
-    String hintText, {
-    int maxLines = 1,
-    Function(String)? onChanged,
-  }) {
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          maxLines: maxLines,
-          onChanged: onChanged,
-          style: TextStyle(color: theme.colorScheme.onSurface),
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: TextStyle(
-              color: theme.colorScheme.onSurface.withAlpha(200),
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: theme.colorScheme.outline.withValues(alpha: 0.5),
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: theme.colorScheme.outline.withValues(alpha: 0.5),
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: theme.primaryColor),
-            ),
-            fillColor: theme.colorScheme.surface,
-            filled: true,
-            contentPadding: const EdgeInsets.all(16),
-          ),
-        ),
-      ],
     );
   }
 

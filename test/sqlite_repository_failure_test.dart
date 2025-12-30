@@ -75,8 +75,13 @@ void main() {
 
       final result = await repo.getCards();
 
-      expect(result.isError, isTrue);
-      expect(result.failure?.message, contains('Failed to load cards'));
+      expect(
+        result.fold(
+          (failure) => failure.message.contains('Failed to load cards'),
+          (_) => false,
+        ),
+        isTrue,
+      );
 
       final stats = ErrorHandlingService.instance.getErrorStats();
       expect(stats['totalErrors'] as int, greaterThanOrEqualTo(1));
@@ -95,8 +100,13 @@ void main() {
     );
 
     final res = await repo.insertCard(card);
-    expect(res.isError, isTrue);
-    expect(res.failure?.message, contains('Failed to save card'));
+    expect(
+      res.fold(
+        (failure) => failure.message.contains('Failed to save card'),
+        (_) => false,
+      ),
+      isTrue,
+    );
 
     final stats = ErrorHandlingService.instance.getErrorStats();
     expect(stats['totalErrors'] as int, greaterThanOrEqualTo(1));
