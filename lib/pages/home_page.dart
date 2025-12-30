@@ -351,6 +351,7 @@ class _HomePageState extends State<HomePage> {
               _searchQuery = '';
               _isSearchActive = false;
               _applySearchFilter();
+              FocusScope.of(context).unfocus();
             });
           },
         ),

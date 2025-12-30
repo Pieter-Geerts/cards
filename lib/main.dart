@@ -64,16 +64,17 @@ class _MyAppState extends State<MyApp> {
   Future<void> _loadCards() async {
     final res = await _cardRepository.getCards();
     if (mounted) {
-      if (res.isOk) {
-        setState(() => _cards = res.value ?? []);
-      } else {
-        // Reported already via ErrorHandlingService; show friendly message
-        final message = res.failure?.message ?? 'Failed to load cards.';
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
-      }
+      res.fold(
+        (failure) {
+          final message = failure.message;
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(message)));
+        },
+        (cards) {
+          setState(() => _cards = cards);
+        },
+      );
     }
   }
 
@@ -92,15 +93,21 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _addCard(CardItem card) async {
-    // Avoid sentinel-based delete signal; rely on explicit delete API.
     final res = await _cardRepository.insertCard(card);
-    if (res.isError) {
-      final message = res.failure?.message ?? 'Failed to add card.';
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+    if (mounted) {
+      res.fold(
+        (failure) {
+          final message = failure.message;
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(message)));
+        },
+        (_) async {
+          // On success, reload the cards to show the new one
+          await _loadCards();
+        },
+      );
     }
-    await _loadCards();
   }
 
   @override

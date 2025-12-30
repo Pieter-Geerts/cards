@@ -3,16 +3,9 @@ import 'package:flutter/material.dart';
 
 import '../helpers/logo_helper.dart';
 import '../l10n/app_localizations.dart';
+import '../services/logo_cache_service.dart';
 import '../utils/simple_icons_mapping.dart';
 
-/// Consolidated bottom sheet for selecting Simple Icons logos.
-///
-/// Supports two usage patterns:
-///  - Callback mode: pass `onLogoSelected` and the sheet will call it
-///    with the chosen `IconData?` when the user confirms.
-///  - Return mode: omit `onLogoSelected` and the sheet will pop with a
-///    `String?` identifier (SimpleIconsMapping identifier) when a logo is
-///    chosen (immediate selection).
 class LogoSelectionSheet extends StatefulWidget {
   final IconData? currentLogo;
   final String cardTitle;
@@ -58,13 +51,15 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
 
     try {
       _suggestedLogo = await LogoHelper.suggestLogo(widget.cardTitle);
-      _availableLogos = await LogoHelper.getAllAvailableLogos();
+      _availableLogos = await LogoCacheService.instance.getAllAvailableLogos();
     } catch (e) {
       debugPrint('Error loading logo data: $e');
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -126,147 +121,147 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurface.withAlpha(200),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
-          // Header
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    AppLocalizations.of(context).selectLogo,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close),
-                ),
-              ],
-            ),
-          ),
-
-          // Current selection preview
-          if (_selectedLogo != null || widget.currentLogo != null)
+    final theme = Theme.of(context);
+    return SafeArea(
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          children: [
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(top: 8),
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
+                color: theme.colorScheme.onSurface.withAlpha(200),
+                borderRadius: BorderRadius.circular(2),
               ),
+            ),
+
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  Icon(
-                    _selectedLogo ?? widget.currentLogo,
-                    size: 48,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context).selectedLogo,
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        Text(
-                          _selectedLogo == null
-                              ? AppLocalizations.of(context).removeLogo
-                              : AppLocalizations.of(context).selectedLogo,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
+                    child: Text(
+                      AppLocalizations.of(context).selectLogo,
+                      style: theme.textTheme.headlineSmall,
                     ),
                   ),
-                  if (_selectedLogo != null)
-                    IconButton(
-                      onPressed: () => _selectLogo(null),
-                      icon: const Icon(Icons.clear),
-                      tooltip: AppLocalizations.of(context).removeLogo,
-                    ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
                 ],
               ),
             ),
 
-          const SizedBox(height: 16),
+            // Current selection preview
+            if (_selectedLogo != null || widget.currentLogo != null)
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _selectedLogo ?? widget.currentLogo,
+                      size: 48,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context).selectedLogo,
+                            style: theme.textTheme.titleSmall,
+                          ),
+                          Text(
+                            _selectedLogo == null
+                                ? AppLocalizations.of(context).removeLogo
+                                : AppLocalizations.of(context).selectedLogo,
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (_selectedLogo != null)
+                      IconButton(
+                        onPressed: () => _selectLogo(null),
+                        icon: const Icon(Icons.clear),
+                        tooltip: AppLocalizations.of(context).removeLogo,
+                      ),
+                  ],
+                ),
+              ),
 
-          TabBar(
-            controller: _tabController,
-            tabs: [
-              Tab(
-                text: AppLocalizations.of(context).suggested,
-                icon: const Icon(Icons.auto_awesome),
-              ),
-              Tab(
-                text: AppLocalizations.of(context).browse,
-                icon: const Icon(Icons.grid_view),
-              ),
-              Tab(
-                text: AppLocalizations.of(context).uploadLogo,
-                icon: const Icon(Icons.upload),
-              ),
-            ],
-          ),
+            const SizedBox(height: 16),
 
-          Expanded(
-            child: TabBarView(
+            TabBar(
               controller: _tabController,
-              children: [
-                _buildSuggestedTab(),
-                _buildBrowseTab(),
-                _buildUploadTab(),
+              tabs: [
+                Tab(
+                  text: AppLocalizations.of(context).suggested,
+                  icon: const Icon(Icons.auto_awesome),
+                ),
+                Tab(
+                  text: AppLocalizations.of(context).browse,
+                  icon: const Icon(Icons.grid_view),
+                ),
+                Tab(
+                  text: AppLocalizations.of(context).uploadLogo,
+                  icon: const Icon(Icons.upload),
+                ),
               ],
             ),
-          ),
 
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  color: Theme.of(context).colorScheme.outline,
-                  width: 0.5,
-                ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildSuggestedTab(),
+                  _buildBrowseTab(),
+                  _buildUploadTab(),
+                ],
               ),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(AppLocalizations.of(context).cancel),
-                  ),
+
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: theme.colorScheme.outline, width: 0.5),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _confirmSelection,
-                    child: Text(AppLocalizations.of(context).confirm),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(AppLocalizations.of(context).cancel),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _confirmSelection,
+                      child: Text(AppLocalizations.of(context).confirm),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

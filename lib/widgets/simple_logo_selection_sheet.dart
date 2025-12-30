@@ -1,4 +1,3 @@
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 
 import '../helpers/logo_helper.dart';
@@ -32,7 +31,7 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _selectedLogo = widget.currentLogo;
     _loadLogoData();
   }
@@ -63,42 +62,9 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
     }
   }
 
-  Future<void> _uploadLogo() async {
-    try {
-      const XTypeGroup typeGroup = XTypeGroup(
-        label: 'images',
-        extensions: <String>['jpg', 'jpeg', 'png', 'svg'],
-      );
-
-      final XFile? file = await openFile(
-        acceptedTypeGroups: <XTypeGroup>[typeGroup],
-      );
-
-      if (file != null) {
-        // For now, just show a message that upload will be implemented
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                AppLocalizations.of(context).customLogoUploadComingSoon,
-              ),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${AppLocalizations.of(context).errorUploadingLogo}: ${e.toString()}',
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
-    }
-  }
+  // Uploading custom logos has been intentionally hidden in this branch.
+  // The helper methods to save/delete uploaded logos remain in
+  // `LogoHelper` if a future decision is made to re-enable uploads.
 
   void _selectLogo(IconData? logo) {
     setState(() {
@@ -209,10 +175,6 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
                 text: AppLocalizations.of(context).browse,
                 icon: const Icon(Icons.grid_view),
               ),
-              Tab(
-                text: AppLocalizations.of(context).uploadLogo,
-                icon: const Icon(Icons.upload),
-              ),
             ],
           ),
 
@@ -220,11 +182,7 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: [
-                _buildSuggestedTab(),
-                _buildBrowseTab(),
-                _buildUploadTab(),
-              ],
+              children: [_buildSuggestedTab(), _buildBrowseTab()],
             ),
           ),
 
@@ -284,7 +242,7 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
             ),
             const SizedBox(height: 8),
             Text(
-              'Try browsing available logos or upload your own',
+              'Try browsing available logos',
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -405,46 +363,5 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
     );
   }
 
-  Widget _buildUploadTab() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.cloud_upload,
-            size: 64,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Upload Custom Logo',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Choose a PNG, JPG, or SVG file from your device',
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: _uploadLogo,
-            icon: const Icon(Icons.folder_open),
-            label: const Text('Choose File'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Custom logo upload coming soon!',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
-          ),
-        ],
-      ),
-    );
-  }
+  // Upload tab removed: upload functionality is intentionally hidden in this branch.
 }

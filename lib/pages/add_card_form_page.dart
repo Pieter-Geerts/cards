@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:simple_icons/simple_icons.dart';
+import 'package:flutter/services.dart';
 
 import '../helpers/logo_helper.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../services/app_navigator.dart';
+import '../utils/simple_icons_mapping.dart';
 import '../widgets/card_preview_widget.dart';
+import '../widgets/labeled_field.dart';
 import 'add_card_entry_page.dart';
 
 class AddCardFormPage extends StatefulWidget {
@@ -29,6 +33,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
   String? _logoPath;
   IconData? _selectedLogoIcon;
   bool _isLoadingLogo = false;
+  Timer? _logoDebounce;
 
   @override
   void initState() {
@@ -41,6 +46,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
     _titleController.dispose();
     _descriptionController.dispose();
     _codeController.dispose();
+    _logoDebounce?.cancel();
     super.dispose();
   }
 
@@ -52,7 +58,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
       _cardType = _detectCardType(widget.scannedCode!);
     }
 
-    // Set up logo auto-suggestion when title changes
+    // Set up logo auto-suggestion when title changes (debounced)
     _titleController.addListener(_onTitleChanged);
   }
 
@@ -64,25 +70,26 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
     return CardType.barcode;
   }
 
-  Future<void> _onTitleChanged() async {
+  void _onTitleChanged() {
     final title = _titleController.text.trim();
-    if (title.length < 3) return; // Wait for meaningful input
-
-    setState(() => _isLoadingLogo = true);
-
-    try {
-      final suggestion = await LogoHelper.suggestLogo(title);
-      if (suggestion != null && mounted) {
-        setState(() {
-          _selectedLogoIcon = suggestion;
-          _logoPath = null; // Clear custom logo when auto-suggestion found
-        });
+    // Debounce suggestions to avoid many calls while typing
+    _logoDebounce?.cancel();
+    if (title.length < 3) return;
+    _logoDebounce = Timer(const Duration(milliseconds: 300), () async {
+      if (!mounted) return;
+      setState(() => _isLoadingLogo = true);
+      try {
+        final suggestion = await LogoHelper.suggestLogo(title);
+        if (suggestion != null && mounted) {
+          setState(() {
+            _selectedLogoIcon = suggestion;
+            _logoPath = null; // Clear custom logo when auto-suggestion found
+          });
+        }
+      } finally {
+        if (mounted) setState(() => _isLoadingLogo = false);
       }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoadingLogo = false);
-      }
-    }
+    });
   }
 
   String _getModeTitle() {
@@ -117,7 +124,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
 
     final logoPath =
         _selectedLogoIcon != null && _logoPath == null
-            ? _getSimpleIconIdentifier(_selectedLogoIcon!)
+            ? SimpleIconsMapping.getIdentifier(_selectedLogoIcon!)
             : _logoPath;
 
     final newCard = CardItem(
@@ -132,32 +139,6 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
     if (mounted) {
       Navigator.of(context).pop(newCard);
     }
-  }
-
-  String? _getSimpleIconIdentifier(IconData icon) {
-    final iconMap = {
-      SimpleIcons.carrefour: 'simple_icon:carrefour',
-      SimpleIcons.aldinord: 'simple_icon:aldinord',
-      SimpleIcons.lidl: 'simple_icon:lidl',
-      SimpleIcons.walmart: 'simple_icon:walmart',
-      SimpleIcons.target: 'simple_icon:target',
-      SimpleIcons.tesco: 'simple_icon:tesco',
-      SimpleIcons.ikea: 'simple_icon:ikea',
-      SimpleIcons.nike: 'simple_icon:nike',
-      SimpleIcons.adidas: 'simple_icon:adidas',
-      SimpleIcons.puma: 'simple_icon:puma',
-      SimpleIcons.zara: 'simple_icon:zara',
-      SimpleIcons.amazon: 'simple_icon:amazon',
-      SimpleIcons.ebay: 'simple_icon:ebay',
-      SimpleIcons.etsy: 'simple_icon:etsy',
-      SimpleIcons.shopify: 'simple_icon:shopify',
-      SimpleIcons.mcdonalds: 'simple_icon:mcdonalds',
-      SimpleIcons.burgerking: 'simple_icon:burgerking',
-      SimpleIcons.kfc: 'simple_icon:kfc',
-      SimpleIcons.starbucks: 'simple_icon:starbucks',
-      SimpleIcons.tacobell: 'simple_icon:tacobell',
-    };
-    return iconMap[icon];
   }
 
   @override
@@ -256,12 +237,11 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
               ],
             ),
             const SizedBox(height: 16),
-
             Center(
               child: CardPreviewWidget(
                 logoPath:
                     _selectedLogoIcon != null && _logoPath == null
-                        ? _getSimpleIconIdentifier(_selectedLogoIcon!)
+                        ? SimpleIconsMapping.getIdentifier(_selectedLogoIcon!)
                         : _logoPath,
                 title: _titleController.text,
                 description: _descriptionController.text,
@@ -383,19 +363,19 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
     return Column(
       children: [
         // Title field
-        _buildLabeledField(
-          '${AppLocalizations.of(context).title} *',
-          _titleController,
-          AppLocalizations.of(context).storeName,
+        LabeledField(
+          label: '${AppLocalizations.of(context).title} *',
+          controller: _titleController,
+          hint: AppLocalizations.of(context).storeName,
           onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: 16),
 
         // Description field
-        _buildLabeledField(
-          AppLocalizations.of(context).description,
-          _descriptionController,
-          AppLocalizations.of(context).optionalDescription,
+        LabeledField(
+          label: AppLocalizations.of(context).description,
+          controller: _descriptionController,
+          hint: AppLocalizations.of(context).optionalDescription,
           maxLines: 2,
         ),
         const SizedBox(height: 16),
@@ -406,22 +386,19 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
           children: [
             Text(
               AppLocalizations.of(context).cardTypeLabel,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.outline.withValues(alpha: 0.5),
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<CardType>(
-                  // ignore: deprecated_member_use
                   value: _cardType,
                   isExpanded: true,
                   onChanged: (CardType? newValue) {
@@ -444,67 +421,23 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
         const SizedBox(height: 16),
 
         // Code field
-        _buildLabeledField(
-          '${AppLocalizations.of(context).code} / ${AppLocalizations.of(context).barcode} *',
-          _codeController,
-          _cardType == CardType.qrCode
-              ? AppLocalizations.of(context).enterQrCodeValue
-              : AppLocalizations.of(context).enterBarcodeValue,
+        LabeledField(
+          label:
+              '${AppLocalizations.of(context).code} / ${AppLocalizations.of(context).barcode} *',
+          controller: _codeController,
+          hint:
+              _cardType == CardType.qrCode
+                  ? AppLocalizations.of(context).enterQrCodeValue
+                  : AppLocalizations.of(context).enterBarcodeValue,
           onChanged: (_) => setState(() {}),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLabeledField(
-    String label,
-    TextEditingController controller,
-    String hintText, {
-    int maxLines = 1,
-    Function(String)? onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          maxLines: maxLines,
-          onChanged: onChanged,
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(
-                  context,
-                ).colorScheme.outline.withValues(alpha: 0.5),
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(
-                  context,
-                ).colorScheme.outline.withValues(alpha: 0.5),
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Theme.of(context).primaryColor),
-            ),
-            fillColor: Theme.of(context).colorScheme.surface,
-            filled: true,
-            contentPadding: const EdgeInsets.all(16),
-          ),
+          keyboardType:
+              _cardType == CardType.barcode
+                  ? TextInputType.number
+                  : TextInputType.url,
+          inputFormatters:
+              _cardType == CardType.barcode
+                  ? [FilteringTextInputFormatter.digitsOnly]
+                  : null,
         ),
       ],
     );
@@ -517,7 +450,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),
@@ -545,7 +478,6 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
               ),
             ),
           ),
-
           if (!_isFormValid()) ...[
             const SizedBox(height: 8),
             Text(

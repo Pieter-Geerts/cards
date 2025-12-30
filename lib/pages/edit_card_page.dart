@@ -1,10 +1,12 @@
 import 'dart:async'; // Added for Timer (debouncer)
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../utils/simple_icons_mapping.dart';
+import '../widgets/labeled_field.dart';
 import '../widgets/logo_avatar_widget.dart';
 import '../widgets/logo_selection_sheet.dart';
 
@@ -243,47 +245,7 @@ class _EditCardPageState extends State<EditCardPage> {
     );
   }
 
-  Widget _buildLabeledField(
-    String label,
-    TextEditingController controller,
-    String hint, {
-    bool optional = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(label, style: TextStyle(fontWeight: FontWeight.w500)),
-            if (optional)
-              Padding(
-                padding: const EdgeInsets.only(left: 4),
-                child: Text(
-                  '(Optioneel)',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: hint,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.primary,
-                width: 2,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  // Replaced by LabeledField widget in lib/widgets/labeled_field.dart
 
   Widget _buildDropdownField(
     String label,
@@ -380,16 +342,16 @@ class _EditCardPageState extends State<EditCardPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildLabeledField(
-                  l10n.title,
-                  _titleController,
-                  l10n.titleHint,
+                LabeledField(
+                  label: l10n.title,
+                  controller: _titleController,
+                  hint: l10n.titleHint,
                 ),
                 const SizedBox(height: 16),
-                _buildLabeledField(
-                  l10n.description,
-                  _descController,
-                  l10n.descriptionHint,
+                LabeledField(
+                  label: l10n.description,
+                  controller: _descController,
+                  hint: l10n.descriptionHint,
                   optional: true,
                 ),
                 const SizedBox(height: 16),
@@ -404,12 +366,21 @@ class _EditCardPageState extends State<EditCardPage> {
                   }
                 }),
                 const SizedBox(height: 16),
-                _buildLabeledField(
-                  l10n.codeValueLabel,
-                  _nameController,
-                  _selectedCardType == CardType.qrCode
-                      ? l10n.enterQrCodeValue
-                      : l10n.enterBarcodeValue,
+                LabeledField(
+                  label: l10n.codeValueLabel,
+                  controller: _nameController,
+                  hint:
+                      _selectedCardType == CardType.qrCode
+                          ? l10n.enterQrCodeValue
+                          : l10n.enterBarcodeValue,
+                  keyboardType:
+                      _selectedCardType == CardType.barcode
+                          ? TextInputType.number
+                          : TextInputType.url,
+                  inputFormatters:
+                      _selectedCardType == CardType.barcode
+                          ? [FilteringTextInputFormatter.digitsOnly]
+                          : null,
                 ),
                 const SizedBox(height: 24),
                 if (codeValueForPreview.isNotEmpty)

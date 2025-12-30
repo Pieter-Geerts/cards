@@ -58,18 +58,26 @@ class _CameraScanPageState extends State<CameraScanPage> {
             cardType = CardType.qrCode;
         }
 
-        // Return the scanned code
-        Navigator.of(context).pop();
+        // Return the scanned code: call callback first then pop.
         widget.onCodeScanned(code, cardType);
+        if (mounted) Navigator.of(context).pop();
       }
     }
   }
 
   void _toggleFlash() async {
-    await cameraController.toggleTorch();
-    setState(() {
-      _isFlashOn = !_isFlashOn;
-    });
+    try {
+      await cameraController.toggleTorch();
+      // Query the actual torch state if available; otherwise toggle local state
+      setState(() {
+        _isFlashOn = !_isFlashOn;
+      });
+    } catch (e) {
+      debugPrint('Failed to toggle torch: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to toggle flash')));
+    }
   }
 
   @override
