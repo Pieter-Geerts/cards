@@ -53,7 +53,7 @@ class AddCardStepDetails extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  AppLocalizations.of(context).title + ' *',
+                  AppLocalizations.of(context).companyOrNameLabel,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -62,10 +62,6 @@ class AddCardStepDetails extends StatelessWidget {
                 const SizedBox(height: 12),
                 TextField(
                   controller: titleController,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context).companyOrNameLabel,
                     filled: true,

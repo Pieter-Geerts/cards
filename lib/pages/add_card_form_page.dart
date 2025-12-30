@@ -46,6 +46,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
     _titleController.dispose();
     _descriptionController.dispose();
     _codeController.dispose();
+    _logoDebounce?.cancel();
     super.dispose();
   }
 
@@ -123,7 +124,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
 
     final logoPath =
         _selectedLogoIcon != null && _logoPath == null
-            ? _getSimpleIconIdentifier(_selectedLogoIcon!)
+            ? SimpleIconsMapping.getIdentifier(_selectedLogoIcon!)
             : _logoPath;
 
     final newCard = CardItem(
@@ -139,9 +140,6 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
       Navigator.of(context).pop(newCard);
     }
   }
-
-  String? _getSimpleIconIdentifier(IconData icon) =>
-      SimpleIconsMapping.getIdentifier(icon);
 
   @override
   Widget build(BuildContext context) {
@@ -239,12 +237,11 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
               ],
             ),
             const SizedBox(height: 16),
-
             Center(
               child: CardPreviewWidget(
                 logoPath:
                     _selectedLogoIcon != null && _logoPath == null
-                        ? _getSimpleIconIdentifier(_selectedLogoIcon!)
+                        ? SimpleIconsMapping.getIdentifier(_selectedLogoIcon!)
                         : _logoPath,
                 title: _titleController.text,
                 description: _descriptionController.text,
@@ -367,7 +364,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
       children: [
         // Title field
         LabeledField(
-          label: AppLocalizations.of(context).title + ' *',
+          label: '${AppLocalizations.of(context).title} *',
           controller: _titleController,
           hint: AppLocalizations.of(context).storeName,
           onChanged: (_) => setState(() {}),
@@ -389,22 +386,19 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
           children: [
             Text(
               AppLocalizations.of(context).cardTypeLabel,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.outline.withValues(alpha: 0.5),
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<CardType>(
-                  // ignore: deprecated_member_use
                   value: _cardType,
                   isExpanded: true,
                   onChanged: (CardType? newValue) {
@@ -429,10 +423,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
         // Code field
         LabeledField(
           label:
-              AppLocalizations.of(context).code +
-              ' / ' +
-              AppLocalizations.of(context).barcode +
-              ' *',
+              '${AppLocalizations.of(context).code} / ${AppLocalizations.of(context).barcode} *',
           controller: _codeController,
           hint:
               _cardType == CardType.qrCode
@@ -452,64 +443,6 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
     );
   }
 
-  Widget _buildLabeledField(
-    String label,
-    TextEditingController controller,
-    String hintText, {
-    int maxLines = 1,
-    Function(String)? onChanged,
-    TextInputType? keyboardType,
-    List<TextInputFormatter>? inputFormatters,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          maxLines: maxLines,
-          keyboardType: keyboardType,
-          inputFormatters: inputFormatters,
-          onChanged: onChanged,
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(
-                  context,
-                ).colorScheme.outline.withValues(alpha: 0.5),
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(
-                  context,
-                ).colorScheme.outline.withValues(alpha: 0.5),
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Theme.of(context).primaryColor),
-            ),
-            fillColor: Theme.of(context).colorScheme.surface,
-            filled: true,
-            contentPadding: const EdgeInsets.all(16),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildSaveButton() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -517,7 +450,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),
@@ -545,7 +478,6 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
               ),
             ),
           ),
-
           if (!_isFormValid()) ...[
             const SizedBox(height: 8),
             Text(

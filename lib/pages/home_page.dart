@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 
-import '../helpers/database_helper.dart';
+// DatabaseHelper is replaced by CardRepository; keep import removed
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
+import '../repositories/card_repository_interface.dart';
+import '../repositories/sqlite_card_repository.dart';
 import '../services/add_card_flow_manager.dart';
 import '../services/share_service.dart';
 import '../widgets/card_list_widget.dart';
@@ -19,12 +21,14 @@ class HomePage extends StatefulWidget {
   final List<CardItem> cards;
   final Function(CardItem) onAddCard;
   final Function(CardItem)? onUpdateCard;
+  final CardRepository? cardRepository;
 
   const HomePage({
     super.key,
     required this.cards,
     required this.onAddCard,
     this.onUpdateCard,
+    this.cardRepository,
   });
 
   @override
@@ -38,25 +42,58 @@ class _HomePageState extends State<HomePage> {
       useBottomSheet: true,
     );
     if (newCard != null) {
-      final nextOrder = await _dbHelper.getNextSortOrder();
-      final finalCard = CardItem(
-        title: newCard.title,
-        description: newCard.description,
-        name: newCard.name,
-        cardType: newCard.cardType,
-        createdAt: newCard.createdAt,
-        sortOrder: nextOrder,
-        logoPath: newCard.logoPath,
+      final nextOrderRes = await _cardRepository.getNextSortOrder();
+      nextOrderRes.fold(
+        (failure) {
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(failure.message)));
+          }
+        },
+        (nextOrder) async {
+          final finalCard = CardItem(
+            title: newCard.title,
+            description: newCard.description,
+            name: newCard.name,
+            cardType: newCard.cardType,
+            createdAt: newCard.createdAt,
+            sortOrder: nextOrder,
+            logoPath: newCard.logoPath,
+          );
+          final ins = await _cardRepository.insertCard(finalCard);
+          ins.fold(
+            (failure) {
+              if (mounted) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(failure.message)));
+              }
+            },
+            (_) async {
+              final cardsRes = await _cardRepository.getCards();
+              cardsRes.fold(
+                (failure) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(failure.message)));
+                  }
+                },
+                (cards) {
+                  setState(() {
+                    _displayedCards = cards;
+                  });
+                },
+              );
+            },
+          );
+        },
       );
-      await _dbHelper.insertCard(finalCard);
-      final cards = await _dbHelper.getCards();
-      setState(() {
-        _displayedCards = cards;
-      });
     }
   }
 
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  late final CardRepository _cardRepository;
   late List<CardItem> _displayedCards;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -67,6 +104,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _displayedCards = List.from(widget.cards);
     _applySearchFilter();
+    _cardRepository = widget.cardRepository ?? SqliteCardRepository();
     _searchController.addListener(() {
       if (_searchController.text.isEmpty && _searchQuery.isNotEmpty) {
         setState(() {
@@ -128,40 +166,67 @@ class _HomePageState extends State<HomePage> {
               card: card,
               onDelete: (deletedCard) async {
                 if (deletedCard.id != null) {
-                  await _dbHelper.deleteCard(deletedCard.id!);
+                  final del = await _cardRepository.deleteCard(deletedCard.id!);
+                  del.fold(
+                    (failure) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(failure.message)),
+                        );
+                      }
+                    },
+                    (_) {
+                      setState(() {
+                        _displayedCards.removeWhere(
+                          (c) => c.id == deletedCard.id,
+                        );
+                      });
+                    },
+                  );
                 }
-                setState(() {
-                  _displayedCards.removeWhere((c) => c.id == deletedCard.id);
-                });
-                final deleteSignal = CardItem(
-                  title: "##DELETE_CARD_SIGNAL##",
-                  description: "",
-                  name: "",
-                  cardType: CardType.qrCode,
-                  sortOrder: -1,
-                );
-                widget.onAddCard(deleteSignal);
               },
             ),
       ),
     );
     if (updated != null && updated.id != null) {
-      await _dbHelper.updateCard(updated);
-      final cards = await _dbHelper.getCards();
-      setState(() {
-        _displayedCards = cards;
-      });
+      final upd = await _cardRepository.updateCard(updated);
+      upd.fold(
+        (failure) {
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(failure.message)));
+          }
+        },
+        (_) async {
+          final cardsRes = await _cardRepository.getCards();
+          cardsRes.fold(
+            (failure) {
+              if (mounted) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(failure.message)));
+              }
+            },
+            (cards) {
+              if (mounted) {
+                setState(() => _displayedCards = cards);
+              }
+            },
+          );
+        },
+      );
     }
   }
 
-  void _onReorder(int oldIndex, int newIndex) {
+  void _onReorder(int oldIndex, int newIndex) async {
+    List<CardItem> cardsToUpdate = [];
     setState(() {
       if (newIndex > oldIndex) {
         newIndex -= 1;
       }
       final CardItem item = _displayedCards.removeAt(oldIndex);
       _displayedCards.insert(newIndex, item);
-      List<CardItem> cardsToUpdate = [];
       for (int i = 0; i < _displayedCards.length; i++) {
         if (_displayedCards[i].sortOrder != i) {
           cardsToUpdate.add(_displayedCards[i].copyWith(sortOrder: i));
@@ -175,10 +240,17 @@ class _HomePageState extends State<HomePage> {
           _displayedCards[originalIndex] = cardsToUpdate[i];
         }
       }
-      if (cardsToUpdate.isNotEmpty) {
-        _dbHelper.updateCardSortOrders(cardsToUpdate);
-      }
     });
+    if (cardsToUpdate.isNotEmpty) {
+      final res = await _cardRepository.updateCardSortOrders(cardsToUpdate);
+      res.fold((failure) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(failure.message)));
+        }
+      }, (_) {});
+    }
   }
 
   List<Widget> _buildAppBarActions(AppLocalizations l10n) {
@@ -195,18 +267,63 @@ class _HomePageState extends State<HomePage> {
               final data = jsonDecode(content);
               if (data is Map<String, dynamic>) {
                 final card = CardItem.fromMap(data);
-                final nextOrder = await _dbHelper.getNextSortOrder();
-                final newCard = card.copyWith(sortOrder: nextOrder);
-                await _dbHelper.insertCard(newCard);
-                widget.onAddCard(newCard);
+                final nextOrderRes = await _cardRepository.getNextSortOrder();
+                nextOrderRes.fold(
+                  (failure) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(failure.message)));
+                    }
+                  },
+                  (nextOrder) async {
+                    final newCard = card.copyWith(sortOrder: nextOrder);
+                    final ins = await _cardRepository.insertCard(newCard);
+                    ins.fold(
+                      (failure) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(failure.message)),
+                          );
+                        }
+                      },
+                      (id) {
+                        widget.onAddCard(newCard.copyWith(id: id));
+                      },
+                    );
+                  },
+                );
               } else if (data is List) {
                 for (final item in data) {
                   if (item is Map<String, dynamic>) {
                     final card = CardItem.fromMap(item);
-                    final nextOrder = await _dbHelper.getNextSortOrder();
-                    final newCard = card.copyWith(sortOrder: nextOrder);
-                    await _dbHelper.insertCard(newCard);
-                    widget.onAddCard(newCard);
+                    final nextOrderRes =
+                        await _cardRepository.getNextSortOrder();
+                    nextOrderRes.fold(
+                      (failure) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(failure.message)),
+                          );
+                        }
+                      },
+                      (nextOrder) async {
+                        final newCard = card.copyWith(sortOrder: nextOrder);
+                        final ins = await _cardRepository.insertCard(newCard);
+                        ins.fold(
+                          (failure) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(failure.message)),
+                              );
+                            }
+                          },
+                          (id) {
+                            widget.onAddCard(newCard.copyWith(id: id));
+                          },
+                        );
+                      },
+                    );
                   }
                 }
               }
@@ -341,25 +458,50 @@ class _HomePageState extends State<HomePage> {
 
                   if (updated != null && updated.id != null) {
                     // Persist updated card and update UI
-                    await _dbHelper.updateCard(updated);
-                    if (widget.onUpdateCard != null) {
-                      widget.onUpdateCard!(updated);
-                    } else {
-                      final index = _displayedCards.indexWhere(
-                        (c) => c.id == updated.id,
-                      );
-                      if (index != -1) {
-                        setState(() {
-                          _displayedCards[index] = updated;
-                        });
-                      } else {
-                        // If card not present locally, refresh list from DB
-                        final cards = await _dbHelper.getCards();
-                        setState(() {
-                          _displayedCards = cards;
-                        });
-                      }
-                    }
+                    final upd = await _cardRepository.updateCard(updated);
+                    upd.fold(
+                      (failure) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(failure.message)),
+                          );
+                        }
+                      },
+                      (_) {
+                        if (widget.onUpdateCard != null) {
+                          widget.onUpdateCard!(updated);
+                        } else {
+                          final index = _displayedCards.indexWhere(
+                            (c) => c.id == updated.id,
+                          );
+                          if (index != -1) {
+                            setState(() {
+                              _displayedCards[index] = updated;
+                            });
+                          } else {
+                            // If card not present locally, refresh list from DB
+                            _cardRepository.getCards().then((cardsRes) {
+                              cardsRes.fold(
+                                (failure) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(failure.message)),
+                                    );
+                                  }
+                                },
+                                (cards) {
+                                  if (mounted) {
+                                    setState(() {
+                                      _displayedCards = cards;
+                                    });
+                                  }
+                                },
+                              );
+                            });
+                          }
+                        }
+                      },
+                    );
                   }
                 },
               ),
