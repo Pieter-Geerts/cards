@@ -31,7 +31,7 @@ void main() {
         title: 'Test Card for Edit',
         description: 'Original description',
         name: 'ORIGINAL123',
-        cardType: CardType.barcode,
+        cardType: CardType.qrCode,
         sortOrder: 0,
       );
 
@@ -195,7 +195,7 @@ void main() {
         title: 'Barcode Test',
         description: 'Test barcode card',
         name: 'ORIGINAL123',
-        cardType: CardType.barcode,
+        cardType: CardType.qrCode,
         sortOrder: 0,
       );
 
