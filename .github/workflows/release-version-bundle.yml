@@ -178,7 +178,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Download AAB artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: app-release-aab-v${{ needs.pre-checks.outputs.version }}
           path: build/app/outputs/bundle/release/
@@ -216,7 +216,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Download artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: app-release-*-v${{ needs.pre-checks.outputs.version }}
           merge-multiple: true
