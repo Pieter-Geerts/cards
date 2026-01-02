@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-import '../helpers/database_helper.dart';
+import '../controllers/card_detail_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../pages/edit_card_page.dart';
-import '../services/brightness_service.dart';
 import '../services/share_service.dart';
+import '../widgets/code_card_widget.dart';
 import '../widgets/logo_avatar_widget.dart';
 
 class CardDetailPage extends StatefulWidget {
   final CardItem card;
   final Function(CardItem)? onDelete;
+  final CardDetailController? controller;
 
-  const CardDetailPage({super.key, required this.card, this.onDelete});
+  const CardDetailPage({
+    super.key,
+    required this.card,
+    this.onDelete,
+    this.controller,
+  });
 
   @override
   State<CardDetailPage> createState() => _CardDetailPageState();
@@ -25,7 +30,7 @@ class _CardDetailPageState extends State<CardDetailPage>
   late TextEditingController _descController;
   late CardItem _currentCard;
   bool _descExpanded = false;
-  double? _originalBrightness;
+  late CardDetailController _controller;
 
   @override
   void initState() {
@@ -33,9 +38,14 @@ class _CardDetailPageState extends State<CardDetailPage>
     _currentCard = widget.card;
     _titleController = TextEditingController(text: _currentCard.title);
     _descController = TextEditingController(text: _currentCard.description);
+    // Create controller that owns non-UI responsibilities. Allow injection
+    // for tests by using widget.controller when provided.
+    _controller = widget.controller ?? CardDetailController(card: _currentCard);
+
     // Defer brightness change until after first frame so UI is visible.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _setBrightnessToMax();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await _controller.setBrightnessToMax();
     });
   }
 
@@ -43,44 +53,8 @@ class _CardDetailPageState extends State<CardDetailPage>
   void dispose() {
     _titleController.dispose();
     _descController.dispose();
-    _restoreOriginalBrightness();
+    _controller.restoreBrightness();
     super.dispose();
-  }
-
-  Future<void> _setBrightnessToMax() async {
-    try {
-      // Store original brightness and set to maximum using service.
-      _originalBrightness = await BrightnessService.current();
-      if (_originalBrightness == null) _originalBrightness = 0.5;
-      await BrightnessService.set(1.0);
-
-      // Also optimize system UI for bright viewing
-      SystemChrome.setSystemUIOverlayStyle(
-        const SystemUiOverlayStyle(
-          statusBarBrightness: Brightness.light, // Light status bar for iOS
-          statusBarIconBrightness: Brightness.dark, // Dark icons for Android
-          systemNavigationBarIconBrightness: Brightness.dark,
-        ),
-      );
-
-      debugPrint('Screen brightness set to maximum for card viewing');
-    } catch (e) {
-      debugPrint('Failed to set brightness: $e');
-    }
-  }
-
-  Future<void> _restoreOriginalBrightness() async {
-    try {
-      if (_originalBrightness != null) {
-        await BrightnessService.set(_originalBrightness!);
-      }
-
-      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
-
-      debugPrint('Screen brightness restored to original level');
-    } catch (e) {
-      debugPrint('Failed to restore brightness: $e');
-    }
   }
 
   void _startEditing() async {
@@ -89,6 +63,7 @@ class _CardDetailPageState extends State<CardDetailPage>
       MaterialPageRoute(builder: (context) => EditCardPage(card: _currentCard)),
     );
     if (updated != null) {
+      if (!mounted) return;
       setState(() {
         _currentCard = updated;
       });
@@ -96,65 +71,52 @@ class _CardDetailPageState extends State<CardDetailPage>
   }
 
   Future<void> _deleteCard(BuildContext context) async {
-    // Cache everything we need from BuildContext before any async operations
-    final l10n = AppLocalizations.of(context);
-    final navigator = Navigator.of(context);
-
-    // Show confirmation dialog
+    // Show confirmation dialog. Obtain localized strings inside the builder
+    // so we don't capture the parent's BuildContext across the async boundary.
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(l10n.deleteCard),
-            content: Text(l10n.deleteConfirmation),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                child: Text(l10n.delete),
-              ),
-            ],
-          ),
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx);
+        return AlertDialog(
+          title: Text(l10n.deleteCard),
+          content: Text(l10n.deleteConfirmation),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(l10n.delete),
+            ),
+          ],
+        );
+      },
     );
 
-    // Early return if widget is unmounted
     if (!mounted) return;
 
-    // Only proceed with deletion if confirmed
     if (confirmed == true) {
-      // Delete from database if card has an ID
-      if (_currentCard.id != null) {
-        try {
-          await DatabaseHelper().deleteCard(_currentCard.id!);
-        } catch (e, st) {
-          debugPrint('Failed deleting card from DB: $e\n$st');
-          if (!mounted) return;
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l10n.deleteFailed)));
-          return;
-        }
-
-        // Check again if widget is still mounted after async operation
+      try {
+        await _controller.deleteCard();
+      } catch (e, st) {
+        debugPrint('Failed deleting card from DB: $e\n$st');
         if (!mounted) return;
+        final l10n = AppLocalizations.of(context);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.deleteFailed)));
+        return;
       }
 
       widget.onDelete?.call(_currentCard);
 
-      if (mounted) {
-        navigator.pop();
-      }
+      if (mounted) Navigator.of(context).pop();
     }
   }
 
   Future<void> _shareCardAsImage() async {
-    // Delegate the sharing flow to the centralized ShareService. This honors
-    // `ShareService.testShareHook` in tests (which allows fast short-circuiting)
-    // and keeps sharing logic consistent across the app.
-    await ShareService.shareCardAsImageStatic(context, _currentCard);
+    await _controller.shareAsImage(context);
   }
 
   void _showFullscreenCode() {
@@ -205,24 +167,53 @@ class _CardDetailPageState extends State<CardDetailPage>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(32),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: _buildCodeWidget(
-                            MediaQuery.of(context).size.width * 0.7,
-                          ),
+                        CodeCardWidget(
+                          card: _currentCard,
+                          maxWidth: MediaQuery.of(context).size.width * 0.9,
+                          maxHeight: MediaQuery.of(context).size.height * 0.55,
+                          onTap: _showFullscreenCode,
+                          showLogo: false, // show logo in header instead
+                          logoOverlay: false,
                         ),
                         if (_currentCard.isBarcode) ...[
+                          // Header with logo and title
+                          if (_currentCard.logoPath != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 36,
+                                    backgroundColor: Colors.transparent,
+                                    child: ClipOval(
+                                      child: Image.asset(
+                                        _currentCard.logoPath!,
+                                        fit: BoxFit.contain,
+                                        width: 64,
+                                        height: 64,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Flexible(
+                                    child: Text(
+                                      _currentCard.title,
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w700,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
+                                      ),
+                                      textAlign: TextAlign.left,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
                           const SizedBox(height: 24),
                           Text(
                             _currentCard.name,
@@ -253,265 +244,225 @@ class _CardDetailPageState extends State<CardDetailPage>
     // AppBar and status bar on all devices.
     final topOffset = MediaQuery.of(context).padding.top + kToolbarHeight + 8.0;
 
-    // CardInfoWidget used in AppBar now handles the logo and title display.
-
+    // Put the logo and title above the code card (no overlay). This keeps
+    // the code area on a dedicated white background and ensures it's visible
+    // without being obscured by other UI chrome.
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) {
-          Navigator.of(context).pop(_currentCard);
-        }
+        if (!didPop) Navigator.of(context).pop(_currentCard);
       },
-      // Wrap the Scaffold in a Stack so we can place the barcode/QR card
-      // as a top-level overlay that renders above the AppBar and header.
-      child: Stack(
-        children: [
-          Scaffold(
-            // Use a darker background to create a high-contrast look where the
-            // barcode (white card) becomes the dominant, bright element.
-            backgroundColor: theme.colorScheme.background,
-            appBar: AppBar(
-              backgroundColor: theme.colorScheme.surfaceContainerHighest,
-              elevation: 0,
-              leading: IconButton(
-                icon: Icon(
-                  Icons.arrow_back,
-                  color: theme.colorScheme.onSurface,
-                ),
-                onPressed: () => Navigator.of(context).maybePop(),
-              ),
-              titleSpacing: 0,
-              // Simplified title: only show the card's name (no avatar next to it)
-              title: Text(
-                _currentCard.title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              actions: [
-                IconButton(
-                  icon: Icon(
-                    Icons.share,
-                    color: theme.colorScheme.onBackground,
-                  ),
-                  tooltip: l10n.shareAsImage,
-                  onPressed: () async {
-                    if (ShareService.testShareHook != null) {
-                      await ShareService.testShareHook!(context, _currentCard);
-                    } else {
-                      await _shareCardAsImage();
-                    }
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.edit, color: theme.colorScheme.onSurface),
-                  tooltip: l10n.edit,
-                  onPressed: _startEditing,
-                ),
-                if (widget.onDelete != null)
-                  IconButton(
-                    icon: Icon(
-                      Icons.delete,
-                      color: theme.colorScheme.onSurface,
-                    ),
-                    tooltip: l10n.delete,
-                    onPressed: () => _deleteCard(context),
-                  ),
-              ],
+      child: Scaffold(
+        backgroundColor: theme.colorScheme.background,
+        appBar: AppBar(
+          backgroundColor: theme.colorScheme.surfaceContainerHighest,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          titleSpacing: 0,
+          title: const SizedBox.shrink(),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.share, color: theme.colorScheme.onBackground),
+              tooltip: l10n.shareAsImage,
+              onPressed: () async {
+                if (ShareService.testShareHook != null) {
+                  await ShareService.testShareHook!(context, _currentCard);
+                } else {
+                  await _shareCardAsImage();
+                }
+              },
             ),
-            body: CustomScrollView(
-              slivers: [
-                // Top header with prominent brand color and centered logo
-                SliverToBoxAdapter(
-                  child: Container(
-                    // Use a dark backdrop that matches the scaffold for a focused
-                    // white card presentation.
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    child: SafeArea(
-                      bottom: false,
-                      child: SizedBox(
-                        height: 200,
-                        child: Center(
-                          child: LogoAvatarWidget(
+            IconButton(
+              icon: Icon(Icons.edit, color: theme.colorScheme.onSurface),
+              tooltip: l10n.edit,
+              onPressed: _startEditing,
+            ),
+            if (widget.onDelete != null)
+              IconButton(
+                icon: Icon(Icons.delete, color: theme.colorScheme.onSurface),
+                tooltip: l10n.delete,
+                onPressed: () => _deleteCard(context),
+              ),
+          ],
+        ),
+        body: CustomScrollView(
+          slivers: [
+            // Top header with centered logo
+            SliverToBoxAdapter(
+              child: Container(
+                color: theme.colorScheme.surfaceContainerHighest,
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Title above the logo. Increase font size so it visually
+                          // balances the logo.
+                          Text(
+                            _currentCard.title,
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          LogoAvatarWidget(
                             logoKey: _currentCard.logoPath,
                             title: _currentCard.title,
                             size: 88,
                             background: Colors.transparent,
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   ),
                 ),
+              ),
+            ),
 
-                // Title/info block beneath the header. Show the card title and a
-                // collapsible description area. This sits beneath the floating
-                // code card so the scan area remains visually dominant.
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 220, 20, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Title is shown in the AppBar; only show the description
-                        // and related info here to avoid duplicate text widgets.
-                        if (_currentCard.description.trim().isNotEmpty)
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              AnimatedSize(
-                                duration: const Duration(milliseconds: 250),
-                                curve: Curves.easeInOut,
-                                alignment: Alignment.topCenter,
-                                child: ConstrainedBox(
-                                  constraints:
-                                      _descExpanded
-                                          ? const BoxConstraints()
-                                          : const BoxConstraints(maxHeight: 80),
-                                  child: ClipRect(
-                                    child: Text(
-                                      _currentCard.description,
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        color: theme.colorScheme.onSurface,
-                                      ),
-                                      softWrap: true,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: IconButton(
-                                  onPressed: () {
-                                    setState(
-                                      () => _descExpanded = !_descExpanded,
-                                    );
-                                  },
-                                  tooltip:
-                                      _descExpanded ? 'Show less' : 'Show more',
-                                  icon: Icon(
-                                    _descExpanded
-                                        ? Icons.expand_less
-                                        : Icons.expand_more,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
+            // Code card placed directly under the logo so it is always visible
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 12.0,
+                ),
+                child: Center(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      double maxWidth = constraints.maxWidth * 0.95;
+                      if (maxWidth > 720) maxWidth = 720;
+                      final maxHeight =
+                          MediaQuery.of(context).size.height * 0.45;
+                      return CodeCardWidget(
+                        card: _currentCard,
+                        maxWidth: maxWidth,
+                        maxHeight: maxHeight,
+                        onTap: _showFullscreenCode,
+                        showLogo: false,
+                        logoOverlay: false,
+                      );
+                    },
                   ),
                 ),
-              ],
-            ),
-          ), // end Scaffold
-          // Floating overlay card rendered above the Scaffold
-          Positioned(
-            top: topOffset,
-            left: 20,
-            right: 20,
-            child: _buildFloatingCodeCard(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCodeWidget(double availableWidth) {
-    final size = _currentCard.is2D ? availableWidth * 0.85 : null;
-    final width = _currentCard.is1D ? availableWidth * 0.95 : null;
-    // Increase 1D barcode height so scanners can read it more reliably.
-    final height = _currentCard.is1D ? 140.0 : null;
-
-    return _currentCard.renderCode(size: size, width: width, height: height);
-  }
-
-  Widget _buildFloatingCodeCard(BuildContext context) {
-    return Card(
-      color: Colors.white,
-      elevation: 6,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GestureDetector(
-              onTap: _showFullscreenCode,
-              child: LayoutBuilder(
-                builder: (ctx, constraints) {
-                  final available = (constraints.maxWidth - 24).clamp(
-                    120.0,
-                    1200.0,
-                  );
-                  return _buildCodeWidget(available);
-                },
               ),
             ),
-            if (_currentCard.isBarcode) ...[
-              const SizedBox(height: 12),
-              // Visible grouped representation for readability. Use plain Text
-              // so tests that inspect Text.data succeed.
-              Text(
-                _formatCode(_currentCard.name),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: 'monospace',
-                  color: Colors.black87,
-                  letterSpacing: 1.2,
+
+            // Title/info block beneath the code card. Show collapsible description
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_currentCard.description.trim().isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeInOut,
+                            alignment: Alignment.topCenter,
+                            child: ConstrainedBox(
+                              constraints:
+                                  _descExpanded
+                                      ? const BoxConstraints()
+                                      : const BoxConstraints(maxHeight: 80),
+                              child: ClipRect(
+                                child: Text(
+                                  _currentCard.description,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
+                                  softWrap: true,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: IconButton(
+                              onPressed: () {
+                                setState(() => _descExpanded = !_descExpanded);
+                              },
+                              tooltip:
+                                  _descExpanded ? 'Show less' : 'Show more',
+                              icon: Icon(
+                                _descExpanded
+                                    ? Icons.expand_less
+                                    : Icons.expand_more,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
                 ),
               ),
-              // Hidden raw code (transparent) so tests can locate the exact
-              // original value via find.text(...) and assert alignment.
-              if (_formatCode(_currentCard.name) != _currentCard.name)
-                Opacity(
-                  opacity: 0.0,
-                  child: Text(_currentCard.name, textAlign: TextAlign.center),
-                ),
-            ],
+            ),
           ],
         ),
       ),
     );
   }
 
-  // Format a numeric code into groups of 4 digits for readability, e.g.
-  // 2292220484809 -> "2292 2204 8480 9". Non-digit characters are preserved
-  // and grouping applies to sequences of digits.
-  String _formatCode(String raw) {
-    final buffer = StringBuffer();
-    final digitRuns = RegExp(r"\d+").allMatches(raw);
-    int lastIndex = 0;
-    for (final match in digitRuns) {
-      // Append any non-digit chars preceding this run
-      if (match.start > lastIndex) {
-        buffer.write(raw.substring(lastIndex, match.start));
-      }
-      final digits = match.group(0) ?? '';
-      // Group into chunks of 4 from the start
-      final groups = <String>[];
-      for (var i = 0; i < digits.length; i += 4) {
-        groups.add(digits.substring(i, (i + 4).clamp(0, digits.length)));
-      }
-      buffer.write(groups.join(' '));
-      lastIndex = match.end;
-    }
-    if (lastIndex < raw.length) {
-      buffer.write(raw.substring(lastIndex));
-    }
-    return buffer.toString();
-  }
+  // Widget _buildCodeWidget(double availableWidth) {
+  //   final size = _currentCard.is2D ? availableWidth * 0.85 : null;
+  //   final width = _currentCard.is1D ? availableWidth * 0.95 : null;
+  //   // Increase 1D barcode height so scanners can read it more reliably.
+  //   final height = _currentCard.is1D ? 140.0 : null;
 
-  // _formatCode removed — barcode value displayed raw to match tests and
-  // avoid accidental transformations during share/export.
+  //   return _currentCard.renderCode(size: size, width: width, height: height);
+  // }
+
+  // Widget _buildFloatingCodeCard(BuildContext context) {
+  //   return CodeCardWidget(
+  //     card: _currentCard,
+  //     maxWidth: 720,
+  //     onTap: _showFullscreenCode,
+  //     showLogo: true,
+  //   );
+  // }
+
+  // // Format a numeric code into groups of 4 digits for readability, e.g.
+  // // 2292220484809 -> "2292 2204 8480 9". Non-digit characters are preserved
+  // // and grouping applies to sequences of digits.
+  // String _formatCode(String raw) {
+  //   final buffer = StringBuffer();
+  //   final digitRuns = RegExp(r"\d+").allMatches(raw);
+  //   int lastIndex = 0;
+  //   for (final match in digitRuns) {
+  //     // Append any non-digit chars preceding this run
+  //     if (match.start > lastIndex) {
+  //       buffer.write(raw.substring(lastIndex, match.start));
+  //     }
+  //     final digits = match.group(0) ?? '';
+  //     // Group into chunks of 4 from the start
+  //     final groups = <String>[];
+  //     for (var i = 0; i < digits.length; i += 4) {
+  //       groups.add(digits.substring(i, (i + 4).clamp(0, digits.length)));
+  //     }
+  //     buffer.write(groups.join(' '));
+  //     lastIndex = match.end;
+  //   }
+  //   if (lastIndex < raw.length) {
+  //     buffer.write(raw.substring(lastIndex));
+  //   }
+  //   return buffer.toString();
+  // }
+
+  // // _formatCode removed — barcode value displayed raw to match tests and
+  // // avoid accidental transformations during share/export.
 }
 
 class _CardEditForm extends StatefulWidget {

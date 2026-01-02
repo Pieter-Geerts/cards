@@ -67,8 +67,8 @@ void main() {
     expect(cardWidget.color, Colors.white);
     // QR code present
     expect(find.byType(QrImageView), findsOneWidget);
-    // No barcode value text for QR
-    expect(find.text('QRCodeData123'), findsNothing);
+    // QR code value text should be visible for 2D codes
+    expect(find.text('QRCodeData123'), findsOneWidget);
   });
 
   testWidgets('CardDetailPage displays Barcode details in white card', (
