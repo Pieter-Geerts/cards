@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:screen_brightness/screen_brightness.dart';
 
 import '../helpers/database_helper.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../pages/edit_card_page.dart';
+import '../services/brightness_service.dart';
 import '../services/share_service.dart';
 import '../widgets/logo_avatar_widget.dart';
 
@@ -25,8 +25,6 @@ class _CardDetailPageState extends State<CardDetailPage>
   late TextEditingController _descController;
   late CardItem _currentCard;
   bool _descExpanded = false;
-  // Previously used for offscreen rendering; sharing is now delegated to
-  // `ShareService`, so this key is no longer needed.
   double? _originalBrightness;
 
   @override
@@ -35,7 +33,10 @@ class _CardDetailPageState extends State<CardDetailPage>
     _currentCard = widget.card;
     _titleController = TextEditingController(text: _currentCard.title);
     _descController = TextEditingController(text: _currentCard.description);
-    _setBrightnessToMax();
+    // Defer brightness change until after first frame so UI is visible.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setBrightnessToMax();
+    });
   }
 
   @override
@@ -48,10 +49,10 @@ class _CardDetailPageState extends State<CardDetailPage>
 
   Future<void> _setBrightnessToMax() async {
     try {
-      // Store original brightness and set to maximum
-      final screenBrightness = ScreenBrightness();
-      _originalBrightness = await screenBrightness.current;
-      await screenBrightness.setScreenBrightness(1.0);
+      // Store original brightness and set to maximum using service.
+      _originalBrightness = await BrightnessService.current();
+      if (_originalBrightness == null) _originalBrightness = 0.5;
+      await BrightnessService.set(1.0);
 
       // Also optimize system UI for bright viewing
       SystemChrome.setSystemUIOverlayStyle(
@@ -71,8 +72,7 @@ class _CardDetailPageState extends State<CardDetailPage>
   Future<void> _restoreOriginalBrightness() async {
     try {
       if (_originalBrightness != null) {
-        final screenBrightness = ScreenBrightness();
-        await screenBrightness.setScreenBrightness(_originalBrightness!);
+        await BrightnessService.set(_originalBrightness!);
       }
 
       SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
@@ -127,7 +127,16 @@ class _CardDetailPageState extends State<CardDetailPage>
     if (confirmed == true) {
       // Delete from database if card has an ID
       if (_currentCard.id != null) {
-        await DatabaseHelper().deleteCard(_currentCard.id!);
+        try {
+          await DatabaseHelper().deleteCard(_currentCard.id!);
+        } catch (e, st) {
+          debugPrint('Failed deleting card from DB: $e\n$st');
+          if (!mounted) return;
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.deleteFailed)));
+          return;
+        }
 
         // Check again if widget is still mounted after async operation
         if (!mounted) return;
