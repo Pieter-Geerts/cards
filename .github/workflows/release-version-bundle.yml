@@ -143,14 +143,14 @@ jobs:
           echo "apk-size=$APK_SIZE" >> $GITHUB_OUTPUT
 
       - name: Upload AAB Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: app-release-aab-v${{ needs.pre-checks.outputs.version }}
           path: build/app/outputs/bundle/release/app-release.aab
           retention-days: 30
 
       - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: app-release-apk-v${{ needs.pre-checks.outputs.version }}
           path: build/app/outputs/flutter-apk/app-release.apk
