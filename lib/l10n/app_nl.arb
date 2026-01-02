@@ -9,6 +9,7 @@
   "deleteConfirmation": "Weet je zeker dat je deze kaart wilt verwijderen?",
   "cancel": "Annuleren",
   "delete": "Verwijderen",
+  "deleteFailed": "Kon kaart niet verwijderen. Probeer het opnieuw.",
   "ok": "OK",
   "cardType": "Type: {type}",
   "@cardType": {

@@ -1,18 +1,59 @@
+import 'dart:typed_data';
+
 import 'package:cards/services/logo_cache_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cards/utils/simple_icons_mapping.dart';
+
+// Simple test AssetBundle that returns an empty YAML so whitelist loading
+// will fallback to defaults in most tests.
+class _EmptyAssetBundle extends CachingAssetBundle {
+  @override
+  Future<ByteData> load(String key) => throw FlutterError('No asset $key');
+
+  @override
+  Future<String> loadString(String key, {bool cache = true}) async {
+    // Return an empty YAML so parsing yields nothing
+    return '';
+  }
+}
 
 void main() {
   group('LogoCacheService Tests', () {
     late LogoCacheService cacheService;
 
     setUp(() {
+      SharedPreferences.setMockInitialValues({});
       cacheService = LogoCacheService.instance;
       cacheService.clearCache(); // Start with clean cache
+      cacheService.setAssetBundleForTesting(_EmptyAssetBundle());
+      // Inject fast logo helper implementations to avoid heavy lookups
+      cacheService.setLogoHelperForTesting(
+        suggestLogo: (title) async {
+          // Map some well-known names
+          final map = {
+            'nike': Icons.shopping_bag,
+            'amazon': Icons.shopping_cart,
+            'google': Icons.search,
+            'apple': Icons.phone_iphone,
+            'microsoft': Icons.computer,
+          };
+          final key = title.trim().toLowerCase();
+          return map[key];
+        },
+        getAllAvailableLogos: () async {
+          return SimpleIconsMapping.getAllIcons();
+        },
+      );
     });
 
     tearDown(() {
       cacheService.clearCache(); // Clean up after each test
+      cacheService.clearLogoHelperInjection();
+      cacheService.clearAssetBundleForTesting();
+      cacheService.dispose();
     });
 
     test('should be singleton', () {

@@ -9,6 +9,7 @@
   "deleteConfirmation": "¿Estás seguro de que quieres eliminar esta tarjeta?",
   "cancel": "Cancelar",
   "delete": "Eliminar",
+  "deleteFailed": "No se pudo eliminar la tarjeta. Por favor, inténtalo de nuevo.",
   "ok": "Aceptar",
   "cardType": "Tipo: {type}",
   "title": "Título",
@@ -133,7 +134,9 @@
   "logoAutoFound": "Encontrado automáticamente",
   "logoForTitle": "Logo para \"{title}\"",
   "@logoForTitle": {
-    "placeholders": { "title": {} }
+    "placeholders": {
+      "title": {}
+    }
   },
   "rescanComingSoon": "¡Reescaneo próximamente!",
   "cardDetails": "Detalles de la tarjeta",
@@ -147,15 +150,19 @@
   "codeCopiedToClipboard": "Código copiado al portapapeles",
   "howAddCode": "¿Cómo te gustaría añadir el código?",
   "stepCounter": "Paso {current} de {total}",
-  "@stepCounter": { "placeholders": { "current": {}, "total": {} } },
+  "@stepCounter": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
   "searchLogo": "Buscar Logo",
   "debugCardData": "Datos de Depuración de Tarjeta",
   "scan": "Escanear",
   "code": "Código",
   "addToWallet": "Agregar a la billetera",
   "notes": "Notas",
-  "noNotes": "No hay notas disponibles"
-  ,
+  "noNotes": "No hay notas disponibles",
   "quickAdd": "Añadir rápido",
   "genericCard": "Tarjeta genérica"
 }

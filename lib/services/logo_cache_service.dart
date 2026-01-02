@@ -68,6 +68,10 @@ class LogoCacheService {
   // Optional override for asset bundle (useful in tests)
   AssetBundle? _assetBundle;
 
+  // Optional injected functions for logo helper (useful in tests)
+  Future<IconData?> Function(String)? _suggestLogoFn;
+  Future<List<IconData>> Function()? _getAllAvailableLogosFn;
+
   /// Attempt to load a JSON array from assets/config/logo_whitelist.json.
   /// If present and valid, this replaces the in-code whitelist.
   /// Attempt to load a YAML configuration from `build-config.yaml`.
@@ -115,6 +119,29 @@ class LogoCacheService {
     // When the bundle changes we should allow reloading from assets
     _whitelistLoaded = false;
     _availableLogosCache.clear();
+  }
+
+  /// Clears the testing asset bundle. Pass `null` to restore default behavior.
+  void clearAssetBundleForTesting() {
+    _assetBundle = null;
+    _whitelistLoaded = false;
+    _availableLogosCache.clear();
+  }
+
+  /// Inject test implementations for logo helper functions.
+  /// Use this in tests to avoid calling heavy static helpers.
+  void setLogoHelperForTesting({
+    Future<IconData?> Function(String)? suggestLogo,
+    Future<List<IconData>> Function()? getAllAvailableLogos,
+  }) {
+    _suggestLogoFn = suggestLogo;
+    _getAllAvailableLogosFn = getAllAvailableLogos;
+  }
+
+  /// Clears injected test implementations.
+  void clearLogoHelperInjection() {
+    _suggestLogoFn = null;
+    _getAllAvailableLogosFn = null;
   }
 
   /// Force reloading the whitelist from assets. Useful in tests or when the
@@ -198,10 +225,17 @@ class LogoCacheService {
       _loadingSuggestions.add(key);
 
       try {
-        // Compute suggestion with timeout protection
-        final suggestion = await LogoHelper.suggestLogo(
-          title,
-        ).timeout(const Duration(seconds: 3), onTimeout: () => null);
+        // Compute suggestion with timeout protection. Use injected function
+        // when provided (tests can inject faster mocks).
+        final suggestionFuture =
+            _suggestLogoFn != null
+                ? _suggestLogoFn!(title)
+                : LogoHelper.suggestLogo(title);
+
+        final suggestion = await suggestionFuture.timeout(
+          const Duration(seconds: 3),
+          onTimeout: () => null,
+        );
 
         // Cache result with metadata
         if (suggestion != null) {
@@ -258,7 +292,10 @@ class LogoCacheService {
     _loadingAvailableLogos = true;
 
     try {
-      final logos = await LogoHelper.getAllAvailableLogos();
+      final logos =
+          _getAllAvailableLogosFn != null
+              ? await _getAllAvailableLogosFn!()
+              : await LogoHelper.getAllAvailableLogos();
 
       // Filter: only show logos that correspond to shops/retail.
       // We use the SimpleIcons identifier (e.g. 'simple_icon:amazon') to
