@@ -29,8 +29,6 @@ class CodeRendererFactory {
     return renderer;
   }
 
-  /// Registers a new renderer for a card type
-  /// This allows future extension without modifying existing code
   static void registerRenderer(CardType cardType, CodeRenderer renderer) {
     _renderers[cardType] = renderer;
   }
