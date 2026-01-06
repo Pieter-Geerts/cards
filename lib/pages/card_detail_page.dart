@@ -269,15 +269,10 @@ class _CardDetailPageState extends State<CardDetailPage>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    // Compute a safe top offset so the floating code card sits below the
-    // AppBar and status bar on all devices.
     final topOffset =
         MediaQuery.of(context).padding.top +
         kToolbarHeight +
         _floatingCardTopOffset;
-
-    // CardInfoWidget used in AppBar now handles the logo and title display.
-
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -391,8 +386,6 @@ class _CardDetailPageState extends State<CardDetailPage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Title is shown in the AppBar; only show the description
-                        // and related info here to avoid duplicate text widgets.
                         if (_currentCard.description.trim().isNotEmpty)
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,7 +422,6 @@ class _CardDetailPageState extends State<CardDetailPage>
               ],
             ),
           ), // end Scaffold
-          // Floating overlay card rendered above the Scaffold
           Positioned(
             top: topOffset,
             left: 20,
@@ -476,8 +468,6 @@ class _CardDetailPageState extends State<CardDetailPage>
             ),
             if (_currentCard.isBarcode) ...[
               const SizedBox(height: 12),
-              // Visible grouped representation for readability. Use plain Text
-              // so tests that inspect Text.data succeed.
               Text(
                 _formatCode(_currentCard.name),
                 textAlign: TextAlign.center,
@@ -489,13 +479,6 @@ class _CardDetailPageState extends State<CardDetailPage>
                   letterSpacing: 1.2,
                 ),
               ),
-              // Hidden raw code (transparent) so tests can locate the exact
-              // original value via find.text(...) and assert alignment.
-              // if (_formatCode(_currentCard.name) != _currentCard.name)
-              //   Opacity(
-              //     opacity: 0.0,
-              //     child: Text(_currentCard.name, textAlign: TextAlign.center),
-              //   ),
             ],
           ],
         ),
@@ -503,9 +486,6 @@ class _CardDetailPageState extends State<CardDetailPage>
     );
   }
 
-  /// Format a numeric code into groups of 4 digits for readability.
-  /// Example: 2292220484809 -> "2292 2204 8480 9"
-  /// Non-digit characters are preserved and grouping applies to sequences of digits.
   String _formatCode(String raw) {
     final buffer = StringBuffer();
     final digitRuns = RegExp(r"\d+").allMatches(raw);

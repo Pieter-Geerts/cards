@@ -1,6 +1,3 @@
-import 'dart:convert';
-
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 
 // DatabaseHelper is replaced by CardRepository; keep import removed
@@ -255,7 +252,8 @@ class _HomePageState extends State<HomePage> {
 
   List<Widget> _buildAppBarActions(AppLocalizations l10n) {
     return [
-      IconButton(
+      // Upload button hidden for now
+      /* IconButton(
         icon: const Icon(Icons.upload_file),
         tooltip: l10n.importCardsFromJsonTooltip,
         onPressed: () async {
@@ -341,7 +339,8 @@ class _HomePageState extends State<HomePage> {
             }
           }
         },
-      ),
+      */
+      // End of upload button (hidden for now)
       if (_isSearchActive)
         IconButton(
           icon: const Icon(Icons.clear),
