@@ -1,9 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 
-import '../models/card_item.dart';
 import '../l10n/app_localizations.dart';
+import '../models/card_item.dart';
 
 class ImageScanPage extends StatefulWidget {
   final String imagePath;
@@ -22,11 +23,89 @@ class ImageScanPage extends StatefulWidget {
 class _ImageScanPageState extends State<ImageScanPage> {
   final TextEditingController _codeController = TextEditingController();
   CardType _selectedType = CardType.qrCode;
+  bool _isScanning = false;
+  late BarcodeScanner _barcodeScanner;
+
+  @override
+  void initState() {
+    super.initState();
+    _barcodeScanner = BarcodeScanner();
+    _scanImageForCode();
+  }
 
   @override
   void dispose() {
     _codeController.dispose();
+    _barcodeScanner.close();
     super.dispose();
+  }
+
+  Future<void> _scanImageForCode() async {
+    if (_isScanning) return;
+
+    setState(() => _isScanning = true);
+
+    try {
+      final file = File(widget.imagePath);
+      final inputImage = InputImage.fromFilePath(file.path);
+
+      final barcodes = await _barcodeScanner.processImage(inputImage);
+
+      if (barcodes.isNotEmpty && mounted) {
+        final barcode = barcodes.first;
+        final code = barcode.displayValue ?? barcode.rawValue ?? '';
+
+        if (code.isNotEmpty) {
+          // Determine the type based on barcode format
+          late CardType detectedType;
+          switch (barcode.format) {
+            case BarcodeFormat.qrCode:
+              detectedType = CardType.qrCode;
+              break;
+            default:
+              detectedType = CardType.barcode;
+          }
+
+          setState(() {
+            _codeController.text = code;
+            _selectedType = detectedType;
+          });
+
+          if (mounted) {
+            final l10n = AppLocalizations.of(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.codeScannedSuccessfully),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        }
+      } else if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.noCodeFoundInImage),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        debugPrint('Error scanning image: $e');
+        final l10n = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.errorScanningImage),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isScanning = false);
+      }
+    }
   }
 
   @override
@@ -44,13 +123,13 @@ class _ImageScanPageState extends State<ImageScanPage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Image display
-          Expanded(
-            flex: 2,
-            child: Container(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Image display
+            Container(
               width: double.infinity,
+              height: 300,
               margin: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.grey.shade100,
@@ -62,22 +141,37 @@ class _ImageScanPageState extends State<ImageScanPage> {
                 child: Image.file(File(widget.imagePath), fit: BoxFit.contain),
               ),
             ),
-          ),
 
-          // Instructions
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              AppLocalizations.of(context).scanFromImageInstructions,
-              style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-              textAlign: TextAlign.center,
+            // Instructions
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                AppLocalizations.of(context).scanFromImageInstructions,
+                style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                textAlign: TextAlign.center,
+              ),
             ),
-          ),
 
-          // Code entry form
-          Expanded(
-            flex: 1,
-            child: Padding(
+            if (_isScanning)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Column(
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 8),
+                    Text(
+                      AppLocalizations.of(context).scanningImage,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            // Code entry form
+            Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,7 +244,7 @@ class _ImageScanPageState extends State<ImageScanPage> {
                     ),
                   ),
 
-                  const Spacer(),
+                  const SizedBox(height: 24),
 
                   // Save button
                   SizedBox(
@@ -175,8 +269,8 @@ class _ImageScanPageState extends State<ImageScanPage> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

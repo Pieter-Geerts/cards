@@ -164,5 +164,9 @@
   "notes": "Notas",
   "noNotes": "No hay notas disponibles",
   "quickAdd": "Añadir rápido",
-  "genericCard": "Tarjeta genérica"
+  "genericCard": "Tarjeta genérica",
+  "codeScannedSuccessfully": "Código escaneado exitosamente",
+  "noCodeFoundInImage": "No se encontró código en la imagen. Ingrese manualmente.",
+  "errorScanningImage": "Error al escanear la imagen. Ingrese manualmente.",
+  "scanningImage": "Escaneando imagen..."
 }

@@ -21,11 +21,25 @@ class CardDetailPage extends StatefulWidget {
 
 class _CardDetailPageState extends State<CardDetailPage>
     with SingleTickerProviderStateMixin {
+  // Layout constants
+  static const double _floatingCardTopOffset = 8.0;
+  static const double _codeCard2DWidthMultiplier = 0.85;
+  static const double _codeCard1DWidthMultiplier = 0.95;
+  static const double _codeCard1DHeight = 140.0;
+  static const double _codeCardMinWidth = 120.0;
+  static const double _codeCardMaxWidth = 1200.0;
+  static const double _headerHeight = 200.0;
+  static const double _headerLogoSize = 88.0;
+  static const double _floatingCardTopPadding = 220.0;
+  static const double _floatingCardHorizontalPadding = 20.0;
+  static const double _descriptionMaxHeight = 80.0;
+
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late CardItem _currentCard;
   bool _descExpanded = false;
   double? _originalBrightness;
+  bool _isSharing = false;
 
   @override
   void initState() {
@@ -154,7 +168,22 @@ class _CardDetailPageState extends State<CardDetailPage>
     // Delegate the sharing flow to the centralized ShareService. This honors
     // `ShareService.testShareHook` in tests (which allows fast short-circuiting)
     // and keeps sharing logic consistent across the app.
-    await ShareService.shareCardAsImageStatic(context, _currentCard);
+    setState(() => _isSharing = true);
+    try {
+      await ShareService.shareCardAsImageStatic(context, _currentCard);
+    } finally {
+      if (mounted) {
+        setState(() => _isSharing = false);
+      }
+    }
+  }
+
+  Future<void> _handleShare() async {
+    if (ShareService.testShareHook != null) {
+      await ShareService.testShareHook!(context, _currentCard);
+    } else {
+      await _shareCardAsImage();
+    }
   }
 
   void _showFullscreenCode() {
@@ -182,16 +211,7 @@ class _CardDetailPageState extends State<CardDetailPage>
                   ),
                   actions: [
                     IconButton(
-                      onPressed: () async {
-                        if (ShareService.testShareHook != null) {
-                          await ShareService.testShareHook!(
-                            context,
-                            _currentCard,
-                          );
-                        } else {
-                          await _shareCardAsImage();
-                        }
-                      },
+                      onPressed: () => _handleShare(),
                       icon: Icon(
                         Icons.share,
                         color: Theme.of(context).appBarTheme.iconTheme?.color,
@@ -249,12 +269,10 @@ class _CardDetailPageState extends State<CardDetailPage>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    // Compute a safe top offset so the floating code card sits below the
-    // AppBar and status bar on all devices.
-    final topOffset = MediaQuery.of(context).padding.top + kToolbarHeight + 8.0;
-
-    // CardInfoWidget used in AppBar now handles the logo and title display.
-
+    final topOffset =
+        MediaQuery.of(context).padding.top +
+        kToolbarHeight +
+        _floatingCardTopOffset;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -294,18 +312,24 @@ class _CardDetailPageState extends State<CardDetailPage>
               ),
               actions: [
                 IconButton(
-                  icon: Icon(
-                    Icons.share,
-                    color: theme.colorScheme.onBackground,
-                  ),
+                  icon:
+                      _isSharing
+                          ? SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation(
+                                theme.colorScheme.onBackground,
+                              ),
+                            ),
+                          )
+                          : Icon(
+                            Icons.share,
+                            color: theme.colorScheme.onBackground,
+                          ),
                   tooltip: l10n.shareAsImage,
-                  onPressed: () async {
-                    if (ShareService.testShareHook != null) {
-                      await ShareService.testShareHook!(context, _currentCard);
-                    } else {
-                      await _shareCardAsImage();
-                    }
-                  },
+                  onPressed: _isSharing ? null : () => _handleShare(),
                 ),
                 IconButton(
                   icon: Icon(Icons.edit, color: theme.colorScheme.onSurface),
@@ -334,12 +358,12 @@ class _CardDetailPageState extends State<CardDetailPage>
                     child: SafeArea(
                       bottom: false,
                       child: SizedBox(
-                        height: 200,
+                        height: _headerHeight,
                         child: Center(
                           child: LogoAvatarWidget(
                             logoKey: _currentCard.logoPath,
                             title: _currentCard.title,
-                            size: 88,
+                            size: _headerLogoSize,
                             background: Colors.transparent,
                           ),
                         ),
@@ -353,12 +377,15 @@ class _CardDetailPageState extends State<CardDetailPage>
                 // code card so the scan area remains visually dominant.
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 220, 20, 24),
+                    padding: EdgeInsets.fromLTRB(
+                      _floatingCardHorizontalPadding,
+                      _floatingCardTopPadding,
+                      _floatingCardHorizontalPadding,
+                      24,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Title is shown in the AppBar; only show the description
-                        // and related info here to avoid duplicate text widgets.
                         if (_currentCard.description.trim().isNotEmpty)
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -371,7 +398,9 @@ class _CardDetailPageState extends State<CardDetailPage>
                                   constraints:
                                       _descExpanded
                                           ? const BoxConstraints()
-                                          : const BoxConstraints(maxHeight: 80),
+                                          : BoxConstraints(
+                                            maxHeight: _descriptionMaxHeight,
+                                          ),
                                   child: ClipRect(
                                     child: Text(
                                       _currentCard.description,
@@ -384,24 +413,6 @@ class _CardDetailPageState extends State<CardDetailPage>
                                   ),
                                 ),
                               ),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: IconButton(
-                                  onPressed: () {
-                                    setState(
-                                      () => _descExpanded = !_descExpanded,
-                                    );
-                                  },
-                                  tooltip:
-                                      _descExpanded ? 'Show less' : 'Show more',
-                                  icon: Icon(
-                                    _descExpanded
-                                        ? Icons.expand_less
-                                        : Icons.expand_more,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                ),
-                              ),
                             ],
                           ),
                       ],
@@ -411,7 +422,6 @@ class _CardDetailPageState extends State<CardDetailPage>
               ],
             ),
           ), // end Scaffold
-          // Floating overlay card rendered above the Scaffold
           Positioned(
             top: topOffset,
             left: 20,
@@ -424,10 +434,12 @@ class _CardDetailPageState extends State<CardDetailPage>
   }
 
   Widget _buildCodeWidget(double availableWidth) {
-    final size = _currentCard.is2D ? availableWidth * 0.85 : null;
-    final width = _currentCard.is1D ? availableWidth * 0.95 : null;
+    final size =
+        _currentCard.is2D ? availableWidth * _codeCard2DWidthMultiplier : null;
+    final width =
+        _currentCard.is1D ? availableWidth * _codeCard1DWidthMultiplier : null;
     // Increase 1D barcode height so scanners can read it more reliably.
-    final height = _currentCard.is1D ? 140.0 : null;
+    final height = _currentCard.is1D ? _codeCard1DHeight : null;
 
     return _currentCard.renderCode(size: size, width: width, height: height);
   }
@@ -447,8 +459,8 @@ class _CardDetailPageState extends State<CardDetailPage>
               child: LayoutBuilder(
                 builder: (ctx, constraints) {
                   final available = (constraints.maxWidth - 24).clamp(
-                    120.0,
-                    1200.0,
+                    _codeCardMinWidth,
+                    _codeCardMaxWidth,
                   );
                   return _buildCodeWidget(available);
                 },
@@ -456,8 +468,6 @@ class _CardDetailPageState extends State<CardDetailPage>
             ),
             if (_currentCard.isBarcode) ...[
               const SizedBox(height: 12),
-              // Visible grouped representation for readability. Use plain Text
-              // so tests that inspect Text.data succeed.
               Text(
                 _formatCode(_currentCard.name),
                 textAlign: TextAlign.center,
@@ -469,13 +479,6 @@ class _CardDetailPageState extends State<CardDetailPage>
                   letterSpacing: 1.2,
                 ),
               ),
-              // Hidden raw code (transparent) so tests can locate the exact
-              // original value via find.text(...) and assert alignment.
-              if (_formatCode(_currentCard.name) != _currentCard.name)
-                Opacity(
-                  opacity: 0.0,
-                  child: Text(_currentCard.name, textAlign: TextAlign.center),
-                ),
             ],
           ],
         ),
@@ -483,9 +486,6 @@ class _CardDetailPageState extends State<CardDetailPage>
     );
   }
 
-  // Format a numeric code into groups of 4 digits for readability, e.g.
-  // 2292220484809 -> "2292 2204 8480 9". Non-digit characters are preserved
-  // and grouping applies to sequences of digits.
   String _formatCode(String raw) {
     final buffer = StringBuffer();
     final digitRuns = RegExp(r"\d+").allMatches(raw);
@@ -508,133 +508,5 @@ class _CardDetailPageState extends State<CardDetailPage>
       buffer.write(raw.substring(lastIndex));
     }
     return buffer.toString();
-  }
-
-  // _formatCode removed — barcode value displayed raw to match tests and
-  // avoid accidental transformations during share/export.
-}
-
-class _CardEditForm extends StatefulWidget {
-  final CardItem card;
-  final void Function() onCancel;
-  final void Function(CardItem updated) onSave;
-  const _CardEditForm({
-    required this.card,
-    required this.onCancel,
-    required this.onSave,
-  });
-
-  @override
-  State<_CardEditForm> createState() => _CardEditFormState();
-}
-
-class _CardEditFormState extends State<_CardEditForm> {
-  late TextEditingController _titleController;
-  late TextEditingController _descController;
-  late String _originalTitle;
-  late String _originalDesc;
-  bool _canSave = false;
-  final _formKey = GlobalKey<FormState>();
-  final FocusNode _titleFocusNode = FocusNode();
-
-  @override
-  void initState() {
-    super.initState();
-    _originalTitle = widget.card.title;
-    _originalDesc = widget.card.description;
-    _titleController = TextEditingController(text: _originalTitle);
-    _descController = TextEditingController(text: _originalDesc);
-    _titleController.addListener(_onChanged);
-    _descController.addListener(_onChanged);
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descController.dispose();
-    _titleFocusNode.dispose();
-    super.dispose();
-  }
-
-  void _onChanged() {
-    setState(() {
-      _canSave =
-          _titleController.text.trim() != _originalTitle.trim() ||
-          _descController.text.trim() != _originalDesc.trim();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              controller: _titleController,
-              focusNode: _titleFocusNode,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: l10n.title,
-                hintText: l10n.titleHint,
-                border: const OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return l10n.validationTitleRequired;
-                }
-                if (value.trim().length < 3) {
-                  return l10n.validationTitleMinLength;
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _descController,
-              decoration: InputDecoration(
-                labelText: l10n.description,
-                hintText: l10n.descriptionHint,
-                border: const OutlineInputBorder(),
-              ),
-              minLines: 1,
-              maxLines: 3,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: widget.onCancel,
-                  child: Text(l10n.cancel),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed:
-                      _canSave
-                          ? () {
-                            if (_formKey.currentState!.validate()) {
-                              widget.onSave(
-                                widget.card.copyWith(
-                                  title: _titleController.text.trim(),
-                                  description: _descController.text.trim(),
-                                ),
-                              );
-                            }
-                          }
-                          : null,
-                  child: Text(l10n.save),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

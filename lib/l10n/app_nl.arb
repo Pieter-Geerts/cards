@@ -173,5 +173,9 @@
   "notes": "Notities",
   "noNotes": "Geen notities beschikbaar",
   "quickAdd": "Snel Toevoegen",
-  "genericCard": "Generieke Kaart"
+  "genericCard": "Generieke Kaart",
+  "codeScannedSuccessfully": "Code succesvol gescand",
+  "noCodeFoundInImage": "Geen code gevonden in afbeelding. Voer handmatig in.",
+  "errorScanningImage": "Fout bij scannen van afbeelding. Voer handmatig in.",
+  "scanningImage": "Bezig met scannen van afbeelding..."
 }

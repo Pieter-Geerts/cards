@@ -178,5 +178,9 @@
   "notes": "Notes",
   "noNotes": "No notes available",
   "quickAdd": "Quick Add",
-  "genericCard": "Generic Card"
+  "genericCard": "Generic Card",
+  "codeScannedSuccessfully": "Code scanned successfully",
+  "noCodeFoundInImage": "No code found in image. Please enter manually.",
+  "errorScanningImage": "Error scanning image. Please enter manually.",
+  "scanningImage": "Scanning image..."
 }

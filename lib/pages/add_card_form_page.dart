@@ -15,8 +15,14 @@ import 'add_card_entry_page.dart';
 class AddCardFormPage extends StatefulWidget {
   final AddCardMode mode;
   final String? scannedCode; // Pre-filled from scanner
+  final CardType? scannedType; // Auto-detected type from scanner
 
-  const AddCardFormPage({super.key, required this.mode, this.scannedCode});
+  const AddCardFormPage({
+    super.key,
+    required this.mode,
+    this.scannedCode,
+    this.scannedType,
+  });
 
   @override
   State<AddCardFormPage> createState() => _AddCardFormPageState();
@@ -54,8 +60,8 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
     // Pre-fill code if scanned
     if (widget.scannedCode != null) {
       _codeController.text = widget.scannedCode!;
-      // Auto-detect card type based on scanned code format
-      _cardType = _detectCardType(widget.scannedCode!);
+      // Use provided scanned type or auto-detect card type based on scanned code format
+      _cardType = widget.scannedType ?? _detectCardType(widget.scannedCode!);
     }
 
     // Set up logo auto-suggestion when title changes (debounced)
