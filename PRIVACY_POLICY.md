@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This Privacy Policy outlines how Cards - QR Scanner ("we", "our", or "app") collects, uses, and discloses information when you use our mobile application.
+This Privacy Policy outlines how Just Cards ("we", "our", or "app") collects, uses, and discloses information when you use our mobile application.
 
 ## Information Collection
 
