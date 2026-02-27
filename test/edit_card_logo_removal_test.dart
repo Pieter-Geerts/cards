@@ -62,6 +62,9 @@ void main() {
         expect(find.text('Logo Verwijderen'), findsOneWidget);
 
         // Act: Remove the logo by tapping "Remove Logo" button
+        // Ensure the button is visible before tapping (scroll if necessary)
+        await tester.ensureVisible(find.text('Logo Verwijderen'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Logo Verwijderen'));
         await tester.pumpAndSettle();
 
@@ -171,7 +174,15 @@ void main() {
       await tester.pumpAndSettle();
 
       // Assert: Should display initials "CS" (Coffee Shop)
-      expect(find.text('CS'), findsOneWidget);
+      // Find by key first (more reliable)
+      expect(find.byKey(const Key('logo-initials')), findsOneWidget);
+
+      // Also verify the text content
+      expect(
+        find.text('CS'),
+        findsOneWidget,
+        reason: 'Should display initials CS for Coffee Shop',
+      );
     });
 
     testWidgets('Logo removal flow with mock repository integration', (
