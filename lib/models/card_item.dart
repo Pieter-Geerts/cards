@@ -5,6 +5,9 @@ import '../widgets/logo_avatar_widget.dart';
 
 enum CardType { qrCode, barcode }
 
+// Sentinel value to differentiate between "not passed" and "explicitly set to null"
+const _unset = Object();
+
 extension CardTypeExtension on CardType {
   String get displayName {
     switch (this) {
@@ -146,7 +149,7 @@ class CardItem {
     CardType? cardType,
     DateTime? createdAt,
     int? sortOrder,
-    String? logoPath,
+    dynamic logoPath = _unset,
   }) {
     return CardItem(
       id: id ?? this.id,
@@ -156,7 +159,8 @@ class CardItem {
       cardType: cardType ?? this.cardType,
       createdAt: createdAt ?? this.createdAt,
       sortOrder: sortOrder ?? this.sortOrder,
-      logoPath: logoPath ?? this.logoPath,
+      logoPath:
+          identical(logoPath, _unset) ? this.logoPath : logoPath as String?,
     );
   }
 

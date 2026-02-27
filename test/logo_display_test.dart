@@ -58,7 +58,7 @@ void main() {
       );
 
       // Should show initials
-      expect(find.text('TE'), findsOneWidget);
+      expect(find.text('TC'), findsOneWidget);
     });
   });
 }

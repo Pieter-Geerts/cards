@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'database_mock_test.dart' as database_tests;
+import 'edit_card_logo_removal_test.dart' as edit_card_logo_removal_tests;
 import 'home_page_test.dart' as home_page_tests;
 import 'models/card_item_test.dart' as card_item_tests;
 import 'models/code_renderer_test.dart' as code_renderer_tests;
@@ -12,4 +13,5 @@ void main() {
   group('Home Page Tests', home_page_tests.main);
   group('Card Item Model Tests', card_item_tests.main);
   group('Code Renderer Tests', code_renderer_tests.main);
+  group('Edit Card Logo Removal Tests', edit_card_logo_removal_tests.main);
 }
