@@ -1,0 +1,9 @@
+Release v1.2.0 (minor)
+
+- Fix: Persist logo removal when editing cards (CardItem.copyWith now accepts explicit null for logoPath)
+- Fix: Correct initials generation for multi-word titles in LogoAvatarWidget
+- Tests: Added/updated integration tests for logo removal and initials fallback
+
+Bump version to 1.2.0+23
+
+Changelog and release notes: smart-release-notes-v1.2.0.md
