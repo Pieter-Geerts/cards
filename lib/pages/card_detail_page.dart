@@ -367,6 +367,7 @@ class _CardDetailPageState extends State<CardDetailPage>
                         child: Center(
                           child: LogoAvatarWidget(
                             logoKey: _currentCard.logoPath,
+                            logoIcon: _currentCard.getDisplayLogoIcon(),
                             title: _currentCard.title,
                             size: _headerLogoSize,
                             background: Colors.transparent,

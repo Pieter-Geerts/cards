@@ -15,7 +15,7 @@ class CardInfoWidget extends StatelessWidget {
       children: [
         LogoAvatarWidget(
           logoKey: card.logoPath,
-          logoIcon: null,
+          logoIcon: card.getDisplayLogoIcon(),
           title: card.title,
           size: 28,
           background: Colors.transparent,

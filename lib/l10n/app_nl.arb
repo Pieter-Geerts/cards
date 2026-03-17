@@ -177,5 +177,16 @@
   "codeScannedSuccessfully": "Code succesvol gescand",
   "noCodeFoundInImage": "Geen code gevonden in afbeelding. Voer handmatig in.",
   "errorScanningImage": "Fout bij scannen van afbeelding. Voer handmatig in.",
-  "scanningImage": "Bezig met scannen van afbeelding..."
+  "scanningImage": "Bezig met scannen van afbeelding...",
+  "temporaryCard": "Tijdelijke Kaart",
+  "temporaryCardLabel": "Tijdelijke kaart",
+  "autoDeleteAfter": "Automatisch verwijderen na",
+  "temporaryDayCount": "{count, plural, one{1 dag} other{{count} dagen}}",
+  "@temporaryDayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

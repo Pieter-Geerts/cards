@@ -129,7 +129,7 @@ class AddCardStepDetails extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              'Temporary card',
+                              AppLocalizations.of(context).temporaryCardLabel,
                               style: theme.textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.w600,
                               ),
@@ -144,7 +144,7 @@ class AddCardStepDetails extends StatelessWidget {
                       if (isTemporary) ...[
                         const SizedBox(height: 10),
                         Text(
-                          'Auto-delete after',
+                          AppLocalizations.of(context).autoDeleteAfter,
                           style: theme.textTheme.bodyMedium,
                         ),
                         const SizedBox(height: 8),
@@ -162,12 +162,14 @@ class AddCardStepDetails extends StatelessWidget {
                             ),
                           ),
                           items:
-                              const [1, 3, 7, 14, 30]
+                              [1, 3, 7, 14, 30]
                                   .map(
                                     (days) => DropdownMenuItem<int>(
                                       value: days,
                                       child: Text(
-                                        '$days day${days == 1 ? '' : 's'}',
+                                        AppLocalizations.of(
+                                          context,
+                                        ).temporaryDayCount(days),
                                       ),
                                     ),
                                   )
@@ -182,86 +184,89 @@ class AddCardStepDetails extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 28),
-                Text(
-                  AppLocalizations.of(context).logoLabel,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.3,
+                if (!isTemporary) ...[
+                  const SizedBox(height: 28),
+                  Text(
+                    AppLocalizations.of(context).logoLabel,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: onLogoTap,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color:
-                          selectedLogoIcon != null
-                              ? colorScheme.primary.withAlpha(25)
-                              : fillColor,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
+                  const SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: onLogoTap,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
                         color:
                             selectedLogoIcon != null
-                                ? colorScheme.primary
-                                : theme.dividerColor,
-                        width: selectedLogoIcon != null ? 2 : 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.shadowColor.withAlpha(10),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
+                                ? colorScheme.primary.withAlpha(25)
+                                : fillColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color:
+                              selectedLogoIcon != null
+                                  ? colorScheme.primary
+                                  : theme.dividerColor,
+                          width: selectedLogoIcon != null ? 2 : 1.5,
                         ),
-                      ],
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.shadowColor.withAlpha(10),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child:
+                          selectedLogoIcon != null
+                              ? Row(
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Icon(selectedLogoIcon, size: 24),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(child: Text('Logo geselecteerd')),
+                                  Icon(Icons.arrow_forward_ios, size: 20),
+                                ],
+                              )
+                              : Row(
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color:
+                                          colorScheme.surfaceContainerHighest,
+                                    ),
+                                    child: Icon(
+                                      Icons.add_photo_alternate_outlined,
+                                      color: theme.colorScheme.onSurface
+                                          .withAlpha(200),
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Text(
+                                      AppLocalizations.of(context).selectALogo,
+                                    ),
+                                  ),
+                                  Icon(Icons.arrow_forward_ios, size: 20),
+                                ],
+                              ),
                     ),
-                    child:
-                        selectedLogoIcon != null
-                            ? Row(
-                              children: [
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Icon(selectedLogoIcon, size: 24),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(child: Text('Logo geselecteerd')),
-                                Icon(Icons.arrow_forward_ios, size: 20),
-                              ],
-                            )
-                            : Row(
-                              children: [
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    color: colorScheme.surfaceContainerHighest,
-                                  ),
-                                  child: Icon(
-                                    Icons.add_photo_alternate_outlined,
-                                    color: theme.colorScheme.onSurface
-                                        .withAlpha(200),
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Text(
-                                    AppLocalizations.of(context).selectALogo,
-                                  ),
-                                ),
-                                Icon(Icons.arrow_forward_ios, size: 20),
-                              ],
-                            ),
                   ),
-                ),
+                ],
                 if (shouldShowPreview && previewWidget != null) ...[
                   const SizedBox(height: 32),
                   previewWidget!,

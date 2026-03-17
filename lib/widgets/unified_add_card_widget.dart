@@ -472,7 +472,7 @@ class _UnifiedAddCardWidgetState extends State<UnifiedAddCardWidget> {
               CardType.values.map((type) {
                 return DropdownMenuItem(
                   value: type,
-                  child: Text(type.displayName),
+                  child: Text(type.getLocalizedDisplayName(context)),
                 );
               }).toList(),
           onChanged: (value) {

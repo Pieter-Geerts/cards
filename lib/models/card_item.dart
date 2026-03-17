@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../widgets/logo_avatar_widget.dart';
 import 'code_renderer.dart';
 
@@ -15,6 +16,15 @@ extension CardTypeExtension on CardType {
         return 'QR Code';
       case CardType.barcode:
         return 'Barcode';
+    }
+  }
+
+  String getLocalizedDisplayName(BuildContext context) {
+    switch (this) {
+      case CardType.qrCode:
+        return AppLocalizations.of(context).textQrCode;
+      case CardType.barcode:
+        return AppLocalizations.of(context).textBarcode;
     }
   }
 
@@ -88,6 +98,16 @@ class CardItem {
   bool get is1D => cardType.is1D;
 
   bool get isTemporary => expiresAt != null;
+
+  /// Gets the display logo icon for this card
+  /// Always returns the hourglass icon for temporary cards
+  /// Returns null for non-temporary cards
+  IconData? getDisplayLogoIcon() {
+    if (isTemporary) {
+      return Icons.hourglass_empty;
+    }
+    return null;
+  }
 
   bool isExpired([DateTime? now]) {
     if (expiresAt == null) return false;
@@ -199,6 +219,7 @@ class CardItem {
             padding: const EdgeInsets.only(top: 12.0),
             child: LogoAvatarWidget(
               logoKey: logoPath,
+              logoIcon: getDisplayLogoIcon(),
               title: title.isNotEmpty ? title : 'Kaart',
               size: 96,
               background: Colors.transparent,

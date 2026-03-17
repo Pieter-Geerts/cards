@@ -168,5 +168,16 @@
   "codeScannedSuccessfully": "Código escaneado exitosamente",
   "noCodeFoundInImage": "No se encontró código en la imagen. Ingrese manualmente.",
   "errorScanningImage": "Error al escanear la imagen. Ingrese manualmente.",
-  "scanningImage": "Escaneando imagen..."
+  "scanningImage": "Escaneando imagen...",
+  "temporaryCard": "Tarjeta Temporal",
+  "temporaryCardLabel": "Tarjeta temporal",
+  "autoDeleteAfter": "Eliminar automáticamente después de",
+  "temporaryDayCount": "{count, plural, one{1 día} other{{count} días}}",
+  "@temporaryDayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

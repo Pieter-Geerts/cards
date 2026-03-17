@@ -48,7 +48,7 @@ class CardItemWidget extends StatelessWidget {
               children: [
                 LogoAvatarWidget(
                   logoKey: card.logoPath,
-                  logoIcon: null,
+                  logoIcon: card.getDisplayLogoIcon(),
                   title: card.title,
                   size: 48,
                   background: Theme.of(context).cardColor,

@@ -182,5 +182,16 @@
   "codeScannedSuccessfully": "Code scanned successfully",
   "noCodeFoundInImage": "No code found in image. Please enter manually.",
   "errorScanningImage": "Error scanning image. Please enter manually.",
-  "scanningImage": "Scanning image..."
+  "scanningImage": "Scanning image...",
+  "temporaryCard": "Temporary Card",
+  "temporaryCardLabel": "Temporary card",
+  "autoDeleteAfter": "Auto-delete after",
+  "temporaryDayCount": "{count, plural, one{1 day} other{{count} days}}",
+  "@temporaryDayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
