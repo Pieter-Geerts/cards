@@ -44,6 +44,8 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
   CardType _cardType = CardType.qrCode;
   String? _logoPath;
   IconData? _selectedLogoIcon;
+  bool _isTemporaryCard = false;
+  int _temporaryDays = 7;
   final ValueNotifier<bool> _showManualEntry = ValueNotifier(false);
 
   // Performance optimization
@@ -354,6 +356,10 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
       description: _descriptionController.text.trim(),
       name: _codeController.text.trim(),
       cardType: _cardType,
+      expiresAt:
+          _isTemporaryCard
+              ? DateTime.now().add(Duration(days: _temporaryDays))
+              : null,
       logoPath: logoPath,
       sortOrder: DateTime.now().millisecondsSinceEpoch,
     );
@@ -1123,7 +1129,19 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
       titleController: _titleController,
       descriptionController: _descriptionController,
       selectedLogoIcon: _selectedLogoIcon,
+      isTemporary: _isTemporaryCard,
+      temporaryDays: _temporaryDays,
       onLogoTap: () => _openLogoSelectionSheet(context),
+      onTemporaryChanged: (value) {
+        setState(() {
+          _isTemporaryCard = value;
+        });
+      },
+      onTemporaryDaysChanged: (value) {
+        setState(() {
+          _temporaryDays = value;
+        });
+      },
       shouldShowPreview: _shouldShowPreview(),
       previewWidget:
           _shouldShowPreview()

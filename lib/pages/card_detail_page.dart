@@ -41,6 +41,11 @@ class _CardDetailPageState extends State<CardDetailPage>
   double? _originalBrightness;
   bool _isSharing = false;
 
+  String _expiresLabel(BuildContext context, DateTime expiresAt) {
+    final date = MaterialLocalizations.of(context).formatMediumDate(expiresAt);
+    return 'Expires on $date';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -386,6 +391,26 @@ class _CardDetailPageState extends State<CardDetailPage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (_currentCard.expiresAt != null) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.tertiaryContainer,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              _expiresLabel(context, _currentCard.expiresAt!),
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: theme.colorScheme.onTertiaryContainer,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                        ],
                         if (_currentCard.description.trim().isNotEmpty)
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

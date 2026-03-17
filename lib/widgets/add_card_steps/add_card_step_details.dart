@@ -6,7 +6,11 @@ class AddCardStepDetails extends StatelessWidget {
   final TextEditingController titleController;
   final TextEditingController descriptionController;
   final IconData? selectedLogoIcon;
+  final bool isTemporary;
+  final int temporaryDays;
   final VoidCallback onLogoTap;
+  final ValueChanged<bool> onTemporaryChanged;
+  final ValueChanged<int> onTemporaryDaysChanged;
   final bool shouldShowPreview;
   final Widget? previewWidget;
 
@@ -15,7 +19,11 @@ class AddCardStepDetails extends StatelessWidget {
     required this.titleController,
     required this.descriptionController,
     required this.selectedLogoIcon,
+    required this.isTemporary,
+    required this.temporaryDays,
     required this.onLogoTap,
+    required this.onTemporaryChanged,
+    required this.onTemporaryDaysChanged,
     required this.shouldShowPreview,
     this.previewWidget,
   });
@@ -104,6 +112,74 @@ class AddCardStepDetails extends StatelessWidget {
                       horizontal: 20,
                       vertical: 18,
                     ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: fillColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: theme.dividerColor),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Temporary card',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          Switch(
+                            value: isTemporary,
+                            onChanged: onTemporaryChanged,
+                          ),
+                        ],
+                      ),
+                      if (isTemporary) ...[
+                        const SizedBox(height: 10),
+                        Text(
+                          'Auto-delete after',
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<int>(
+                          value: temporaryDays,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: fillColor,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                          ),
+                          items:
+                              const [1, 3, 7, 14, 30]
+                                  .map(
+                                    (days) => DropdownMenuItem<int>(
+                                      value: days,
+                                      child: Text(
+                                        '$days day${days == 1 ? '' : 's'}',
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged: (value) {
+                            if (value != null) {
+                              onTemporaryDaysChanged(value);
+                            }
+                          },
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 const SizedBox(height: 28),

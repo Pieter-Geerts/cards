@@ -25,7 +25,7 @@ class DatabaseHelper implements IDatabaseHelper {
 
     return openDatabase(
       path,
-      version: 5, // Increment version to 5
+      version: 6,
       onCreate: (db, version) {
         return db.execute('''
           CREATE TABLE cards (
@@ -35,6 +35,7 @@ class DatabaseHelper implements IDatabaseHelper {
             name TEXT,
             cardType TEXT,
             createdAt INTEGER,
+            expiresAt INTEGER,
             sortOrder INTEGER,
             logoPath TEXT
           )
@@ -75,6 +76,9 @@ class DatabaseHelper implements IDatabaseHelper {
         if (oldVersion < 5) {
           await db.execute('ALTER TABLE cards ADD COLUMN logoPath TEXT');
         }
+        if (oldVersion < 6) {
+          await db.execute('ALTER TABLE cards ADD COLUMN expiresAt INTEGER');
+        }
       },
     );
   }
@@ -90,6 +94,12 @@ class DatabaseHelper implements IDatabaseHelper {
   @override
   Future<List<CardItem>> getCards() async {
     final db = await database;
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    await db.delete(
+      'cards',
+      where: 'expiresAt IS NOT NULL AND expiresAt <= ?',
+      whereArgs: [nowMs],
+    );
     // Fetch cards ordered by their sortOrder
     final maps = await db.query('cards', orderBy: 'sortOrder ASC');
     return List.generate(maps.length, (i) => CardItem.fromMap(maps[i]));

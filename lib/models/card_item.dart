@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'code_renderer.dart';
 import '../widgets/logo_avatar_widget.dart';
+import 'code_renderer.dart';
 
 enum CardType { qrCode, barcode }
 
@@ -44,6 +44,7 @@ class CardItem {
   final String name;
   final CardType cardType;
   final DateTime createdAt;
+  final DateTime? expiresAt;
   final int sortOrder;
   final String? logoPath;
 
@@ -54,6 +55,7 @@ class CardItem {
     required this.name,
     this.cardType = CardType.qrCode,
     DateTime? createdAt,
+    this.expiresAt,
     required this.sortOrder,
     this.logoPath,
   }) : createdAt = createdAt ?? DateTime.now();
@@ -63,9 +65,14 @@ class CardItem {
     required this.description,
     required this.name,
     this.cardType = CardType.qrCode,
+    int? expiresInDays,
     this.logoPath,
   }) : id = null,
        createdAt = DateTime.now(),
+       expiresAt =
+           expiresInDays != null
+               ? DateTime.now().add(Duration(days: expiresInDays))
+               : null,
        sortOrder = -1;
 
   // Helper to check if this is a QR code
@@ -79,6 +86,14 @@ class CardItem {
 
   // Helper to check if this is a 1D code (traditional barcodes)
   bool get is1D => cardType.is1D;
+
+  bool get isTemporary => expiresAt != null;
+
+  bool isExpired([DateTime? now]) {
+    if (expiresAt == null) return false;
+    final reference = now ?? DateTime.now();
+    return !expiresAt!.isAfter(reference);
+  }
 
   /// Gets the appropriate code renderer for this card
   CodeRenderer get codeRenderer => CodeRendererFactory.getRenderer(cardType);
@@ -107,6 +122,7 @@ class CardItem {
       'name': name,
       'cardType': cardType.name,
       'createdAt': createdAt.millisecondsSinceEpoch,
+      'expiresAt': expiresAt?.millisecondsSinceEpoch,
       'sortOrder': sortOrder,
       'logoPath': logoPath,
     };
@@ -136,6 +152,10 @@ class CardItem {
           map['createdAt'] != null
               ? DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int)
               : DateTime.now(),
+      expiresAt:
+          map['expiresAt'] != null
+              ? DateTime.fromMillisecondsSinceEpoch(map['expiresAt'] as int)
+              : null,
       sortOrder: map['sortOrder'] as int? ?? 0,
       logoPath: map['logoPath'] as String?,
     );
@@ -148,6 +168,7 @@ class CardItem {
     String? name,
     CardType? cardType,
     DateTime? createdAt,
+    dynamic expiresAt = _unset,
     int? sortOrder,
     dynamic logoPath = _unset,
   }) {
@@ -158,6 +179,10 @@ class CardItem {
       name: name ?? this.name,
       cardType: cardType ?? this.cardType,
       createdAt: createdAt ?? this.createdAt,
+      expiresAt:
+          identical(expiresAt, _unset)
+              ? this.expiresAt
+              : expiresAt as DateTime?,
       sortOrder: sortOrder ?? this.sortOrder,
       logoPath:
           identical(logoPath, _unset) ? this.logoPath : logoPath as String?,

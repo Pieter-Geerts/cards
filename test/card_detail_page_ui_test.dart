@@ -71,28 +71,6 @@ void main() {
     );
   });
 
-  testWidgets('Hidden raw code exists (transparent)', (
-    WidgetTester tester,
-  ) async {
-    // SKIPPED: This test checks for transparent barcode text rendering
-    // which is no longer part of the card detail page UI design.
-    return;
-    final card = CardItem(
-      title: 'Hidden Code',
-      description: 'desc',
-      name: 'HID123456',
-      cardType: CardType.barcode,
-      sortOrder: 0,
-    );
-
-    await tester.pumpWidget(makePage(card));
-    await tester.pumpAndSettle();
-
-    // raw Text with the exact string should be findable by the tests (even
-    // if transparent). We rely on find.text to locate it.
-    expect(find.text('HID123456'), findsOneWidget);
-  });
-
   testWidgets('Barcode area is a white Card', (WidgetTester tester) async {
     final card = CardItem(
       title: 'Card Area',

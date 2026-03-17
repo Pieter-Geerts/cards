@@ -80,6 +80,25 @@ void main() {
       expect(card.id, null);
       expect(card.sortOrder, -1);
       expect(card.cardType, CardType.qrCode); // default
+      expect(card.isTemporary, false);
+      expect(card.expiresAt, isNull);
+    });
+
+    test('should create temp card with expiration days', () {
+      final card = CardItem.temp(
+        title: 'Temp Card',
+        description: 'Temporary',
+        name: 'TEMP123',
+        expiresInDays: 3,
+      );
+
+      expect(card.isTemporary, true);
+      expect(card.expiresAt, isNotNull);
+      expect(card.isExpired(DateTime.now().add(const Duration(days: 4))), true);
+      expect(
+        card.isExpired(DateTime.now().subtract(const Duration(days: 1))),
+        false,
+      );
     });
 
     test('should serialize to map correctly', () {
@@ -103,6 +122,23 @@ void main() {
       expect(map['sortOrder'], 0);
       expect(map['logoPath'], '/path/to/logo.png');
       expect(map['createdAt'], isA<int>());
+      expect(map['expiresAt'], isNull);
+    });
+
+    test('should serialize expiresAt when set', () {
+      final expiresAt = DateTime.now().add(const Duration(days: 7));
+      final card = CardItem(
+        id: 124,
+        title: 'Temporary Card',
+        description: 'Expires soon',
+        name: 'TMP123',
+        sortOrder: 2,
+        expiresAt: expiresAt,
+      );
+
+      final map = card.toMap();
+
+      expect(map['expiresAt'], expiresAt.millisecondsSinceEpoch);
     });
 
     test('should deserialize from map with new enum format', () {
@@ -113,6 +149,8 @@ void main() {
         'name': 'SAVED123',
         'cardType': 'barcode', // new enum format
         'createdAt': DateTime.now().millisecondsSinceEpoch,
+        'expiresAt':
+            DateTime.now().add(const Duration(days: 2)).millisecondsSinceEpoch,
         'sortOrder': 1,
         'logoPath': '/path/to/saved.png',
       };
@@ -126,6 +164,8 @@ void main() {
       expect(card.cardType, CardType.barcode);
       expect(card.sortOrder, 1);
       expect(card.logoPath, '/path/to/saved.png');
+      expect(card.expiresAt, isNotNull);
+      expect(card.isTemporary, true);
     });
 
     test('should deserialize from map with legacy format', () {
