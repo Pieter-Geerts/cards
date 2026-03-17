@@ -57,7 +57,7 @@ void main() {
       );
 
       // Should fall back to initials since the icon doesn't exist
-      expect(find.text('TE'), findsOneWidget);
+      expect(find.text('TC'), findsOneWidget);
     });
 
     testWidgets('LogoAvatarWidget should handle null logoPath', (
@@ -73,7 +73,7 @@ void main() {
       );
 
       // Should show initials
-      expect(find.text('TE'), findsOneWidget);
+      expect(find.text('TC'), findsOneWidget);
     });
   });
 }

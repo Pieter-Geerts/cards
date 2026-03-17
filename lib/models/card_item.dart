@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
-import 'code_renderer.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/logo_avatar_widget.dart';
+import 'code_renderer.dart';
 
 enum CardType { qrCode, barcode }
+
+// Sentinel value to differentiate between "not passed" and "explicitly set to null"
+const _unset = Object();
 
 extension CardTypeExtension on CardType {
   String get displayName {
@@ -12,6 +16,15 @@ extension CardTypeExtension on CardType {
         return 'QR Code';
       case CardType.barcode:
         return 'Barcode';
+    }
+  }
+
+  String getLocalizedDisplayName(BuildContext context) {
+    switch (this) {
+      case CardType.qrCode:
+        return AppLocalizations.of(context).textQrCode;
+      case CardType.barcode:
+        return AppLocalizations.of(context).textBarcode;
     }
   }
 
@@ -41,6 +54,7 @@ class CardItem {
   final String name;
   final CardType cardType;
   final DateTime createdAt;
+  final DateTime? expiresAt;
   final int sortOrder;
   final String? logoPath;
 
@@ -51,6 +65,7 @@ class CardItem {
     required this.name,
     this.cardType = CardType.qrCode,
     DateTime? createdAt,
+    this.expiresAt,
     required this.sortOrder,
     this.logoPath,
   }) : createdAt = createdAt ?? DateTime.now();
@@ -60,9 +75,14 @@ class CardItem {
     required this.description,
     required this.name,
     this.cardType = CardType.qrCode,
+    int? expiresInDays,
     this.logoPath,
   }) : id = null,
        createdAt = DateTime.now(),
+       expiresAt =
+           expiresInDays != null
+               ? DateTime.now().add(Duration(days: expiresInDays))
+               : null,
        sortOrder = -1;
 
   // Helper to check if this is a QR code
@@ -76,6 +96,24 @@ class CardItem {
 
   // Helper to check if this is a 1D code (traditional barcodes)
   bool get is1D => cardType.is1D;
+
+  bool get isTemporary => expiresAt != null;
+
+  /// Gets the display logo icon for this card
+  /// Always returns the hourglass icon for temporary cards
+  /// Returns null for non-temporary cards
+  IconData? getDisplayLogoIcon() {
+    if (isTemporary) {
+      return Icons.hourglass_empty;
+    }
+    return null;
+  }
+
+  bool isExpired([DateTime? now]) {
+    if (expiresAt == null) return false;
+    final reference = now ?? DateTime.now();
+    return !expiresAt!.isAfter(reference);
+  }
 
   /// Gets the appropriate code renderer for this card
   CodeRenderer get codeRenderer => CodeRendererFactory.getRenderer(cardType);
@@ -104,6 +142,7 @@ class CardItem {
       'name': name,
       'cardType': cardType.name,
       'createdAt': createdAt.millisecondsSinceEpoch,
+      'expiresAt': expiresAt?.millisecondsSinceEpoch,
       'sortOrder': sortOrder,
       'logoPath': logoPath,
     };
@@ -133,6 +172,10 @@ class CardItem {
           map['createdAt'] != null
               ? DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int)
               : DateTime.now(),
+      expiresAt:
+          map['expiresAt'] != null
+              ? DateTime.fromMillisecondsSinceEpoch(map['expiresAt'] as int)
+              : null,
       sortOrder: map['sortOrder'] as int? ?? 0,
       logoPath: map['logoPath'] as String?,
     );
@@ -145,8 +188,9 @@ class CardItem {
     String? name,
     CardType? cardType,
     DateTime? createdAt,
+    dynamic expiresAt = _unset,
     int? sortOrder,
-    String? logoPath,
+    dynamic logoPath = _unset,
   }) {
     return CardItem(
       id: id ?? this.id,
@@ -155,8 +199,13 @@ class CardItem {
       name: name ?? this.name,
       cardType: cardType ?? this.cardType,
       createdAt: createdAt ?? this.createdAt,
+      expiresAt:
+          identical(expiresAt, _unset)
+              ? this.expiresAt
+              : expiresAt as DateTime?,
       sortOrder: sortOrder ?? this.sortOrder,
-      logoPath: logoPath ?? this.logoPath,
+      logoPath:
+          identical(logoPath, _unset) ? this.logoPath : logoPath as String?,
     );
   }
 
@@ -170,6 +219,7 @@ class CardItem {
             padding: const EdgeInsets.only(top: 12.0),
             child: LogoAvatarWidget(
               logoKey: logoPath,
+              logoIcon: getDisplayLogoIcon(),
               title: title.isNotEmpty ? title : 'Kaart',
               size: 96,
               background: Colors.transparent,

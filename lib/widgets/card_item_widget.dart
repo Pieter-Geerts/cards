@@ -15,6 +15,11 @@ class CardItemWidget extends StatelessWidget {
     required this.onActions,
   });
 
+  String _expiresLabel(BuildContext context, DateTime expiresAt) {
+    final date = MaterialLocalizations.of(context).formatMediumDate(expiresAt);
+    return 'Expires on $date';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -43,7 +48,7 @@ class CardItemWidget extends StatelessWidget {
               children: [
                 LogoAvatarWidget(
                   logoKey: card.logoPath,
-                  logoIcon: null,
+                  logoIcon: card.getDisplayLogoIcon(),
                   title: card.title,
                   size: 48,
                   background: Theme.of(context).cardColor,
@@ -80,6 +85,32 @@ class CardItemWidget extends StatelessWidget {
                           ),
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                      if (card.expiresAt != null) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color:
+                                Theme.of(context).colorScheme.tertiaryContainer,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            _expiresLabel(context, card.expiresAt!),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.labelMedium?.copyWith(
+                              color:
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.onTertiaryContainer,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ],
                     ],

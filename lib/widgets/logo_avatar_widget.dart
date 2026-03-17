@@ -26,7 +26,7 @@ class LogoAvatarWidget extends StatelessWidget {
   Widget _buildInitials(BuildContext context) {
     String initials = '';
     if (title != null && title!.isNotEmpty) {
-      final words = title!.trim().split(RegExp(r'\\s+'));
+      final words = title!.trim().split(RegExp(r'\s+'));
       if (words.length == 1) {
         initials =
             words[0].length >= 2

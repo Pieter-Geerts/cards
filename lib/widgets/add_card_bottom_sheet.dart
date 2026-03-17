@@ -34,6 +34,7 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
   // Step 1: selection
   PresetCard? _selectedPreset;
   bool _isGenericSelected = false;
+  bool _isTemporarySelected = false;
 
   // Form controllers
   final TextEditingController _titleController = TextEditingController();
@@ -44,6 +45,8 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
   CardType _cardType = CardType.qrCode;
   String? _logoPath;
   IconData? _selectedLogoIcon;
+  bool _isTemporaryCard = false;
+  int _temporaryDays = 7;
   final ValueNotifier<bool> _showManualEntry = ValueNotifier(false);
 
   // Performance optimization
@@ -151,17 +154,22 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
         if (_selectedPreset != null) {
           _titleController.text = _selectedPreset!.title;
           _selectedLogoIcon = _selectedPreset!.logoIcon;
-        } else if (_isGenericSelected) {
+        } else if (_isGenericSelected || _isTemporarySelected) {
           _titleController.clear();
           _selectedLogoIcon = null;
         }
       }
       // Update _canProceed for each step
       if (page == 0) {
-        _canProceed = _selectedPreset != null || _isGenericSelected;
+        _canProceed =
+            _selectedPreset != null ||
+            _isGenericSelected ||
+            _isTemporarySelected;
       } else if (page == 1) {
         _canProceed =
-            _isGenericSelected ? _titleController.text.trim().isNotEmpty : true;
+            (_isGenericSelected || _isTemporarySelected)
+                ? _titleController.text.trim().isNotEmpty
+                : true;
       } else {
         _canProceed = _codeController.text.trim().isNotEmpty;
       }
@@ -315,9 +323,11 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
 
   bool _canProceedFromStep(int step) {
     if (step == 0) {
-      return _selectedPreset != null || _isGenericSelected;
+      return _selectedPreset != null ||
+          _isGenericSelected ||
+          _isTemporarySelected;
     } else if (step == 1) {
-      return _isGenericSelected
+      return (_isGenericSelected || _isTemporarySelected)
           ? _titleController.text.trim().isNotEmpty
           : true;
     } else {
@@ -354,6 +364,10 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
       description: _descriptionController.text.trim(),
       name: _codeController.text.trim(),
       cardType: _cardType,
+      expiresAt:
+          _isTemporaryCard
+              ? DateTime.now().add(Duration(days: _temporaryDays))
+              : null,
       logoPath: logoPath,
       sortOrder: DateTime.now().millisecondsSinceEpoch,
     );
@@ -682,16 +696,32 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
     return AddCardStepPreset(
       selectedPreset: _selectedPreset,
       isGenericSelected: _isGenericSelected,
+      isTemporarySelected: _isTemporarySelected,
       onPresetSelected: (preset) {
         setState(() {
           _selectedPreset = preset;
           _isGenericSelected = false;
+          _isTemporarySelected = false;
+          _isTemporaryCard = false;
         });
       },
       onGenericSelected: (selected) {
         setState(() {
           _selectedPreset = null;
           _isGenericSelected = selected;
+          _isTemporarySelected = false;
+          _isTemporaryCard = false;
+        });
+      },
+      onTemporarySelected: (selected) {
+        setState(() {
+          _selectedPreset = null;
+          _isGenericSelected = false;
+          _isTemporarySelected = selected;
+          _isTemporaryCard = selected;
+          if (!selected) {
+            _temporaryDays = 7;
+          }
         });
       },
     );
@@ -918,7 +948,9 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
                           CardType.values.map((type) {
                             return DropdownMenuItem(
                               value: type,
-                              child: Text(type.displayName),
+                              child: Text(
+                                type.getLocalizedDisplayName(context),
+                              ),
                             );
                           }).toList(),
                       onChanged: (CardType? value) {
@@ -1123,7 +1155,19 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
       titleController: _titleController,
       descriptionController: _descriptionController,
       selectedLogoIcon: _selectedLogoIcon,
+      isTemporary: _isTemporaryCard,
+      temporaryDays: _temporaryDays,
       onLogoTap: () => _openLogoSelectionSheet(context),
+      onTemporaryChanged: (value) {
+        setState(() {
+          _isTemporaryCard = value;
+        });
+      },
+      onTemporaryDaysChanged: (value) {
+        setState(() {
+          _temporaryDays = value;
+        });
+      },
       shouldShowPreview: _shouldShowPreview(),
       previewWidget:
           _shouldShowPreview()

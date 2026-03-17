@@ -6,15 +6,19 @@ import '../../l10n/app_localizations.dart';
 class AddCardStepPreset extends StatelessWidget {
   final PresetCard? selectedPreset;
   final bool isGenericSelected;
+  final bool isTemporarySelected;
   final ValueChanged<PresetCard?> onPresetSelected;
   final ValueChanged<bool> onGenericSelected;
+  final ValueChanged<bool> onTemporarySelected;
 
   const AddCardStepPreset({
     super.key,
     required this.selectedPreset,
     required this.isGenericSelected,
+    required this.isTemporarySelected,
     required this.onPresetSelected,
     required this.onGenericSelected,
+    required this.onTemporarySelected,
   });
 
   @override
@@ -52,7 +56,7 @@ class AddCardStepPreset extends StatelessWidget {
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                   ),
-                  itemCount: gridCards.length + 1, // +1 for generic card
+                  itemCount: gridCards.length + 2, // +1 generic, +1 temporary
                   itemBuilder: (context, index) {
                     if (index < gridCards.length) {
                       final preset = gridCards[index];
@@ -103,7 +107,7 @@ class AddCardStepPreset extends StatelessWidget {
                           ),
                         ),
                       );
-                    } else {
+                    } else if (index == gridCards.length) {
                       // Generic card option
                       return GestureDetector(
                         onTap: () => onGenericSelected(true),
@@ -142,6 +146,55 @@ class AddCardStepPreset extends StatelessWidget {
                               const SizedBox(height: 8),
                               Text(
                                 AppLocalizations.of(context).genericCard,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    } else {
+                      // Temporary card option
+                      return GestureDetector(
+                        onTap: () => onTemporarySelected(true),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color:
+                                isTemporarySelected
+                                    ? colorScheme.primaryContainer
+                                    : colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color:
+                                  isTemporarySelected
+                                      ? colorScheme.primary
+                                      : colorScheme.outline,
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: theme.shadowColor.withAlpha(10),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.timer_outlined,
+                                size: 32,
+                                color: colorScheme.primary,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                AppLocalizations.of(context).temporaryCard,
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,

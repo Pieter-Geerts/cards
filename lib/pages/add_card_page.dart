@@ -237,7 +237,7 @@ class _AddCardPageState extends State<AddCardPage> {
                   .map(
                     (type) => DropdownMenuItem(
                       value: type,
-                      child: Text(type.displayName),
+                      child: Text(type.getLocalizedDisplayName(context)),
                     ),
                   )
                   .toList(),
