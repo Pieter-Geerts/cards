@@ -33,9 +33,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Future<void> _navigateToAddCardPage() async {
+  Future<void> _navigateToAddCardPage({
+    AddCardFlowMode mode = AddCardFlowMode.selection,
+  }) async {
     final newCard = await AddCardFlowManager.showAddCardFlow(
       context,
+      mode: mode,
       useBottomSheet: true,
     );
     if (newCard != null) {
@@ -88,6 +91,46 @@ class _HomePageState extends State<HomePage> {
         },
       );
     }
+  }
+
+  void _showAddOptions() {
+    final l10n = AppLocalizations.of(context);
+    showModalBottomSheet(
+      context: context,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.qr_code_scanner),
+                title: Text(l10n.scanBarcodeCTA),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _navigateToAddCardPage(mode: AddCardFlowMode.scan);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: Text(l10n.addCard),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _navigateToAddCardPage(mode: AddCardFlowMode.manual);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: Text(l10n.scanFromImageAction),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _navigateToAddCardPage(mode: AddCardFlowMode.import);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   late final CardRepository _cardRepository;
@@ -409,7 +452,11 @@ class _HomePageState extends State<HomePage> {
       ),
       body:
           _displayedCards.isEmpty
-              ? EmptyStateWidget(onAddCard: _navigateToAddCardPage)
+              ? EmptyStateWidget(
+                onAddCard: () => _navigateToAddCardPage(),
+                onScan:
+                    () => _navigateToAddCardPage(mode: AddCardFlowMode.scan),
+              )
               : CardListWidget(
                 cards: _displayedCards,
                 onCardTap: _onCardTap,
@@ -417,7 +464,7 @@ class _HomePageState extends State<HomePage> {
                 onReorder: _onReorder,
               ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToAddCardPage,
+        onPressed: _showAddOptions,
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         elevation: 6.0,

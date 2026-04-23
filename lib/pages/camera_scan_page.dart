@@ -4,6 +4,48 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 
+class CameraScanTestResult {
+  final String code;
+  final BarcodeFormat format;
+
+  const CameraScanTestResult({required this.code, required this.format});
+}
+
+class CameraScanTestOverrides {
+  static CameraScanTestResult? _nextResult;
+
+  static void queueResult(CameraScanTestResult result) {
+    _nextResult = result;
+  }
+
+  static CameraScanTestResult? takeNextResult() {
+    final result = _nextResult;
+    _nextResult = null;
+    return result;
+  }
+
+  static void clear() {
+    _nextResult = null;
+  }
+}
+
+CardType cardTypeFromBarcodeFormat(BarcodeFormat format) {
+  switch (format) {
+    case BarcodeFormat.qrCode:
+      return CardType.qrCode;
+    case BarcodeFormat.ean13:
+    case BarcodeFormat.ean8:
+    case BarcodeFormat.upcA:
+    case BarcodeFormat.upcE:
+    case BarcodeFormat.code128:
+    case BarcodeFormat.code39:
+    case BarcodeFormat.code93:
+      return CardType.barcode;
+    default:
+      return CardType.qrCode;
+  }
+}
+
 class CameraScanPage extends StatefulWidget {
   final Function(String code, CardType type) onCodeScanned;
 
@@ -17,6 +59,16 @@ class _CameraScanPageState extends State<CameraScanPage> {
   MobileScannerController cameraController = MobileScannerController();
   bool _isFlashOn = false;
   bool _isCodeScanned = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final testResult = CameraScanTestOverrides.takeNextResult();
+      if (!mounted || testResult == null) return;
+      _handleDetectedCode(testResult.code, testResult.format);
+    });
+  }
 
   @override
   void dispose() {
@@ -33,36 +85,20 @@ class _CameraScanPageState extends State<CameraScanPage> {
       final code = barcode.rawValue ?? '';
 
       if (code.isNotEmpty) {
-        setState(() {
-          _isCodeScanned = true;
-        });
-
-        // Determine card type based on barcode format
-        CardType cardType = CardType.qrCode;
-        switch (barcode.format) {
-          case BarcodeFormat.qrCode:
-            cardType = CardType.qrCode;
-            break;
-          case BarcodeFormat.ean13:
-          case BarcodeFormat.ean8:
-          case BarcodeFormat.upcA:
-          case BarcodeFormat.upcE:
-            cardType = CardType.barcode;
-            break;
-          case BarcodeFormat.code128:
-          case BarcodeFormat.code39:
-          case BarcodeFormat.code93:
-            cardType = CardType.barcode;
-            break;
-          default:
-            cardType = CardType.qrCode;
-        }
-
-        // Return the scanned code: call callback first then pop.
-        widget.onCodeScanned(code, cardType);
-        if (mounted) Navigator.of(context).pop();
+        _handleDetectedCode(code, barcode.format);
       }
     }
+  }
+
+  void _handleDetectedCode(String code, BarcodeFormat format) {
+    if (_isCodeScanned || code.isEmpty) return;
+
+    setState(() {
+      _isCodeScanned = true;
+    });
+
+    widget.onCodeScanned(code, cardTypeFromBarcodeFormat(format));
+    if (mounted) Navigator.of(context).pop();
   }
 
   void _toggleFlash() async {
@@ -93,6 +129,7 @@ class _CameraScanPageState extends State<CameraScanPage> {
         ),
         actions: [
           IconButton(
+            key: const ValueKey('flash_toggle_button'),
             onPressed: _toggleFlash,
             icon: Icon(
               _isFlashOn ? Icons.flash_on : Icons.flash_off,
@@ -104,7 +141,11 @@ class _CameraScanPageState extends State<CameraScanPage> {
       body: Stack(
         children: [
           // Camera view
-          MobileScanner(controller: cameraController, onDetect: _onDetect),
+          MobileScanner(
+            key: const ValueKey('camera_preview'),
+            controller: cameraController,
+            onDetect: _onDetect,
+          ),
 
           // Scanning overlay
           Center(

@@ -394,6 +394,7 @@ class _CardDetailPageState extends State<CardDetailPage>
                       children: [
                         if (_currentCard.expiresAt != null) ...[
                           Container(
+                            key: const ValueKey('expiry_chip'),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 6,
@@ -412,6 +413,27 @@ class _CardDetailPageState extends State<CardDetailPage>
                           ),
                           const SizedBox(height: 10),
                         ],
+                        Container(
+                          key: const ValueKey('card_type_chip'),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            _currentCard.cardType.getLocalizedDisplayName(
+                              context,
+                            ),
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: theme.colorScheme.onPrimaryContainer,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
                         if (_currentCard.description.trim().isNotEmpty)
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -476,6 +498,7 @@ class _CardDetailPageState extends State<CardDetailPage>
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
+        key: const ValueKey('code_display'),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
