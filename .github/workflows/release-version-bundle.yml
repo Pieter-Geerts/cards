@@ -133,29 +133,43 @@ jobs:
             echo "Created secrets.dart from template"
           fi
 
-      - name: Set up Android signing (if available)
+      - name: Set up Android signing
+        id: setup_signing
         run: |
           if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
             echo "Setting up Android signing..."
+            mkdir -p android
             # Decode and save keystore
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/upload-keystore.jks
 
-            # Create key.properties
+            # Create key.properties inside android/
             cat > android/key.properties << EOF
-          storePassword=$ANDROID_STORE_PASSWORD
-          keyPassword=$ANDROID_KEY_PASSWORD
-          keyAlias=$ANDROID_KEY_ALIAS
-          storeFile=upload-keystore.jks
-          EOF
+storePassword=$ANDROID_STORE_PASSWORD
+keyPassword=$ANDROID_KEY_PASSWORD
+keyAlias=$ANDROID_KEY_ALIAS
+storeFile=upload-keystore.jks
+EOF
+            echo "signing_configured=true" >> $GITHUB_OUTPUT
             echo "Android signing configured"
           else
-            echo "Android signing secrets not available, building unsigned APK"
+            echo "signing_configured=false" >> $GITHUB_OUTPUT
+            echo "Android signing secrets not available; artifacts will be unsigned"
           fi
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+
+      - name: Enforce signing when uploading to Play Store
+        if: ${{ github.event.inputs.upload_to_play_store == 'true' }}
+        run: |
+          if [ "${{ steps.setup_signing.outputs.signing_configured }}" != "true" ]; then
+            echo "::error::upload_to_play_store requested but Android signing secrets are missing."
+            exit 1
+          else
+            echo "Signing configured; proceeding with signed build."
+          fi
 
       - name: Build Android App Bundle (AAB)
         run: flutter build appbundle --release
@@ -172,6 +186,7 @@ jobs:
           echo "apk-size=$APK_SIZE" >> $GITHUB_OUTPUT
 
       - name: Upload AAB Artifact
+        if: steps.setup_signing.outputs.signing_configured == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: app-release-aab-v${{ needs.pre-checks.outputs.version }}
@@ -179,6 +194,7 @@ jobs:
           retention-days: 30
 
       - name: Upload APK Artifact
+        if: steps.setup_signing.outputs.signing_configured == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk-v${{ needs.pre-checks.outputs.version }}
