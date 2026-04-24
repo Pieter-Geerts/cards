@@ -30,6 +30,9 @@ jobs:
         run: |
           cp lib/secrets_template.dart lib/secrets.dart
 
+      - name: Create assets directory
+        run: mkdir -p assets/icons
+
       - name: Get dependencies
         run: flutter pub get
 
