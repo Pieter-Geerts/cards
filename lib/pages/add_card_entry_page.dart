@@ -8,7 +8,9 @@ import 'camera_scan_page.dart';
 import 'image_scan_page.dart';
 
 class AddCardEntryPage extends StatefulWidget {
-  const AddCardEntryPage({super.key});
+  final ValueChanged<CardItem>? onCardCreated;
+
+  const AddCardEntryPage({super.key, this.onCardCreated});
 
   @override
   State<AddCardEntryPage> createState() => _AddCardEntryPageState();
@@ -31,6 +33,7 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
             // Main scan button - Camera
             _buildPrimaryOption(
               context,
+              optionKey: const ValueKey('scan_barcode_button'),
               icon: Icons.qr_code_scanner,
               title: l10n.scanBarcodeCTA,
               subtitle: l10n.useCameraToScan,
@@ -63,6 +66,7 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
             // Secondary options - Image
             _buildSecondaryOption(
               context,
+              optionKey: const ValueKey('scan_from_photo_button'),
               icon: Icons.image,
               title: l10n.importFromImage,
               subtitle: l10n.scanFromImageSubtitle,
@@ -74,6 +78,7 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
             // Manual entry
             _buildSecondaryOption(
               context,
+              optionKey: const ValueKey('manual_entry_button'),
               icon: Icons.edit,
               title: l10n.manualEntryFull,
               subtitle: l10n.typeCodeManually,
@@ -87,6 +92,7 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
 
   Widget _buildPrimaryOption(
     BuildContext context, {
+    Key? optionKey,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -108,6 +114,7 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          key: optionKey,
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
@@ -156,6 +163,7 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
 
   Widget _buildSecondaryOption(
     BuildContext context, {
+    Key? optionKey,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -176,6 +184,7 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          key: optionKey,
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
           child: Padding(
@@ -283,15 +292,21 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
 
   void _navigateToManualForm(BuildContext context) {
     // ignore: use_build_context_synchronously
-    Navigator.of(context).push<CardItem?>(
-      MaterialPageRoute(
-        builder:
-            (context) => const AddCardFormPage(
-              mode: AddCardMode.manual,
-              scannedCode: null,
-            ),
-      ),
-    );
+    Navigator.of(context)
+        .push<CardItem?>(
+          MaterialPageRoute(
+            builder:
+                (context) => const AddCardFormPage(
+                  mode: AddCardMode.manual,
+                  scannedCode: null,
+                ),
+          ),
+        )
+        .then((createdCard) {
+          if (createdCard != null) {
+            widget.onCardCreated?.call(createdCard);
+          }
+        });
   }
 
   void _navigateToFormWithCode(
@@ -300,16 +315,22 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
     CardType type,
   ) {
     // ignore: use_build_context_synchronously
-    Navigator.of(context).push<CardItem?>(
-      MaterialPageRoute(
-        builder:
-            (context) => AddCardFormPage(
-              mode: AddCardMode.scan,
-              scannedCode: code,
-              scannedType: type,
-            ),
-      ),
-    );
+    Navigator.of(context)
+        .push<CardItem?>(
+          MaterialPageRoute(
+            builder:
+                (context) => AddCardFormPage(
+                  mode: AddCardMode.scan,
+                  scannedCode: code,
+                  scannedType: type,
+                ),
+          ),
+        )
+        .then((createdCard) {
+          if (createdCard != null) {
+            widget.onCardCreated?.call(createdCard);
+          }
+        });
   }
 }
 

@@ -20,6 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Just Cards',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
@@ -381,6 +382,7 @@ class _InitializedAppState extends State<_InitializedApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Just Cards',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

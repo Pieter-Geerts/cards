@@ -218,6 +218,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
 
   Widget _buildCardPreview() {
     return Card(
+      key: const ValueKey('card_preview'),
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -371,6 +372,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
         // Title field
         LabeledField(
           label: '${AppLocalizations.of(context).title} *',
+          fieldKey: const ValueKey('title_field'),
           controller: _titleController,
           hint: AppLocalizations.of(context).storeName,
           onChanged: (_) => setState(() {}),
@@ -380,6 +382,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
         // Description field
         LabeledField(
           label: AppLocalizations.of(context).description,
+          fieldKey: const ValueKey('description_field'),
           controller: _descriptionController,
           hint: AppLocalizations.of(context).optionalDescription,
           maxLines: 2,
@@ -405,6 +408,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<CardType>(
+                  key: const ValueKey('card_type_dropdown'),
                   value: _cardType,
                   isExpanded: true,
                   onChanged: (CardType? newValue) {
@@ -430,6 +434,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
         LabeledField(
           label:
               '${AppLocalizations.of(context).code} / ${AppLocalizations.of(context).barcode} *',
+          fieldKey: const ValueKey('code_field'),
           controller: _codeController,
           hint:
               _cardType == CardType.qrCode
