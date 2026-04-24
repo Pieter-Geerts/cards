@@ -97,7 +97,7 @@ void main() {
       final textWidget = tester.widget<Text>(find.text('112345566'));
       expect(textWidget.textAlign, TextAlign.center);
     },
-    skip: 'No longer applicable in current design',
+    skip: true, // No longer applicable in current design
   );
 
   testWidgets('CardDetailPage delete button works', (
