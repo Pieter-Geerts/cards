@@ -94,46 +94,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _showAddOptions() {
-    final l10n = AppLocalizations.of(context);
-    showModalBottomSheet(
-      context: context,
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.qr_code_scanner),
-                title: Text(l10n.scanBarcodeCTA),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  _navigateToAddCardPage(mode: AddCardFlowMode.scan);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: Text(l10n.addCard),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  _navigateToAddCardPage(mode: AddCardFlowMode.manual);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: Text(l10n.scanFromImageAction),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  _navigateToAddCardPage(mode: AddCardFlowMode.import);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   late final CardRepository _cardRepository;
   late List<CardItem> _displayedCards;
   String _searchQuery = '';

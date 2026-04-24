@@ -13,7 +13,6 @@ import '../pages/image_scan_page.dart';
 import '../utils/logo_helpers.dart';
 import 'add_card_steps/add_card_bottom_actions.dart';
 import 'add_card_steps/add_card_header.dart';
-import 'add_card_steps/add_card_options.dart';
 import 'add_card_steps/add_card_step_code_acquisition.dart';
 import 'add_card_steps/add_card_step_details.dart';
 import 'add_card_steps/add_card_step_preset.dart';
@@ -80,23 +79,6 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
     setState(() {
       _currentStep = page;
     });
-  }
-
-  Widget _buildSecondaryOption({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-    Key? key,
-  }) {
-    return AddCardSecondaryOption(
-      key: key,
-      icon: icon,
-      title: title,
-      subtitle: subtitle,
-      onTap: onTap,
-    );
   }
 
   void _startScan() async {
@@ -285,7 +267,6 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(

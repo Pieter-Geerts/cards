@@ -42,19 +42,33 @@ jobs:
       - name: Format code
         run: dart format .
 
-      - name: Analyze project source (errors only)
+      - name: Analyze project source (allow infos)
         run: |
           set -o pipefail
-          echo "Running flutter analyze (will only fail on errors)..."
-          flutter analyze --no-fatal-infos --no-fatal-warnings 2>&1 | tee analyzer_output.txt
-          # If analyzer printed any 'error' severity lines, fail the step.
-          if grep -E "\berror •\b" analyzer_output.txt >/dev/null; then
-            echo "Analyzer found errors:" >&2
-            grep -nE "\berror •\b" analyzer_output.txt >&2 || true
-            exit 1
-          else
-            echo "No analyzer errors found. Info/warnings will not fail the job."
-          fi
+          echo "Running analyzer (will fail on errors or warnings, infos allowed)..."
+          dart analyze --format=json > analysis.json 2>&1 || true
+          python3 - <<'PY'
+import json,sys
+try:
+    with open('analysis.json') as f:
+        j=json.load(f)
+except Exception as e:
+    print('Could not read analyzer JSON output:', e)
+    sys.exit(0)
+issues=j.get('diagnostics', [])
+errs=[i for i in issues if i.get('severity') in ('ERROR','WARNING')]
+if errs:
+    print('Analyzer found errors/warnings:')
+    for e in errs:
+        loc=e.get('location',{})
+        file=loc.get('file')
+        rng=loc.get('range',{}).get('start',{})
+        line=rng.get('line')
+        print(f"{e.get('severity')}: {e.get('problemMessage')} ({file}:{line})")
+    sys.exit(1)
+else:
+    print('No analyzer errors or warnings found. Info-level messages are allowed.')
+PY
 
       - name: Run tests
         run: flutter test

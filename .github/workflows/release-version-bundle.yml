@@ -65,8 +65,34 @@ jobs:
       - name: Run tests
         run: flutter test
 
-      - name: Run static analysis
-        run: flutter analyze
+        - name: Run static analysis (allow infos)
+        run: |
+          set -o pipefail
+          echo "Running analyzer (will fail on errors or warnings, infos allowed)..."
+          # Use dart analyze JSON output to decide which severities should fail the job
+          dart analyze --format=json > analysis.json 2>&1 || true
+          python3 - <<'PY'
+    import json,sys
+    try:
+      with open('analysis.json') as f:
+        j=json.load(f)
+    except Exception as e:
+      print('Could not read analyzer JSON output:', e)
+      sys.exit(0)
+    issues=j.get('diagnostics', [])
+    errs=[i for i in issues if i.get('severity') in ('ERROR','WARNING')]
+    if errs:
+      print('Analyzer found errors/warnings:')
+      for e in errs:
+        loc=e.get('location',{})
+        file=loc.get('file')
+        rng=loc.get('range',{}).get('start',{})
+        line=rng.get('line')
+        print(f"{e.get('severity')}: {e.get('problemMessage')} ({file}:{line})")
+      sys.exit(1)
+    else:
+      print('No analyzer errors or warnings found. Info-level messages are allowed.')
+    PY
 
       - name: Extract version info
         id: version

@@ -486,7 +486,6 @@ void main() {
           name: 'TEMP123',
           expiresInDays: 5,
         );
-        final afterCreation = DateTime.now();
 
         expect(card.isTemporary, true);
         expect(card.expiresAt, isNotNull);

@@ -71,33 +71,34 @@ void main() {
     expect(find.text('QRCodeData123'), findsNothing);
   });
 
-  testWidgets('CardDetailPage displays Barcode details in white card', (
-    WidgetTester tester,
-  ) async {
-    // SKIPPED: This test verifies barcode value text display which is no
-    // longer rendered in the current card detail page design.
-    return;
-    final card = CardItem(
-      title: 'Barcode Test Card',
-      description: 'This is a barcode.',
-      name: '112345566',
-      cardType: CardType.barcode,
-      sortOrder: 0,
-    );
-    await tester.pumpWidget(createCardDetailPage(card: card));
-    await tester.pumpAndSettle();
-    expect(find.text('Barcode Test Card'), findsOneWidget);
-    expect(find.text('This is a barcode.'), findsOneWidget);
-    // Card with white background
-    final cardWidget = tester.widget<Card>(find.byType(Card).first);
-    expect(cardWidget.color, Colors.white);
-    // Barcode present
-    expect(find.byType(BarcodeWidget), findsOneWidget);
-    // Barcode value text present and centered
-    expect(find.text('112345566'), findsOneWidget);
-    final textWidget = tester.widget<Text>(find.text('112345566'));
-    expect(textWidget.textAlign, TextAlign.center);
-  });
+  testWidgets(
+    'CardDetailPage displays Barcode details in white card',
+    (WidgetTester tester) async {
+      // SKIPPED: This test verifies barcode value text display which is no
+      // longer rendered in the current card detail page design.
+      final card = CardItem(
+        title: 'Barcode Test Card',
+        description: 'This is a barcode.',
+        name: '112345566',
+        cardType: CardType.barcode,
+        sortOrder: 0,
+      );
+      await tester.pumpWidget(createCardDetailPage(card: card));
+      await tester.pumpAndSettle();
+      expect(find.text('Barcode Test Card'), findsOneWidget);
+      expect(find.text('This is a barcode.'), findsOneWidget);
+      // Card with white background
+      final cardWidget = tester.widget<Card>(find.byType(Card).first);
+      expect(cardWidget.color, Colors.white);
+      // Barcode present
+      expect(find.byType(BarcodeWidget), findsOneWidget);
+      // Barcode value text present and centered
+      expect(find.text('112345566'), findsOneWidget);
+      final textWidget = tester.widget<Text>(find.text('112345566'));
+      expect(textWidget.textAlign, TextAlign.center);
+    },
+    skip: 'No longer applicable in current design',
+  );
 
   testWidgets('CardDetailPage delete button works', (
     WidgetTester tester,
