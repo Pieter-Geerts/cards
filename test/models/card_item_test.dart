@@ -287,4 +287,217 @@ void main() {
       expect(barcodeCard.codeRenderer, isA<BarcodeRenderer>());
     });
   });
+
+  group('CardItem expiry validation', () {
+    test('should identify non-temporary card as not expired', () {
+      final card = CardItem(
+        title: 'Permanent Card',
+        description: 'No expiry',
+        name: 'PERM123',
+        sortOrder: 0,
+      );
+
+      expect(card.isTemporary, false);
+      expect(card.expiresAt, isNull);
+      expect(card.isExpired(), false);
+      expect(
+        card.isExpired(DateTime.now().add(const Duration(days: 100))),
+        false,
+      );
+    });
+
+    test('should identify card as expired when expiresAt is today', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      final card = CardItem(
+        title: 'Expiring Today',
+        description: 'Expires today',
+        name: 'EXP123',
+        sortOrder: 0,
+        expiresAt: today,
+      );
+
+      expect(card.isTemporary, true);
+      expect(card.isExpired(), true);
+    });
+
+    test('should identify card as expired when expiresAt is in past', () {
+      final yesterday = DateTime.now().subtract(const Duration(days: 1));
+
+      final card = CardItem(
+        title: 'Expired Card',
+        description: 'Already expired',
+        name: 'OLD123',
+        sortOrder: 0,
+        expiresAt: yesterday,
+      );
+
+      expect(card.isTemporary, true);
+      expect(card.isExpired(), true);
+    });
+
+    test('should identify card as not expired when expiresAt is in future', () {
+      final tomorrow = DateTime.now().add(const Duration(days: 1));
+
+      final card = CardItem(
+        title: 'Future Expiry',
+        description: 'Not expired yet',
+        name: 'FUTURE123',
+        sortOrder: 0,
+        expiresAt: tomorrow,
+      );
+
+      expect(card.isTemporary, true);
+      expect(card.isExpired(), false);
+    });
+
+    test('should correctly compare expiry against reference time', () {
+      final referenceDate = DateTime(2024, 6, 15, 12, 0, 0);
+      final expiryDate = DateTime(2024, 6, 15, 0, 0, 0); // same day
+
+      final card = CardItem(
+        title: 'Reference Test',
+        description: 'Test reference time',
+        name: 'REF123',
+        sortOrder: 0,
+        expiresAt: expiryDate,
+      );
+
+      // At midnight of expiry date, card should be expired
+      expect(card.isExpired(referenceDate), true);
+    });
+
+    test('should handle expiry 1 second before midnight', () {
+      final referenceDate = DateTime(2024, 6, 16, 0, 0, 0);
+      final oneSecondBefore = DateTime(2024, 6, 15, 23, 59, 59);
+
+      final card = CardItem(
+        title: 'Microsecond Before',
+        description: 'Test boundary',
+        name: 'BOUNDARY123',
+        sortOrder: 0,
+        expiresAt: oneSecondBefore,
+      );
+
+      // At midnight of next day - card IS expired (expiry was 1 second before midnight)
+      expect(card.isExpired(referenceDate), true);
+    });
+
+    test('should correctly identify multiple days expiry', () {
+      final today = DateTime.now();
+      final sevenDaysFromNow = today.add(const Duration(days: 7));
+
+      final card = CardItem(
+        title: 'Week Long Card',
+        description: 'Valid for 7 days',
+        name: 'WEEK123',
+        sortOrder: 0,
+        expiresAt: sevenDaysFromNow,
+      );
+
+      expect(card.isTemporary, true);
+      expect(card.isExpired(), false);
+      expect(
+        card.isExpired(sevenDaysFromNow.add(const Duration(hours: 1))),
+        true,
+      );
+    });
+
+    test('should serialize expiry date to millisecondsSinceEpoch', () {
+      final expiryDate = DateTime(2025, 12, 31, 23, 59, 59);
+      final card = CardItem(
+        title: 'Serialization Test',
+        description: 'Test expiry serialization',
+        name: 'SER123',
+        sortOrder: 0,
+        expiresAt: expiryDate,
+      );
+
+      final map = card.toMap();
+
+      expect(map['expiresAt'], expiryDate.millisecondsSinceEpoch);
+    });
+
+    test('should deserialize expiry date from millisecondsSinceEpoch', () {
+      final expiryDate = DateTime(2025, 12, 31, 23, 59, 59);
+      final map = {
+        'title': 'Deserialization Test',
+        'description': 'Test expiry deserialization',
+        'name': 'DESER123',
+        'expiresAt': expiryDate.millisecondsSinceEpoch,
+        'sortOrder': 0,
+      };
+
+      final card = CardItem.fromMap(map);
+
+      expect(card.expiresAt, isNotNull);
+      expect(
+        card.expiresAt!.millisecondsSinceEpoch,
+        expiryDate.millisecondsSinceEpoch,
+      );
+      expect(card.isTemporary, true);
+    });
+
+    test('should preserve expiry date when copying card', () {
+      final expiryDate = DateTime.now().add(const Duration(days: 3));
+      final original = CardItem(
+        id: 1,
+        title: 'Original',
+        description: 'Original',
+        name: 'ORIG123',
+        sortOrder: 0,
+        expiresAt: expiryDate,
+      );
+
+      final copy = original.copyWith(title: 'Updated');
+
+      expect(copy.expiresAt, expiryDate);
+      expect(copy.isTemporary, true);
+      expect(copy.title, 'Updated');
+    });
+
+    test('should allow updating expiry date via copyWith', () {
+      final originalExpiry = DateTime.now().add(const Duration(days: 3));
+      final newExpiry = DateTime.now().add(const Duration(days: 7));
+
+      final original = CardItem(
+        id: 1,
+        title: 'Original',
+        description: 'Original',
+        name: 'ORIG123',
+        sortOrder: 0,
+        expiresAt: originalExpiry,
+      );
+
+      final updated = original.copyWith(expiresAt: newExpiry);
+
+      expect(updated.expiresAt, newExpiry);
+      expect(updated.isExpired(), false);
+    });
+
+    test(
+      'should calculate expiry correctly for cards created with expiresInDays',
+      () {
+        final beforeCreation = DateTime.now();
+        final card = CardItem.temp(
+          title: 'Temp Card',
+          description: 'Temp',
+          name: 'TEMP123',
+          expiresInDays: 5,
+        );
+        final afterCreation = DateTime.now();
+
+        expect(card.isTemporary, true);
+        expect(card.expiresAt, isNotNull);
+
+        final expiryDate = card.expiresAt!;
+        final expectedMin = beforeCreation
+            .add(const Duration(days: 5))
+            .subtract(Duration(seconds: 1)); // allow 1 second buffer
+
+        expect(expiryDate.isAfter(expectedMin), true);
+      },
+    );
+  });
 }

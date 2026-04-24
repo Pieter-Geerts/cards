@@ -5,6 +5,7 @@ class LabeledField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
   final String hint;
+  final Key? fieldKey;
   final bool optional;
   final int maxLines;
   final ValueChanged<String>? onChanged;
@@ -16,6 +17,7 @@ class LabeledField extends StatelessWidget {
     required this.label,
     required this.controller,
     required this.hint,
+    this.fieldKey,
     this.optional = false,
     this.maxLines = 1,
     this.onChanged,
@@ -43,6 +45,7 @@ class LabeledField extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         TextField(
+          key: fieldKey,
           controller: controller,
           maxLines: maxLines,
           onChanged: onChanged,

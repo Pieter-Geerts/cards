@@ -1,14 +1,200 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "flutter-build-debug",
-      "type": "shell",
-      "command": "flutter",
-      "args": ["build", "apk", "--debug"],
-      "group": "build",
-      "isBackground": false,
-      "problemMatcher": ["$dart-flutter"]
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "flutter-build-debug",
+			"type": "shell",
+			"command": "flutter",
+			"args": [
+				"build",
+				"apk",
+				"--debug"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": [
+				"$dart-flutter"
+			]
+		},
+		{
+			"label": "manual-test-install-launch",
+			"type": "shell",
+			"command": "adb install -r build/app/outputs/flutter-apk/app-debug.apk && adb shell monkey -p com.pietergeerts.cards -c android.intent.category.LAUNCHER 1",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-ui-dump-home",
+			"type": "shell",
+			"command": "adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null && adb shell cat /sdcard/window_dump.xml | rg -i \"Add Card|Scan from Photo|scan|Just Cards|No cards|empty\"",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-ui-dump-home-grep",
+			"type": "shell",
+			"command": "adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null && adb shell cat /sdcard/window_dump.xml | grep -Ei \"Add Card|Scan from Photo|scan|Just Cards|No cards|empty\"",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-tap-add-card",
+			"type": "shell",
+			"command": "adb shell input tap 672 1884 && adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null && adb shell cat /sdcard/window_dump.xml | grep -Ei \"Scan from Photo|Manual Entry|Scan|Camera|Enter card|Add Card\"",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-dump-after-add-card",
+			"type": "shell",
+			"command": "adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null && adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | head -120",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-open-scan-flow",
+			"type": "shell",
+			"command": "adb shell input tap 354 2776 && adb shell input tap 672 2070 && adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null && adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -Ei \"content-desc=|text=|Scan from Photo|Gallery|Camera|Manual|Import|Photo|Pick\" | head -120",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-go-home-and-open-scanner",
+			"type": "shell",
+			"command": "adb shell input keyevent 4 && adb shell input keyevent 4 && adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null && adb shell cat /sdcard/window_dump.xml | grep -E \"content-desc=\\\"(Add Card|Scan Barcode|My Cards|No cards yet)\" && adb shell input tap 672 2070 && adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null && adb shell cat /sdcard/window_dump.xml | grep -Ei \"content-desc=\\\"(Scan|Camera|Gallery|Photo|Import|Cancel|Back|Torch|Flash|Permission)\" | head -60",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-go-home-and-open-scanner-v2",
+			"type": "shell",
+			"command": "adb shell input keyevent 4; adb shell input keyevent 4; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; echo '---HOME DUMP---'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -Ei 'My Cards|No cards yet|Add Card|Scan Barcode' | head -40 || true; adb shell input tap 672 2070; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; echo '---SCAN DUMP---'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -Ei 'Scan|Camera|Gallery|Photo|Import|Cancel|Flash|Torch|Permission' | head -80 || true",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-relaunch-app",
+			"type": "shell",
+			"command": "adb shell monkey -p com.pietergeerts.cards -c android.intent.category.LAUNCHER 1 >/dev/null; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -Ei 'package=\"com.pietergeerts.cards\"|My Cards|Add Card|Scan Barcode|No cards yet' | head -60",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-open-scanner-screen",
+			"type": "shell",
+			"command": "adb shell input tap 672 2070; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -Ei 'Scan|Camera|Photo|Gallery|Import|Permission|Allow|Cancel|Back|Flash|Torch|Continue' | head -120",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-list-clickable-nodes",
+			"type": "shell",
+			"command": "adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep 'clickable=\"true\"' | head -200",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-open-fab-scan",
+			"type": "shell",
+			"command": "adb shell input keyevent 4; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; adb shell input tap 1212 2788; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -Ei 'content-desc=\"|clickable=\"true\"' | head -200",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-open-image-picker",
+			"type": "shell",
+			"command": "adb shell input tap 672 2836; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -Ei 'Allow|permission|Photos|Pictures|test_qr|Recent|Files|Open from|Gallery|com.google.android.documentsui|Select' | head -160",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-fab-scan-from-image-script",
+			"type": "shell",
+			"command": "adb shell monkey -p com.pietergeerts.cards -c android.intent.category.LAUNCHER 1 >/dev/null; adb shell input tap 1212 2788; sleep 1; adb shell input tap 672 2836; sleep 1; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; echo '---CURRENT PACKAGE NODES---'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -E 'package=\"' | head -20; echo '---KEYWORDS---'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -Ei 'test_qr|Pictures|Photos|Documents|Allow|Select|Open|Scan from Image|Step 1 of 3|Card Type|QR Code|Code' | head -80 || true",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-capture-evidence",
+			"type": "shell",
+			"command": "mkdir -p screenshots/manual_run_2026-04-17 && adb shell screencap -p /sdcard/manual_home.png && adb pull /sdcard/manual_home.png screenshots/manual_run_2026-04-17/manual_home.png >/dev/null && adb shell input tap 1212 2788 && adb shell screencap -p /sdcard/manual_actions.png && adb pull /sdcard/manual_actions.png screenshots/manual_run_2026-04-17/manual_actions.png >/dev/null && ls -la screenshots/manual_run_2026-04-17",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-cancel-to-home-and-actions",
+			"type": "shell",
+			"command": "mkdir -p screenshots/manual_run_2026-04-17 && adb shell input tap 354 2776 && adb shell screencap -p /sdcard/manual_after_cancel.png && adb pull /sdcard/manual_after_cancel.png screenshots/manual_run_2026-04-17/manual_after_cancel.png >/dev/null && adb shell input tap 1212 2788 && adb shell screencap -p /sdcard/manual_action_sheet.png && adb pull /sdcard/manual_action_sheet.png screenshots/manual_run_2026-04-17/manual_action_sheet.png >/dev/null && ls -la screenshots/manual_run_2026-04-17",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-expand-action-sheet",
+			"type": "shell",
+			"command": "adb shell input swipe 672 2910 672 2450 300 && adb shell screencap -p /sdcard/manual_action_sheet_expanded.png && adb pull /sdcard/manual_action_sheet_expanded.png screenshots/manual_run_2026-04-17/manual_action_sheet_expanded.png >/dev/null && ls -la screenshots/manual_run_2026-04-17",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-deterministic-scan-from-image",
+			"type": "shell",
+			"command": "adb shell monkey -p com.pietergeerts.cards -c android.intent.category.LAUNCHER 1 >/dev/null; adb shell input tap 1212 2788; sleep 1; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; echo '---SCAN FROM IMAGE NODE---'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -n 'Scan from Image' || true; echo '---ALL ACTIONS---'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -E 'content-desc=\"(Scan Barcode|Add Card|Scan from Image)' || true",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-force-home-and-actions",
+			"type": "shell",
+			"command": "adb shell am force-stop com.pietergeerts.cards; adb shell monkey -p com.pietergeerts.cards -c android.intent.category.LAUNCHER 1 >/dev/null; sleep 1; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; echo '---HOME ACTION BUTTONS---'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -E 'content-desc=\"(Add Card|Scan Barcode|My Cards|No cards yet)' || true; adb shell input tap 1212 2788; sleep 1; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; echo '---FAB SHEET ACTIONS---'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -E 'content-desc=\"(Scan Barcode|Add Card|Scan from Image|Scrim)' || true",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-inspect-current-dump",
+			"type": "shell",
+			"command": "adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | head -80",
+			"isBackground": false
+		},
+		{
+			"label": "manual-test-grant-camera-and-open-sheet",
+			"type": "shell",
+			"command": "adb shell input tap 672 1536; sleep 1; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; echo '---POST-PERMISSION---'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -Ei 'My Cards|Add Card|Scan Barcode|Quick Add|Step 1 of 3' | head -40 || true; adb shell input keyevent 4; sleep 1; adb shell input tap 1212 2788; sleep 1; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; echo '---ACTION SHEET---'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -Ei 'Scan from Image|Scan Barcode|Add Card|Scrim' | head -60 || true",
+			"isBackground": false
+		},
+		{
+			"label": "manual-equivalent-scan-flow-run",
+			"type": "shell",
+			"command": "flutter test integration_test/scan_code_type_flows_test.dart",
+			"isBackground": false
+		},
+		{
+			"label": "manual-equivalent-pull-screenshots",
+			"type": "shell",
+			"command": "mkdir -p screenshots/manual_run_2026-04-17/integration_evidence && adb shell ls -la /sdcard/Pictures/flutter_test_screenshots && adb pull /sdcard/Pictures/flutter_test_screenshots screenshots/manual_run_2026-04-17/integration_evidence >/dev/null && ls -la screenshots/manual_run_2026-04-17/integration_evidence/flutter_test_screenshots | head -40",
+			"isBackground": false
+		},
+		{
+			"label": "exploratory-01-reset-and-launch",
+			"type": "shell",
+			"command": "adb shell am force-stop com.pietergeerts.cards; adb shell monkey -p com.pietergeerts.cards -c android.intent.category.LAUNCHER 1 >/dev/null; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -Ei 'My Cards|Add Card|Scan Barcode|No cards yet' | head -40",
+			"isBackground": false
+		},
+		{
+			"label": "exploratory-02-capture-home",
+			"type": "shell",
+			"command": "mkdir -p screenshots/exploratory_2026-04-17 && adb shell screencap -p /sdcard/explore_home.png && adb pull /sdcard/explore_home.png screenshots/exploratory_2026-04-17/explore_home.png >/dev/null && ls -la screenshots/exploratory_2026-04-17",
+			"isBackground": false
+		},
+		{
+			"label": "exploratory-03-assert-current-package",
+			"type": "shell",
+			"command": "adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -m 1 'package='",
+			"isBackground": false
+		},
+		{
+			"label": "exploratory-04-save-lens-proof",
+			"type": "shell",
+			"command": "mkdir -p screenshots/exploratory_2026-04-17 && adb shell screencap -p /sdcard/explore_lens_intercept.png && adb pull /sdcard/explore_lens_intercept.png screenshots/exploratory_2026-04-17/explore_lens_intercept.png >/dev/null && ls -la screenshots/exploratory_2026-04-17",
+			"isBackground": false
+		},
+		{
+			"label": "exploratory-05-repro-from-home-buttons",
+			"type": "shell",
+			"command": "adb shell am force-stop com.pietergeerts.cards; adb shell monkey -p com.pietergeerts.cards -c android.intent.category.LAUNCHER 1 >/dev/null; sleep 1; adb shell input tap 672 2070; sleep 2; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; echo 'SCAN_BARCODE_RESULT_PACKAGE:'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -m 1 'package='; adb shell input keyevent 4; sleep 1; adb shell monkey -p com.pietergeerts.cards -c android.intent.category.LAUNCHER 1 >/dev/null; sleep 1; adb shell input tap 1212 2788; sleep 1; adb shell input tap 672 2498; sleep 2; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; echo 'FAB_SCAN_BARCODE_RESULT_PACKAGE:'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -m 1 'package='",
+			"isBackground": false
+		},
+		{
+			"label": "exploratory-06-non-scan-path-health-check",
+			"type": "shell",
+			"command": "adb shell am force-stop com.pietergeerts.cards; adb shell monkey -p com.pietergeerts.cards -c android.intent.category.LAUNCHER 1 >/dev/null; sleep 1; adb shell input tap 672 1884; sleep 1; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; echo 'ADD_CARD_RESULT_PACKAGE:'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -m 1 'package='; echo 'ADD_CARD_SCREEN_HINT:'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -Ei 'Step 1 of 3|Basic Information|Quick Add' | head -5",
+			"isBackground": false
+		},
+		{
+			"label": "exploratory-07-launch-state-only",
+			"type": "shell",
+			"command": "adb shell am force-stop com.pietergeerts.cards; adb shell monkey -p com.pietergeerts.cards -c android.intent.category.LAUNCHER 1 >/dev/null; sleep 2; adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null; echo 'POST_LAUNCH_PACKAGE:'; adb shell cat /sdcard/window_dump.xml | sed 's/></>\\n</g' | grep -m 1 'package='; mkdir -p screenshots/exploratory_2026-04-17 && adb shell screencap -p /sdcard/explore_post_launch.png && adb pull /sdcard/explore_post_launch.png screenshots/exploratory_2026-04-17/explore_post_launch.png >/dev/null; ls -la screenshots/exploratory_2026-04-17",
+			"isBackground": false
+		}
+	]
 }
