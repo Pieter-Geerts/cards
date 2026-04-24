@@ -138,13 +138,7 @@ class ErrorHandlingService {
     );
 
     if (kDebugMode) {
-      debugPrint('🚨 Error: ${error.error}');
-      if (error.context != null) {
-        debugPrint('📍 Context: ${error.context}');
-      }
-      if (error.additionalData != null) {
-        debugPrint('📊 Data: ${error.additionalData}');
-      }
+      // Additional debug output removed in favor of structured logging
     }
   }
 

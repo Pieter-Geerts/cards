@@ -1,6 +1,7 @@
 import 'dart:async'; // Added for Timer (debouncer)
 
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart';
@@ -145,7 +146,11 @@ class _EditCardPageState extends State<EditCardPage> {
           widget.onSave!(result);
         }
       } catch (e) {
-        debugPrint('Error in onSave callback: $e');
+        developer.log(
+          'Error in onSave callback: $e',
+          name: 'EditCardPage',
+          error: e,
+        );
       }
 
       if (mounted) {
@@ -157,7 +162,11 @@ class _EditCardPageState extends State<EditCardPage> {
       Navigator.of(context).pop<CardItem>(result);
       return;
     } catch (e) {
-      debugPrint('Error while saving card: $e');
+      developer.log(
+        'Error while saving card: $e',
+        name: 'EditCardPage',
+        error: e,
+      );
       if (mounted) {
         setState(() {
           _isSaving = false;

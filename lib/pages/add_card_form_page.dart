@@ -331,6 +331,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
+                    key: const ValueKey('select_logo_button'),
                     icon: const Icon(Icons.store),
                     label: Text(AppLocalizations.of(context).searchLogo),
                     onPressed: _openLogoSelectionSheet,
@@ -472,8 +473,17 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
         children: [
           SizedBox(
             width: double.infinity,
+            child: OutlinedButton(
+              key: const ValueKey('cancel_button'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(AppLocalizations.of(context).cancel),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
             child: ElevatedButton(
-              key: const ValueKey('save_card_button'),
+              key: const ValueKey('submit_button'),
               onPressed: _isFormValid() ? _saveCard : null,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),

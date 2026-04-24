@@ -64,9 +64,7 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
 
   // --- Method stubs for navigation and steps ---
   void _nextStep() {
-    debugPrint(
-      'AddCardBottomSheet: _nextStep called (currentStep=$_currentStep)',
-    );
+    // Advance step controller
     if (_currentStep < 2) {
       setState(() {
         _currentStep++;
@@ -82,8 +80,6 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
     setState(() {
       _currentStep = page;
     });
-    // Debugging: log page changes during tests
-    debugPrint('AddCardBottomSheet: onPageChanged -> $page');
   }
 
   Widget _buildSecondaryOption({
@@ -246,7 +242,7 @@ class _AddCardBottomSheetState extends State<AddCardBottomSheet> {
   }
 
   Future<void> _saveCard() async {
-    debugPrint('AddCardBottomSheet: _saveCard called');
+    // Persist and return created card
     // Always try to set logoPath using helper, fallback to initials if not found
     String? logoPath;
     if (_selectedLogoIcon != null && _logoPath == null) {

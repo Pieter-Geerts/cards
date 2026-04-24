@@ -64,22 +64,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Import from image (uses testScanResult)
-    // Dump widget tree for debugging in case the import option is not found
-    debugDumpApp();
-    // Print all Text widgets for inspection
-    final textWidgets =
-        tester
-            .widgetList(find.byType(Text))
-            .map((w) => (w as Text).data ?? '')
-            .toList();
-    debugPrint('Text widgets: ${textWidgets.join(' | ')}');
-    // Print all Icons for inspection
-    final icons =
-        tester
-            .widgetList(find.byType(Icon))
-            .map((w) => (w as Icon).icon?.toString() ?? '')
-            .toList();
-    debugPrint('Icons: ${icons.join(' | ')}');
+    // Proceed to find import option in UI
 
     var importFromImage = find.byKey(
       const ValueKey('import_from_image_option'),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:developer' as developer;
 
 import '../helpers/database_helper.dart';
 import '../l10n/app_localizations.dart';
@@ -82,9 +83,16 @@ class _CardDetailPageState extends State<CardDetailPage>
         ),
       );
 
-      debugPrint('Screen brightness set to maximum for card viewing');
+      developer.log(
+        'Screen brightness set to maximum for card viewing',
+        name: 'CardDetailPage',
+      );
     } catch (e) {
-      debugPrint('Failed to set brightness: $e');
+      developer.log(
+        'Failed to set brightness: $e',
+        name: 'CardDetailPage',
+        error: e,
+      );
     }
   }
 
@@ -96,9 +104,16 @@ class _CardDetailPageState extends State<CardDetailPage>
 
       SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
 
-      debugPrint('Screen brightness restored to original level');
+      developer.log(
+        'Screen brightness restored to original level',
+        name: 'CardDetailPage',
+      );
     } catch (e) {
-      debugPrint('Failed to restore brightness: $e');
+      developer.log(
+        'Failed to restore brightness: $e',
+        name: 'CardDetailPage',
+        error: e,
+      );
     }
   }
 
@@ -149,7 +164,11 @@ class _CardDetailPageState extends State<CardDetailPage>
         try {
           await DatabaseHelper().deleteCard(_currentCard.id!);
         } catch (e, st) {
-          debugPrint('Failed deleting card from DB: $e\n$st');
+          developer.log(
+            'Failed deleting card from DB: $e\n$st',
+            name: 'CardDetailPage',
+            error: e,
+          );
           if (!mounted) return;
           ScaffoldMessenger.of(
             context,

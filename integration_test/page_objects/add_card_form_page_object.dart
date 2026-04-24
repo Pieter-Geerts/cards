@@ -25,11 +25,13 @@ class AddCardFormPageObject {
   // ===== Verifications =====
   Future<void> verifyAddCardFormPageDisplayed() async {
     expect(_appBar, findsOneWidget, reason: 'AppBar should be visible');
-    expect(
+    // Wait briefly for the title field to appear (handles async navigation)
+    final found = await TestSyncHelper.waitForFinder(
+      tester,
       _titleField,
-      findsOneWidget,
-      reason: 'Title field should be visible',
+      timeout: const Duration(seconds: 2),
     );
+    expect(found, isTrue, reason: 'Title field should be visible');
     expect(_codeField, findsOneWidget, reason: 'Code field should be visible');
     expect(
       _submitButton,
@@ -93,44 +95,51 @@ class AddCardFormPageObject {
 
   // ===== Actions =====
   Future<void> fillTitleField(String title) async {
+    await tester.ensureVisible(_titleField);
     await tester.tap(_titleField);
     await tester.pump();
     await tester.enterText(_titleField, title);
-    await tester.pump();
+    await tester.pumpAndSettle();
   }
 
   Future<void> fillDescriptionField(String description) async {
+    await tester.ensureVisible(_descriptionField);
     await tester.tap(_descriptionField);
     await tester.pump();
     await tester.enterText(_descriptionField, description);
-    await tester.pump();
+    await tester.pumpAndSettle();
   }
 
   Future<void> fillCodeField(String code) async {
+    await tester.ensureVisible(_codeField);
     await tester.tap(_codeField);
     await tester.pump();
     await tester.enterText(_codeField, code);
-    await tester.pump();
+    await tester.pumpAndSettle();
   }
 
   Future<void> selectCardType(String cardType) async {
+    await tester.ensureVisible(_cardTypeDropdown);
     await tester.tap(_cardTypeDropdown);
-    await tester.pump();
+    await tester.pumpAndSettle();
     await tester.tap(find.text(cardType).last);
     await tester.pumpAndSettle();
   }
 
   Future<void> tapSelectLogoButton() async {
+    await tester.ensureVisible(_logoButton);
     await tester.tap(_logoButton);
     await tester.pumpAndSettle();
   }
 
   Future<void> tapSubmitButton() async {
+    await tester.ensureVisible(_submitButton);
     await tester.tap(_submitButton);
     await tester.pumpAndSettle();
   }
 
   Future<void> tapCancelButton() async {
+    await tester.ensureVisible(_cancelButton);
     await tester.tap(_cancelButton);
     await tester.pumpAndSettle();
   }

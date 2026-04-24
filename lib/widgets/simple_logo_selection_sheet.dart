@@ -54,7 +54,7 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
       // Load all available logos
       _availableLogos = await LogoHelper.getAllAvailableLogos();
     } catch (e) {
-      debugPrint('Error loading logo data: $e');
+      // Failed to load logo data; continue with empty list
     } finally {
       setState(() {
         _isLoading = false;

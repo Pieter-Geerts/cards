@@ -70,18 +70,8 @@ void main() {
         expect(saveButton, findsOneWidget);
 
         // Check if save button is enabled by trying to tap it
-        debugPrint('Save button found: true');
-
-        try {
-          await tester.tap(saveButton, warnIfMissed: false);
-          await tester.pumpAndSettle();
-        } catch (e) {
-          debugPrint('Error tapping save button: $e');
-        }
-
-        // Debug: Print callback state
-        debugPrint('updateCallbackCalled: $updateCallbackCalled');
-        debugPrint('updatedCard: $updatedCard');
+        await tester.tap(saveButton, warnIfMissed: false);
+        await tester.pumpAndSettle();
 
         // The main test: verify that the onSave callback mechanism works
         expect(

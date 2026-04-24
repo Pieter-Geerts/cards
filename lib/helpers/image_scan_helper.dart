@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:developer' as developer;
 
 import '../models/card_item.dart';
 
@@ -37,7 +38,11 @@ class ImageScanHelper {
       }
       return null;
     } catch (e) {
-      debugPrint('Error picking image: $e');
+      developer.log(
+        'Error picking image: $e',
+        name: 'ImageScanHelper',
+        error: e,
+      );
       return null;
     }
   }
@@ -69,7 +74,11 @@ class ImageScanHelper {
       }
       return null;
     } catch (e) {
-      debugPrint('Error taking photo: $e');
+      developer.log(
+        'Error taking photo: $e',
+        name: 'ImageScanHelper',
+        error: e,
+      );
       return null;
     }
   }
