@@ -31,6 +31,7 @@ class EmptyStateWidget extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
+              key: const ValueKey('empty_state_add_card_button'),
               onPressed: onAddCard,
               icon: const Icon(Icons.add),
               label: Text(l10n.addCard),

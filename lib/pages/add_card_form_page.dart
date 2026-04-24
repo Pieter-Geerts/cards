@@ -468,6 +468,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
+              key: const ValueKey('save_card_button'),
               onPressed: _isFormValid() ? _saveCard : null,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),

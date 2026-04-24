@@ -417,6 +417,7 @@ class _HomePageState extends State<HomePage> {
                 onReorder: _onReorder,
               ),
       floatingActionButton: FloatingActionButton(
+        key: const ValueKey('add_card_fab'),
         onPressed: _navigateToAddCardPage,
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,

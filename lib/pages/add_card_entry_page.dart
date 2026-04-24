@@ -162,6 +162,10 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
     required VoidCallback onTap,
   }) {
     return Container(
+      key:
+          title.contains('Import')
+              ? const ValueKey('import_from_image_option')
+              : null,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),

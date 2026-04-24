@@ -20,6 +20,7 @@ class CardListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ReorderableListView.builder(
+      key: const ValueKey('card_list'),
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
       itemCount: cards.length,
       itemBuilder: (context, index) {

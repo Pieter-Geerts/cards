@@ -69,6 +69,7 @@ class AddCardStepDetails extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 TextField(
+                  key: const ValueKey('card_title_field'),
                   controller: titleController,
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context).companyOrNameLabel,
