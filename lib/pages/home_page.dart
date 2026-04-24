@@ -11,6 +11,7 @@ import '../widgets/card_list_widget.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/home_app_bar.dart';
 import 'card_detail_page.dart';
+import 'add_card_entry_page.dart';
 import 'edit_card_page.dart';
 import 'settings_page.dart';
 
@@ -464,7 +465,76 @@ class _HomePageState extends State<HomePage> {
                 onReorder: _onReorder,
               ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddOptions,
+        key: const ValueKey('add_card_fab'),
+        onPressed: () {
+          final parentContext = context;
+          Navigator.of(parentContext).push(
+            MaterialPageRoute(
+              builder:
+                  (context) => AddCardEntryPage(
+                    onCardCreated: (createdCard) async {
+                      final nextOrderRes =
+                          await _cardRepository.getNextSortOrder();
+                      nextOrderRes.fold(
+                        (failure) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(parentContext).showSnackBar(
+                              SnackBar(content: Text(failure.message)),
+                            );
+                          }
+                        },
+                        (nextOrder) async {
+                          final finalCard = CardItem(
+                            title: createdCard.title,
+                            description: createdCard.description,
+                            name: createdCard.name,
+                            cardType: createdCard.cardType,
+                            createdAt: createdCard.createdAt,
+                            sortOrder: nextOrder,
+                            logoPath: createdCard.logoPath,
+                          );
+                          final ins = await _cardRepository.insertCard(
+                            finalCard,
+                          );
+                          ins.fold(
+                            (failure) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(
+                                  parentContext,
+                                ).showSnackBar(
+                                  SnackBar(content: Text(failure.message)),
+                                );
+                              }
+                            },
+                            (_) async {
+                              final cardsRes = await _cardRepository.getCards();
+                              cardsRes.fold(
+                                (failure) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(
+                                      parentContext,
+                                    ).showSnackBar(
+                                      SnackBar(content: Text(failure.message)),
+                                    );
+                                  }
+                                },
+                                (cards) {
+                                  if (mounted) {
+                                    setState(() {
+                                      _displayedCards = cards;
+                                    });
+                                  }
+                                },
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+            ),
+          );
+        },
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         elevation: 6.0,

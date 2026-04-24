@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:developer' as developer;
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +40,11 @@ class LogoHelper {
     try {
       return SimpleIconsMapping.getAllIcons();
     } catch (e) {
-      debugPrint('Error loading available logos: $e');
+      developer.log(
+        'Error loading available logos: $e',
+        name: 'LogoHelper',
+        error: e,
+      );
       return [];
     }
   }
@@ -69,7 +74,11 @@ class LogoHelper {
 
       return filePath;
     } catch (e) {
-      debugPrint('Error saving uploaded logo: $e');
+      developer.log(
+        'Error saving uploaded logo: $e',
+        name: 'LogoHelper',
+        error: e,
+      );
       return null;
     }
   }
@@ -95,7 +104,7 @@ class LogoHelper {
       }
       return false;
     } catch (e) {
-      debugPrint('Error deleting logo: $e');
+      developer.log('Error deleting logo: $e', name: 'LogoHelper', error: e);
       return false;
     }
   }

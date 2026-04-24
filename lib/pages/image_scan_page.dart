@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 
 import '../l10n/app_localizations.dart';
@@ -92,7 +93,11 @@ class _ImageScanPageState extends State<ImageScanPage> {
       }
     } catch (e) {
       if (mounted) {
-        debugPrint('Error scanning image: $e');
+        developer.log(
+          'Error scanning image: $e',
+          name: 'ImageScanPage',
+          error: e,
+        );
         final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

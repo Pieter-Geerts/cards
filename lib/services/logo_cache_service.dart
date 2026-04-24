@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 // dart:convert is not required here after YAML usage
 
@@ -90,7 +91,11 @@ class LogoCacheService {
           return;
         }
       } catch (e) {
-        if (kDebugMode) debugPrint('Failed to read persisted whitelist: $e');
+        developer.log(
+          'Failed to read persisted whitelist: $e',
+          name: 'LogoCacheService',
+          error: e,
+        );
       }
 
       final bundle = _assetBundle ?? rootBundle;
@@ -109,7 +114,11 @@ class LogoCacheService {
       }
     } catch (e) {
       // No asset present or parsing failed — silently continue with default
-      if (kDebugMode) debugPrint('No external whitelist loaded: $e');
+      developer.log(
+        'No external whitelist loaded: $e',
+        name: 'LogoCacheService',
+        error: e,
+      );
     }
   }
 
@@ -185,7 +194,11 @@ class LogoCacheService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList('logo_shop_whitelist', _shopWhitelist.toList());
     } catch (e) {
-      if (kDebugMode) debugPrint('Failed to persist whitelist: $e');
+      developer.log(
+        'Failed to persist whitelist: $e',
+        name: 'LogoCacheService',
+        error: e,
+      );
     }
   }
 
@@ -207,8 +220,9 @@ class LogoCacheService {
 
         stopwatch.stop();
         if (stopwatch.elapsedMilliseconds > 100) {
-          debugPrint(
+          developer.log(
             'Cache lookup took ${stopwatch.elapsedMilliseconds}ms for: $key',
+            name: 'LogoCacheService',
           );
         }
         return cached;
@@ -244,8 +258,9 @@ class LogoCacheService {
 
         stopwatch.stop();
         if (stopwatch.elapsedMilliseconds > 500) {
-          debugPrint(
+          developer.log(
             'Logo suggestion took ${stopwatch.elapsedMilliseconds}ms for: $key',
+            name: 'LogoCacheService',
           );
         }
 
@@ -255,7 +270,11 @@ class LogoCacheService {
       }
     } catch (e) {
       stopwatch.stop();
-      debugPrint('Error getting logo suggestion for $title: $e');
+      developer.log(
+        'Error getting logo suggestion for $title: $e',
+        name: 'LogoCacheService',
+        error: e,
+      );
       _loadingSuggestions.remove(key);
       return null;
     }
@@ -456,7 +475,11 @@ class LogoCacheService {
       try {
         await getAllAvailableLogos();
       } catch (e) {
-        debugPrint('Failed to preload logos: $e');
+        developer.log(
+          'Failed to preload logos: $e',
+          name: 'LogoCacheService',
+          error: e,
+        );
       }
     });
   }

@@ -7,6 +7,7 @@ import 'pages/home_page.dart';
 import 'repositories/card_repository_interface.dart';
 import 'repositories/sqlite_card_repository.dart';
 import 'services/error_handling_service.dart';
+import 'services/app_navigator.dart';
 import 'utils/app_settings.dart';
 
 void main() async {
@@ -395,6 +396,7 @@ class _InitializedAppState extends State<_InitializedApp> {
         onAddCard: _addCard,
         onUpdateCard: _updateCard,
       ),
+      navigatorKey: AppNavigator.instance.navigatorKey,
     );
   }
 }

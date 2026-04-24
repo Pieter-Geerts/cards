@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/test_helpers.dart';
 
 /// Page Object for HomePage
 /// Encapsulates all UI interactions and assertions for the home screen
@@ -20,7 +21,14 @@ class HomePageObject {
   // ===== Verifications =====
   Future<void> verifyHomePageDisplayed() async {
     expect(_appBar, findsOneWidget, reason: 'AppBar should be visible');
-    expect(_addCardFAB, findsOneWidget, reason: 'FAB should be visible');
+
+    // Wait for FAB to appear (handles any async initialization)
+    final found = await TestSyncHelper.waitForFinder(
+      tester,
+      _addCardFAB,
+      timeout: const Duration(seconds: 2),
+    );
+    expect(found, isTrue, reason: 'FAB should be visible');
   }
 
   Future<void> verifyEmptyState() async {

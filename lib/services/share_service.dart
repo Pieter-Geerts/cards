@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'dart:developer' as developer;
 
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter/material.dart';
@@ -154,10 +155,17 @@ class ShareService {
           // If toImage fails for any reason, log and silently fail the share
           // so the rest of the app isn't affected. In production we'd surface
           // this via Sentry or a user-visible Snackbar.
-          debugPrint('Failed to capture share image: $e');
+          developer.log(
+            'Failed to capture share image: $e',
+            name: 'ShareService',
+            error: e,
+          );
         }
       } else {
-        debugPrint('Failed to find a painted RepaintBoundary for sharing.');
+        developer.log(
+          'Failed to find a painted RepaintBoundary for sharing.',
+          name: 'ShareService',
+        );
       }
     } finally {
       overlay.remove();

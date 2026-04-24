@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../l10n/app_localizations.dart';
@@ -109,7 +110,11 @@ class _CameraScanPageState extends State<CameraScanPage> {
         _isFlashOn = !_isFlashOn;
       });
     } catch (e) {
-      debugPrint('Failed to toggle torch: $e');
+      developer.log(
+        'Failed to toggle torch: $e',
+        name: 'CameraScanPage',
+        error: e,
+      );
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Failed to toggle flash')));

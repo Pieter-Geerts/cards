@@ -53,7 +53,7 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
       _suggestedLogo = await LogoHelper.suggestLogo(widget.cardTitle);
       _availableLogos = await LogoCacheService.instance.getAllAvailableLogos();
     } catch (e) {
-      debugPrint('Error loading logo data: $e');
+      // Failed to load logo data; fall back to empty state silently
     } finally {
       if (mounted) {
         setState(() {

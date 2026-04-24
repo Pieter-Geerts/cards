@@ -79,14 +79,13 @@ class AddCardSecondaryOption extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
-
   const AddCardSecondaryOption({
-    super.key,
+    Key? key,
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.onTap,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

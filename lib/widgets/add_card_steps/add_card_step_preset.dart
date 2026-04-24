@@ -110,6 +110,7 @@ class AddCardStepPreset extends StatelessWidget {
                     } else if (index == gridCards.length) {
                       // Generic card option
                       return GestureDetector(
+                        key: const ValueKey('generic_card_option'),
                         onTap: () => onGenericSelected(true),
                         child: Container(
                           decoration: BoxDecoration(
