@@ -10,8 +10,8 @@ import '../services/share_service.dart';
 import '../widgets/card_list_widget.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/home_app_bar.dart';
-import 'card_detail_page.dart';
 import 'add_card_entry_page.dart';
+import 'card_detail_page.dart';
 import 'edit_card_page.dart';
 import 'settings_page.dart';
 

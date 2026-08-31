@@ -1,5 +1,6 @@
-import 'package:image_picker/image_picker.dart';
 import 'dart:developer' as developer;
+
+import 'package:image_picker/image_picker.dart';
 
 import '../models/card_item.dart';
 

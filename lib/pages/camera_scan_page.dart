@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
+
+import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../l10n/app_localizations.dart';

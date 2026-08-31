@@ -1,7 +1,7 @@
+import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'dart:developer' as developer;
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 
 import '../l10n/app_localizations.dart';
