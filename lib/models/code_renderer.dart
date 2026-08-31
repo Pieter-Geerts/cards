@@ -99,7 +99,7 @@ class BarcodeRenderer implements CodeRenderer {
     double? height,
   }) {
     return bw.BarcodeWidget(
-      barcode: bw.Barcode.code128(),
+      barcode: bw.Barcode.ean13(),
       data: data,
       width: width ?? 200,
       height: height ?? 80,
@@ -112,7 +112,7 @@ class BarcodeRenderer implements CodeRenderer {
   @override
   Widget renderForSharing(String data, {double? size}) {
     return bw.BarcodeWidget(
-      barcode: bw.Barcode.code128(),
+      barcode: bw.Barcode.ean13(),
       data: data,
       width: size ?? 320,
       height: 120,
@@ -124,9 +124,8 @@ class BarcodeRenderer implements CodeRenderer {
 
   @override
   bool validateData(String data) {
-    // Basic validation for Code 128 barcodes
     return data.isNotEmpty &&
-        data.length >= 3 &&
+        data.length >= 12 &&
         RegExp(r'^[0-9a-zA-Z]+$').hasMatch(data);
   }
 

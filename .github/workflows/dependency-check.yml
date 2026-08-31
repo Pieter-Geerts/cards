@@ -9,7 +9,7 @@ jobs:
   check-dependencies:
     name: Check for dependency updates
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -44,19 +44,19 @@ jobs:
         run: |
           echo "## 📦 Dependency Status Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           # Check Flutter version
           echo "### Flutter Version" >> $GITHUB_STEP_SUMMARY
           flutter --version >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           # Check for outdated dependencies
           echo "### Outdated Dependencies" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           flutter pub outdated >> outdated.txt 2>&1 || true
           cat outdated.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          
+
           # Check if there are any outdated dependencies
           if grep -q "dependencies have newer versions" outdated.txt; then
             echo "has_updates=true" >> $GITHUB_OUTPUT
@@ -88,20 +88,20 @@ jobs:
           script: |
             const fs = require('fs');
             const outdatedOutput = fs.readFileSync('outdated.txt', 'utf8');
-            
+
             const issueTitle = '📦 Weekly Dependency Update Available';
             const issueBody = `
             ## 📦 Dependency Updates Available
-            
+
             This is an automated weekly check for dependency updates.
-            
+
             ### Outdated Dependencies:
             \`\`\`
             ${outdatedOutput}
             \`\`\`
-            
+
             ### Recommended Actions:
-            
+
             1. **Review the outdated dependencies** listed above
             2. **Run the update script** locally to test changes:
                \`\`\`bash
@@ -109,28 +109,28 @@ jobs:
                \`\`\`
             3. **Test thoroughly** to ensure no breaking changes
             4. **Commit updates** if everything works correctly
-            
+
             ### Manual Steps:
-            
+
             \`\`\`bash
             # Clone the repository
             git clone https://github.com/Pieter-Geerts/cards.git
             cd cards
-            
+
             # Run the dependency update script
             ./scripts/update-dependencies.sh
-            
+
             # If all tests pass, commit the changes
             git add pubspec.lock
             git commit -m "deps: Update Flutter dependencies"
             git push
             \`\`\`
-            
+
             ---
             _This issue was automatically created by the Weekly Dependency Update Check workflow._
             _You can disable this by modifying \`.github/workflows/dependency-check.yml\`_
             `;
-            
+
             // Check if there's already an open issue for dependency updates
             const existingIssues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
@@ -138,7 +138,7 @@ jobs:
               labels: ['dependencies', 'automated'],
               state: 'open'
             });
-            
+
             if (existingIssues.data.length === 0) {
               await github.rest.issues.create({
                 owner: context.repo.owner,
