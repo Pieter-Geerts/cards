@@ -64,16 +64,14 @@ class AddCardStepPreset extends StatelessWidget {
                         onTap: () => onPresetSelected(preset),
                         child: Container(
                           decoration: BoxDecoration(
-                            color:
-                                selectedPreset == preset
-                                    ? colorScheme.primaryContainer
-                                    : colorScheme.surface,
+                            color: selectedPreset == preset
+                                ? colorScheme.primaryContainer
+                                : colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color:
-                                  selectedPreset == preset
-                                      ? colorScheme.primary
-                                      : colorScheme.outline,
+                              color: selectedPreset == preset
+                                  ? colorScheme.primary
+                                  : colorScheme.outline,
                               width: 1.5,
                             ),
                             boxShadow: [
@@ -114,16 +112,14 @@ class AddCardStepPreset extends StatelessWidget {
                         onTap: () => onGenericSelected(true),
                         child: Container(
                           decoration: BoxDecoration(
-                            color:
-                                isGenericSelected
-                                    ? colorScheme.primaryContainer
-                                    : colorScheme.surface,
+                            color: isGenericSelected
+                                ? colorScheme.primaryContainer
+                                : colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color:
-                                  isGenericSelected
-                                      ? colorScheme.primary
-                                      : colorScheme.outline,
+                              color: isGenericSelected
+                                  ? colorScheme.primary
+                                  : colorScheme.outline,
                               width: 1.5,
                             ),
                             boxShadow: [
@@ -165,16 +161,14 @@ class AddCardStepPreset extends StatelessWidget {
                         onTap: () => onTemporarySelected(true),
                         child: Container(
                           decoration: BoxDecoration(
-                            color:
-                                isTemporarySelected
-                                    ? colorScheme.primaryContainer
-                                    : colorScheme.surface,
+                            color: isTemporarySelected
+                                ? colorScheme.primaryContainer
+                                : colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color:
-                                  isTemporarySelected
-                                      ? colorScheme.primary
-                                      : colorScheme.outline,
+                              color: isTemporarySelected
+                                  ? colorScheme.primary
+                                  : colorScheme.outline,
                               width: 1.5,
                             ),
                             boxShadow: [

@@ -10,17 +10,15 @@ Widget _harness(AddCardFlowMode mode) {
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Builder(
-      builder:
-          (context) => Scaffold(
-            body: Center(
-              child: ElevatedButton(
-                onPressed:
-                    () =>
-                        AddCardFlowManager.showAddCardFlow(context, mode: mode),
-                child: const Text('Start'),
-              ),
-            ),
+      builder: (context) => Scaffold(
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () =>
+                AddCardFlowManager.showAddCardFlow(context, mode: mode),
+            child: const Text('Start'),
           ),
+        ),
+      ),
     ),
   );
 }

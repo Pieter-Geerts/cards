@@ -20,16 +20,14 @@ class AddCardLogoSelector extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color:
-              selectedLogoIcon != null
-                  ? Theme.of(context).colorScheme.primary.withAlpha(25)
-                  : Theme.of(context).colorScheme.surface,
+          color: selectedLogoIcon != null
+              ? Theme.of(context).colorScheme.primary.withAlpha(25)
+              : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color:
-                selectedLogoIcon != null
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).dividerColor,
+            color: selectedLogoIcon != null
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).dividerColor,
             width: selectedLogoIcon != null ? 2 : 1.5,
           ),
           boxShadow: [
@@ -40,52 +38,50 @@ class AddCardLogoSelector extends StatelessWidget {
             ),
           ],
         ),
-        child:
-            selectedLogoIcon != null
-                ? Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(selectedLogoIcon, size: 24),
+        child: selectedLogoIcon != null
+            ? Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(AppLocalizations.of(context).logoSelected),
+                    child: Icon(selectedLogoIcon, size: 24),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(AppLocalizations.of(context).logoSelected),
+                  ),
+                  Icon(Icons.arrow_forward_ios, size: 20),
+                ],
+              )
+            : Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                     ),
-                    Icon(Icons.arrow_forward_ios, size: 20),
-                  ],
-                )
-                : Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color:
-                            Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                      ),
-                      child: Icon(
-                        Icons.add_photo_alternate_outlined,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withAlpha(200),
-                        size: 24,
-                      ),
+                    child: Icon(
+                      Icons.add_photo_alternate_outlined,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withAlpha(200),
+                      size: 24,
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(AppLocalizations.of(context).selectALogo),
-                    ),
-                    Icon(Icons.arrow_forward_ios, size: 20),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(AppLocalizations.of(context).selectALogo),
+                  ),
+                  Icon(Icons.arrow_forward_ios, size: 20),
+                ],
+              ),
       ),
     );
   }

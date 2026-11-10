@@ -162,19 +162,18 @@ class AddCardStepDetails extends StatelessWidget {
                               vertical: 12,
                             ),
                           ),
-                          items:
-                              [1, 3, 7, 14, 30]
-                                  .map(
-                                    (days) => DropdownMenuItem<int>(
-                                      value: days,
-                                      child: Text(
-                                        AppLocalizations.of(
-                                          context,
-                                        ).temporaryDayCount(days),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
+                          items: [1, 3, 7, 14, 30]
+                              .map(
+                                (days) => DropdownMenuItem<int>(
+                                  value: days,
+                                  child: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).temporaryDayCount(days),
+                                  ),
+                                ),
+                              )
+                              .toList(),
                           onChanged: (value) {
                             if (value != null) {
                               onTemporaryDaysChanged(value);
@@ -202,16 +201,14 @@ class AddCardStepDetails extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color:
-                            selectedLogoIcon != null
-                                ? colorScheme.primary.withAlpha(25)
-                                : fillColor,
+                        color: selectedLogoIcon != null
+                            ? colorScheme.primary.withAlpha(25)
+                            : fillColor,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color:
-                              selectedLogoIcon != null
-                                  ? colorScheme.primary
-                                  : theme.dividerColor,
+                          color: selectedLogoIcon != null
+                              ? colorScheme.primary
+                              : theme.dividerColor,
                           width: selectedLogoIcon != null ? 2 : 1.5,
                         ),
                         boxShadow: [
@@ -222,49 +219,47 @@ class AddCardStepDetails extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child:
-                          selectedLogoIcon != null
-                              ? Row(
-                                children: [
-                                  Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Icon(selectedLogoIcon, size: 24),
+                      child: selectedLogoIcon != null
+                          ? Row(
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                                  const SizedBox(width: 16),
-                                  Expanded(child: Text('Logo geselecteerd')),
-                                  Icon(Icons.arrow_forward_ios, size: 20),
-                                ],
-                              )
-                              : Row(
-                                children: [
-                                  Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      color:
-                                          colorScheme.surfaceContainerHighest,
-                                    ),
-                                    child: Icon(
-                                      Icons.add_photo_alternate_outlined,
-                                      color: theme.colorScheme.onSurface
-                                          .withAlpha(200),
-                                      size: 24,
-                                    ),
+                                  child: Icon(selectedLogoIcon, size: 24),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(child: Text('Logo geselecteerd')),
+                                Icon(Icons.arrow_forward_ios, size: 20),
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: colorScheme.surfaceContainerHighest,
                                   ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Text(
-                                      AppLocalizations.of(context).selectALogo,
-                                    ),
+                                  child: Icon(
+                                    Icons.add_photo_alternate_outlined,
+                                    color: theme.colorScheme.onSurface
+                                        .withAlpha(200),
+                                    size: 24,
                                   ),
-                                  Icon(Icons.arrow_forward_ios, size: 20),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    AppLocalizations.of(context).selectALogo,
+                                  ),
+                                ),
+                                Icon(Icons.arrow_forward_ios, size: 20),
+                              ],
+                            ),
                     ),
                   ),
                 ],

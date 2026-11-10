@@ -122,36 +122,34 @@ class AddCardBottomActions extends StatelessWidget {
                 height: 56,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  gradient:
-                      canProceed
-                          ? LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              colorScheme.primary,
-                              colorScheme.primaryContainer,
-                            ],
-                          )
-                          : null,
+                  gradient: canProceed
+                      ? LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            colorScheme.primary,
+                            colorScheme.primaryContainer,
+                          ],
+                        )
+                      : null,
                   color: !canProceed ? theme.disabledColor.withAlpha(31) : null,
-                  boxShadow:
-                      canProceed
-                          ? [
-                            BoxShadow(
-                              color: colorScheme.primary.withAlpha(51),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                            ),
-                          ]
-                          : null,
+                  boxShadow: canProceed
+                      ? [
+                          BoxShadow(
+                            color: colorScheme.primary.withAlpha(51),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: ElevatedButton(
-                  key:
-                      currentStep == 2
-                          ? const ValueKey('save_card_button')
-                          : const ValueKey('next_button'),
-                  onPressed:
-                      canProceed ? (currentStep == 2 ? onSave : onNext) : null,
+                  key: currentStep == 2
+                      ? const ValueKey('save_card_button')
+                      : const ValueKey('next_button'),
+                  onPressed: canProceed
+                      ? (currentStep == 2 ? onSave : onNext)
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
@@ -168,10 +166,9 @@ class AddCardBottomActions extends StatelessWidget {
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color:
-                              canProceed
-                                  ? colorScheme.onPrimary
-                                  : theme.disabledColor.withAlpha(204),
+                          color: canProceed
+                              ? colorScheme.onPrimary
+                              : theme.disabledColor.withAlpha(204),
                           letterSpacing: 0.5,
                         ),
                       ),

@@ -74,12 +74,11 @@ class AddCardFlowManager {
 
     final result = await Navigator.of(context).push<CardItem>(
       MaterialPageRoute(
-        builder:
-            (context) => AddCardEntryPage(
-              initialMode: _convertToEntryMode(mode),
-              prefilledCode: prefilledCode,
-              prefilledType: prefilledType,
-            ),
+        builder: (context) => AddCardEntryPage(
+          initialMode: _convertToEntryMode(mode),
+          prefilledCode: prefilledCode,
+          prefilledType: prefilledType,
+        ),
       ),
     );
 

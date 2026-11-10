@@ -161,10 +161,9 @@ class CardItem {
                ? CodeFormat.qrCode
                : CodeFormat.code128),
        createdAt = DateTime.now(),
-       expiresAt =
-           expiresInDays != null
-               ? DateTime.now().add(Duration(days: expiresInDays))
-               : null,
+       expiresAt = expiresInDays != null
+           ? DateTime.now().add(Duration(days: expiresInDays))
+           : null,
        sortOrder = -1;
 
   // Helper to check if this is a QR code
@@ -255,14 +254,12 @@ class CardItem {
         map['codeFormat'] as String?,
         cardType: parsedCardType,
       ),
-      createdAt:
-          map['createdAt'] != null
-              ? DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int)
-              : DateTime.now(),
-      expiresAt:
-          map['expiresAt'] != null
-              ? DateTime.fromMillisecondsSinceEpoch(map['expiresAt'] as int)
-              : null,
+      createdAt: map['createdAt'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int)
+          : DateTime.now(),
+      expiresAt: map['expiresAt'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(map['expiresAt'] as int)
+          : null,
       sortOrder: map['sortOrder'] as int? ?? 0,
       logoPath: map['logoPath'] as String?,
     );
@@ -285,8 +282,8 @@ class CardItem {
         codeFormat ??
         (cardType != null && cardType != this.cardType
             ? (cardType == CardType.qrCode
-                ? CodeFormat.qrCode
-                : CodeFormat.code128)
+                  ? CodeFormat.qrCode
+                  : CodeFormat.code128)
             : this.codeFormat);
 
     return CardItem(
@@ -297,13 +294,13 @@ class CardItem {
       cardType: nextCardType,
       codeFormat: nextCodeFormat,
       createdAt: createdAt ?? this.createdAt,
-      expiresAt:
-          identical(expiresAt, _unset)
-              ? this.expiresAt
-              : expiresAt as DateTime?,
+      expiresAt: identical(expiresAt, _unset)
+          ? this.expiresAt
+          : expiresAt as DateTime?,
       sortOrder: sortOrder ?? this.sortOrder,
-      logoPath:
-          identical(logoPath, _unset) ? this.logoPath : logoPath as String?,
+      logoPath: identical(logoPath, _unset)
+          ? this.logoPath
+          : logoPath as String?,
     );
   }
 

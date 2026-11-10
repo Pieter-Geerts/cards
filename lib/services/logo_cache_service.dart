@@ -241,10 +241,9 @@ class LogoCacheService {
       try {
         // Compute suggestion with timeout protection. Use injected function
         // when provided (tests can inject faster mocks).
-        final suggestionFuture =
-            _suggestLogoFn != null
-                ? _suggestLogoFn!(title)
-                : LogoHelper.suggestLogo(title);
+        final suggestionFuture = _suggestLogoFn != null
+            ? _suggestLogoFn!(title)
+            : LogoHelper.suggestLogo(title);
 
         final suggestion = await suggestionFuture.timeout(
           const Duration(seconds: 3),
@@ -311,10 +310,9 @@ class LogoCacheService {
     _loadingAvailableLogos = true;
 
     try {
-      final logos =
-          _getAllAvailableLogosFn != null
-              ? await _getAllAvailableLogosFn!()
-              : await LogoHelper.getAllAvailableLogos();
+      final logos = _getAllAvailableLogosFn != null
+          ? await _getAllAvailableLogosFn!()
+          : await LogoHelper.getAllAvailableLogos();
 
       // Filter: only show logos that correspond to shops/retail.
       // We use the SimpleIcons identifier (e.g. 'simple_icon:amazon') to
@@ -387,19 +385,19 @@ class LogoCacheService {
     if (_suggestionCache.length < maxCacheSize) return;
 
     // Sort by access count and timestamp
-    final sortedKeys =
-        _suggestionCache.keys.toList()..sort((a, b) {
-          final aCount = _accessCounts[a] ?? 0;
-          final bCount = _accessCounts[b] ?? 0;
+    final sortedKeys = _suggestionCache.keys.toList()
+      ..sort((a, b) {
+        final aCount = _accessCounts[a] ?? 0;
+        final bCount = _accessCounts[b] ?? 0;
 
-          if (aCount != bCount) {
-            return aCount.compareTo(bCount); // Lower access count first
-          }
+        if (aCount != bCount) {
+          return aCount.compareTo(bCount); // Lower access count first
+        }
 
-          final aTime = _cacheTimestamps[a] ?? DateTime.now();
-          final bTime = _cacheTimestamps[b] ?? DateTime.now();
-          return aTime.compareTo(bTime); // Older timestamp first
-        });
+        final aTime = _cacheTimestamps[a] ?? DateTime.now();
+        final bTime = _cacheTimestamps[b] ?? DateTime.now();
+        return aTime.compareTo(bTime); // Older timestamp first
+      });
 
     // Remove oldest 20% of entries
     final entriesToRemove = (maxCacheSize * 0.2).round();
@@ -452,14 +450,12 @@ class LogoCacheService {
       'availableLogosCount': _availableLogosCache.length,
       'preloadedLogosCount': _preloadedLogos.length,
       'totalCacheEntries': _cacheTimestamps.length,
-      'oldestEntry':
-          _cacheTimestamps.values.isEmpty
-              ? null
-              : _cacheTimestamps.values.reduce((a, b) => a.isBefore(b) ? a : b),
-      'newestEntry':
-          _cacheTimestamps.values.isEmpty
-              ? null
-              : _cacheTimestamps.values.reduce((a, b) => a.isAfter(b) ? a : b),
+      'oldestEntry': _cacheTimestamps.values.isEmpty
+          ? null
+          : _cacheTimestamps.values.reduce((a, b) => a.isBefore(b) ? a : b),
+      'newestEntry': _cacheTimestamps.values.isEmpty
+          ? null
+          : _cacheTimestamps.values.reduce((a, b) => a.isAfter(b) ? a : b),
     };
   }
 

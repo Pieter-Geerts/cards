@@ -49,25 +49,24 @@ class _LogoWhitelistSettingsPageState extends State<LogoWhitelistSettingsPage> {
   void _remove(String item) {
     showDialog<void>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Remove entry'),
-            content: Text('Remove "$item" from the whitelist?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  setState(() => _whitelist.remove(item));
-                  LogoCacheService.instance.removeShopFromWhitelist(item);
-                },
-                child: const Text('Remove'),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text('Remove entry'),
+        content: Text('Remove "$item" from the whitelist?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
           ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              setState(() => _whitelist.remove(item));
+              LogoCacheService.instance.removeShopFromWhitelist(item);
+            },
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -75,55 +74,50 @@ class _LogoWhitelistSettingsPageState extends State<LogoWhitelistSettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Logo whitelist')),
-      body:
-          _loading
-              ? const Center(child: CircularProgressIndicator())
-              : Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _controller,
-                            decoration: const InputDecoration(
-                              labelText: 'Add shop identifier',
-                              hintText: 'e.g. amazon',
-                            ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _controller,
+                          decoration: const InputDecoration(
+                            labelText: 'Add shop identifier',
+                            hintText: 'e.g. amazon',
                           ),
                         ),
-                        IconButton(
-                          onPressed: _add,
-                          icon: const Icon(Icons.add),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Expanded(
-                      child: Builder(
-                        builder: (context) {
-                          final items = _whitelist.toList()..sort();
-                          return ListView(
-                            children:
-                                items
-                                    .map(
-                                      (e) => ListTile(
-                                        title: Text(e),
-                                        trailing: IconButton(
-                                          icon: const Icon(Icons.delete),
-                                          onPressed: () => _remove(e),
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                          );
-                        },
                       ),
+                      IconButton(onPressed: _add, icon: const Icon(Icons.add)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: Builder(
+                      builder: (context) {
+                        final items = _whitelist.toList()..sort();
+                        return ListView(
+                          children: items
+                              .map(
+                                (e) => ListTile(
+                                  title: Text(e),
+                                  trailing: IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () => _remove(e),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        );
+                      },
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
     );
   }
 }

@@ -10,8 +10,7 @@ if (keystorePropertiesFile.exists()) {
 
 plugins {
     id("com.android.application")
-    id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // The Flutter Gradle Plugin must be applied after the Android Gradle plugin.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -25,25 +24,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-    java {
-        toolchain {
-            languageVersion.set(JavaLanguageVersion.of(21))
-        }
-    }
 
     defaultConfig {
         // Change from example domain to your unique application ID
         applicationId = "com.pietergeerts.cards"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-    // androidx.camera:camera-core requires minSdk 23 or higher.
-    // Set a concrete minSdk to avoid manifest merger failures from camera libraries.
-    minSdk = 23
-    // Target the same SDK as compile to avoid compatibility warnings from plugins.
-    targetSdk = 36
+        // Flutter 3.47 and integration_test require Android API 24 or later.
+        minSdk = flutter.minSdkVersion
+        // Target the same SDK as compile to avoid compatibility warnings from plugins.
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -76,6 +66,12 @@ android {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 

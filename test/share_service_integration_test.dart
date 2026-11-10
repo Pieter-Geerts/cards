@@ -34,8 +34,8 @@ void main() {
 
     final service = ShareService(
       shareFiles: fakeShare,
-      codeBuilder:
-          (ctx, c) => Container(width: 320, height: 320, color: Colors.black),
+      codeBuilder: (ctx, c) =>
+          Container(width: 320, height: 320, color: Colors.black),
     );
 
     final card = CardItem(
@@ -97,8 +97,8 @@ void main() {
 
     final service = ShareService(
       shareFiles: fakeShare,
-      codeBuilder:
-          (ctx, c) => Container(width: 320, height: 120, color: Colors.black),
+      codeBuilder: (ctx, c) =>
+          Container(width: 320, height: 120, color: Colors.black),
     );
 
     final card = CardItem(

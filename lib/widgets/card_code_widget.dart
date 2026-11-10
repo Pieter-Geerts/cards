@@ -20,10 +20,9 @@ class CardCodeWidget extends StatelessWidget {
     final codeContainer = Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color:
-            theme.brightness == Brightness.dark
-                ? theme.colorScheme.surface
-                : Colors.transparent,
+        color: theme.brightness == Brightness.dark
+            ? theme.colorScheme.surface
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Center(child: codeWidget),

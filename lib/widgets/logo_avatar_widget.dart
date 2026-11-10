@@ -28,10 +28,9 @@ class LogoAvatarWidget extends StatelessWidget {
     if (title != null && title!.isNotEmpty) {
       final words = title!.trim().split(RegExp(r'\s+'));
       if (words.length == 1) {
-        initials =
-            words[0].length >= 2
-                ? words[0].substring(0, 2).toUpperCase()
-                : words[0].toUpperCase();
+        initials = words[0].length >= 2
+            ? words[0].substring(0, 2).toUpperCase()
+            : words[0].toUpperCase();
       } else if (words.length > 1) {
         initials = words[0][0].toUpperCase() + words[1][0].toUpperCase();
       }
@@ -63,18 +62,17 @@ class LogoAvatarWidget extends StatelessWidget {
         ],
       ),
       alignment: Alignment.center,
-      child:
-          initials.isNotEmpty
-              ? Text(
-                initials,
-                key: const Key('logo-initials'),
-                style: TextStyle(
-                  fontSize: size * 0.4,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              )
-              : Icon(Icons.credit_card, size: size * 0.6, color: iconColor),
+      child: initials.isNotEmpty
+          ? Text(
+              initials,
+              key: const Key('logo-initials'),
+              style: TextStyle(
+                fontSize: size * 0.4,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            )
+          : Icon(Icons.credit_card, size: size * 0.6, color: iconColor),
     );
   }
 

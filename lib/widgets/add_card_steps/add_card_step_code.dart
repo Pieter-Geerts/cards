@@ -164,12 +164,11 @@ class AddCardStepCode extends StatelessWidget {
                       const SizedBox(width: 12),
                       Text(
                         AppLocalizations.of(context).manualEntryFull,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleMedium?.copyWith(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
                     ],
                   ),
@@ -200,13 +199,12 @@ class AddCardStepCode extends StatelessWidget {
                         vertical: 18,
                       ),
                     ),
-                    items:
-                        CardType.values.map((type) {
-                          return DropdownMenuItem(
-                            value: type,
-                            child: Text(type.getLocalizedDisplayName(context)),
-                          );
-                        }).toList(),
+                    items: CardType.values.map((type) {
+                      return DropdownMenuItem(
+                        value: type,
+                        child: Text(type.getLocalizedDisplayName(context)),
+                      );
+                    }).toList(),
                     onChanged: (CardType? value) {
                       if (value != null) onCardTypeChanged(value);
                     },
@@ -227,10 +225,9 @@ class AddCardStepCode extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                     decoration: InputDecoration(
-                      hintText:
-                          cardType == CardType.qrCode
-                              ? AppLocalizations.of(context).qrCodeValue
-                              : AppLocalizations.of(context).barcodeValue,
+                      hintText: cardType == CardType.qrCode
+                          ? AppLocalizations.of(context).qrCodeValue
+                          : AppLocalizations.of(context).barcodeValue,
                       filled: true,
                       fillColor:
                           Theme.of(context).inputDecorationTheme.fillColor ??

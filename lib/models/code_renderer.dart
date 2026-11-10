@@ -28,10 +28,9 @@ class CodeRendererFactory {
   };
 
   static CodeRenderer getRenderer(Object format) {
-    final codeFormat =
-        format is CardType
-            ? (format == CardType.qrCode ? CodeFormat.qrCode : CodeFormat.ean13)
-            : format as CodeFormat;
+    final codeFormat = format is CardType
+        ? (format == CardType.qrCode ? CodeFormat.qrCode : CodeFormat.ean13)
+        : format as CodeFormat;
     return _renderers[codeFormat] ?? _renderers[CodeFormat.unknown]!;
   }
 
@@ -41,10 +40,9 @@ class CodeRendererFactory {
   ];
 
   static void registerRenderer(Object format, CodeRenderer renderer) {
-    final codeFormat =
-        format is CardType
-            ? (format == CardType.qrCode ? CodeFormat.qrCode : CodeFormat.ean13)
-            : format as CodeFormat;
+    final codeFormat = format is CardType
+        ? (format == CardType.qrCode ? CodeFormat.qrCode : CodeFormat.ean13)
+        : format as CodeFormat;
     _renderers[codeFormat] = renderer;
   }
 
@@ -102,12 +100,9 @@ class BarcodeRenderer implements CodeRenderer {
   final CodeFormat format;
 
   BarcodeRenderer([Object format = CodeFormat.code128])
-    : format =
-          format is CardType
-              ? (format == CardType.qrCode
-                  ? CodeFormat.qrCode
-                  : CodeFormat.ean13)
-              : format as CodeFormat;
+    : format = format is CardType
+          ? (format == CardType.qrCode ? CodeFormat.qrCode : CodeFormat.ean13)
+          : format as CodeFormat;
 
   bw.Barcode get _barcode {
     switch (format) {
@@ -204,6 +199,6 @@ class BarcodeRenderer implements CodeRenderer {
   @override
   String get displayName =>
       format == CodeFormat.code128 || format == CodeFormat.unknown
-          ? 'Barcode'
-          : format.displayName;
+      ? 'Barcode'
+      : format.displayName;
 }

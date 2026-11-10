@@ -115,21 +115,18 @@ class _ImageScanPageState extends State<ImageScanPage> {
         final file = File(widget.imagePath);
         final inputImage = InputImage.fromFilePath(file.path);
         final barcodes = await _barcodeScanner.processImage(inputImage);
-        detectedCodes =
-            barcodes
-                .map((barcode) {
-                  final code = barcode.displayValue ?? barcode.rawValue ?? '';
-                  final format = _codeFormatFromImageBarcodeFormat(
-                    barcode.format,
-                  );
-                  return DetectedImageCode(
-                    code: code,
-                    type: format.cardType,
-                    format: format,
-                  );
-                })
-                .where((result) => result.code.isNotEmpty)
-                .toList();
+        detectedCodes = barcodes
+            .map((barcode) {
+              final code = barcode.displayValue ?? barcode.rawValue ?? '';
+              final format = _codeFormatFromImageBarcodeFormat(barcode.format);
+              return DetectedImageCode(
+                code: code,
+                type: format.cardType,
+                format: format,
+              );
+            })
+            .where((result) => result.code.isNotEmpty)
+            .toList();
       }
 
       if (!mounted) return;
@@ -321,21 +318,19 @@ class _ImageScanPageState extends State<ImageScanPage> {
                           if (newValue == null) return;
                           setState(() {
                             _selectedType = newValue;
-                            _selectedFormat =
-                                newValue == CardType.qrCode
-                                    ? CodeFormat.qrCode
-                                    : CodeFormat.ean13;
+                            _selectedFormat = newValue == CardType.qrCode
+                                ? CodeFormat.qrCode
+                                : CodeFormat.ean13;
                           });
                         },
-                        items:
-                            CardType.values.map<DropdownMenuItem<CardType>>((
-                              CardType value,
-                            ) {
-                              return DropdownMenuItem<CardType>(
-                                value: value,
-                                child: Text(value.displayName),
-                              );
-                            }).toList(),
+                        items: CardType.values.map<DropdownMenuItem<CardType>>((
+                          CardType value,
+                        ) {
+                          return DropdownMenuItem<CardType>(
+                            value: value,
+                            child: Text(value.displayName),
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
@@ -353,10 +348,9 @@ class _ImageScanPageState extends State<ImageScanPage> {
                     onChanged: (_) => setState(() {}),
                     maxLines: 3,
                     decoration: InputDecoration(
-                      hintText:
-                          _selectedType == CardType.qrCode
-                              ? AppLocalizations.of(context).enterQrCodeValue
-                              : AppLocalizations.of(context).enterBarcodeValue,
+                      hintText: _selectedType == CardType.qrCode
+                          ? AppLocalizations.of(context).enterQrCodeValue
+                          : AppLocalizations.of(context).enterBarcodeValue,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: Colors.grey.shade300),

@@ -136,10 +136,9 @@ class _LogoGridItem extends StatelessWidget {
             duration: const Duration(milliseconds: 150),
             curve: Curves.easeInOut,
             decoration: BoxDecoration(
-              color:
-                  isSelected
-                      ? primaryColor.withValues(alpha: 0.08)
-                      : surfaceColor,
+              color: isSelected
+                  ? primaryColor.withValues(alpha: 0.08)
+                  : surfaceColor,
               border: Border.all(
                 color: isSelected ? primaryColor : outlineColor,
                 width: isSelected ? 2 : 1,
