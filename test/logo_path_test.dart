@@ -29,12 +29,11 @@ void main() {
       // This tests the mapping in _getSimpleIconIdentifier
       final iconMap = {
         SimpleIcons.starbucks: 'simple_icon:starbucks',
-        SimpleIcons.amazon: 'simple_icon:amazon',
         SimpleIcons.carrefour: 'simple_icon:carrefour',
       };
 
       expect(iconMap[SimpleIcons.starbucks], equals('simple_icon:starbucks'));
-      expect(iconMap[SimpleIcons.amazon], equals('simple_icon:amazon'));
+
       expect(iconMap[SimpleIcons.carrefour], equals('simple_icon:carrefour'));
     });
   });

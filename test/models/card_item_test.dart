@@ -119,6 +119,7 @@ void main() {
       expect(map['description'], 'Test Description');
       expect(map['name'], 'Test123');
       expect(map['cardType'], 'barcode'); // enum name
+      expect(map['codeFormat'], 'code128');
       expect(map['sortOrder'], 0);
       expect(map['logoPath'], '/path/to/logo.png');
       expect(map['createdAt'], isA<int>());
@@ -166,6 +167,38 @@ void main() {
       expect(card.logoPath, '/path/to/saved.png');
       expect(card.expiresAt, isNotNull);
       expect(card.isTemporary, true);
+    });
+
+    test('should round-trip every concrete code format', () {
+      for (final format in CodeFormat.values.where(
+        (format) => format != CodeFormat.unknown,
+      )) {
+        final card = CardItem(
+          title: format.displayName,
+          description: 'Format test',
+          name: 'TEST123',
+          cardType: format.cardType,
+          codeFormat: format,
+          sortOrder: 0,
+        );
+
+        final restored = CardItem.fromMap(card.toMap());
+
+        expect(restored.codeFormat, format);
+        expect(restored.cardType, format.cardType);
+      }
+    });
+
+    test('should default a legacy barcode without format to Code 128', () {
+      final card = CardItem.fromMap({
+        'title': 'Legacy Barcode',
+        'description': 'No symbology',
+        'name': 'ABC123',
+        'cardType': 'barcode',
+        'sortOrder': 0,
+      });
+
+      expect(card.codeFormat, CodeFormat.code128);
     });
 
     test('should deserialize from map with legacy format', () {
@@ -234,6 +267,20 @@ void main() {
       expect(copy.name, 'ORIG123'); // unchanged
       expect(copy.cardType, CardType.barcode); // changed
       expect(copy.sortOrder, 0); // unchanged
+    });
+
+    test('copyWith keeps format consistent when card type changes', () {
+      final qrCard = CardItem(
+        title: 'QR Card',
+        description: 'Test',
+        name: 'ABC123',
+        sortOrder: 0,
+      );
+
+      final barcodeCard = qrCard.copyWith(cardType: CardType.barcode);
+
+      expect(barcodeCard.cardType, CardType.barcode);
+      expect(barcodeCard.codeFormat, CodeFormat.code128);
     });
 
     test('should validate data using renderer', () {

@@ -25,7 +25,7 @@ class DatabaseHelper implements IDatabaseHelper {
 
     return openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: (db, version) {
         return db.execute('''
           CREATE TABLE cards (
@@ -37,7 +37,8 @@ class DatabaseHelper implements IDatabaseHelper {
             createdAt INTEGER,
             expiresAt INTEGER,
             sortOrder INTEGER,
-            logoPath TEXT
+            logoPath TEXT,
+            codeFormat TEXT
           )
         ''');
       },
@@ -78,6 +79,12 @@ class DatabaseHelper implements IDatabaseHelper {
         }
         if (oldVersion < 6) {
           await db.execute('ALTER TABLE cards ADD COLUMN expiresAt INTEGER');
+        }
+        if (oldVersion < 7) {
+          await db.execute('ALTER TABLE cards ADD COLUMN codeFormat TEXT');
+          await db.execute(
+            "UPDATE cards SET codeFormat = CASE WHEN cardType = 'barcode' OR cardType = 'BARCODE' THEN 'ean13' ELSE 'qrCode' END WHERE codeFormat IS NULL",
+          );
         }
       },
     );

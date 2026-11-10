@@ -4,8 +4,8 @@ import 'config/app_localization.dart';
 import 'config/app_theme.dart';
 import 'models/card_item.dart';
 import 'pages/home_page.dart';
+import 'repositories/card_repository_factory.dart';
 import 'repositories/card_repository_interface.dart';
-import 'repositories/sqlite_card_repository.dart';
 import 'services/app_navigator.dart';
 import 'services/error_handling_service.dart';
 import 'utils/app_settings.dart';
@@ -67,7 +67,7 @@ class _AppInitializerState extends State<AppInitializer> {
       final themeMode = _getThemeModeFromString(AppSettings.getThemeMode());
 
       // Step 2: Initialize repository
-      final cardRepository = SqliteCardRepository();
+      final cardRepository = CardRepositoryFactory.create();
 
       // Step 3: Load initial data
       final cardsResult = await cardRepository.getCards();

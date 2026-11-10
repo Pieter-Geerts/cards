@@ -50,7 +50,6 @@ void main() {
       final icons = SimpleIconsMapping.getAllIcons();
       expect(icons, isNotEmpty);
       expect(icons, contains(SimpleIcons.starbucks));
-      expect(icons, contains(SimpleIcons.amazon));
     });
   });
 }

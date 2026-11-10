@@ -3,7 +3,6 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../helpers/database_helper.dart';
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 import '../pages/edit_card_page.dart';
@@ -14,8 +13,14 @@ import '../widgets/logo_avatar_widget.dart';
 class CardDetailPage extends StatefulWidget {
   final CardItem card;
   final Function(CardItem)? onDelete;
+  final CardShareService? shareService;
 
-  const CardDetailPage({super.key, required this.card, this.onDelete});
+  const CardDetailPage({
+    super.key,
+    required this.card,
+    this.onDelete,
+    this.shareService,
+  });
 
   @override
   State<CardDetailPage> createState() => _CardDetailPageState();
@@ -39,6 +44,7 @@ class _CardDetailPageState extends State<CardDetailPage>
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late CardItem _currentCard;
+  late final CardShareService _shareService;
   bool _descExpanded = false;
   double? _originalBrightness;
   bool _isSharing = false;
@@ -52,6 +58,7 @@ class _CardDetailPageState extends State<CardDetailPage>
   void initState() {
     super.initState();
     _currentCard = widget.card;
+    _shareService = widget.shareService ?? ShareService();
     _titleController = TextEditingController(text: _currentCard.title);
     _descController = TextEditingController(text: _currentCard.description);
     // Defer brightness change until after first frame so UI is visible.
@@ -160,27 +167,8 @@ class _CardDetailPageState extends State<CardDetailPage>
 
     // Only proceed with deletion if confirmed
     if (confirmed == true) {
-      // Delete from database if card has an ID
-      if (_currentCard.id != null) {
-        try {
-          await DatabaseHelper().deleteCard(_currentCard.id!);
-        } catch (e, st) {
-          developer.log(
-            'Failed deleting card from DB: $e\n$st',
-            name: 'CardDetailPage',
-            error: e,
-          );
-          if (!mounted) return;
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l10n.deleteFailed)));
-          return;
-        }
-
-        // Check again if widget is still mounted after async operation
-        if (!mounted) return;
-      }
-
+      // Persistence belongs to the parent/repository layer. The detail page
+      // only reports the user's confirmed intent once.
       widget.onDelete?.call(_currentCard);
 
       if (mounted) {
@@ -189,13 +177,23 @@ class _CardDetailPageState extends State<CardDetailPage>
     }
   }
 
+  Future<void> _copyCode() async {
+    await Clipboard.setData(ClipboardData(text: _currentCard.name));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context).codeCopiedToClipboard),
+      ),
+    );
+  }
+
   Future<void> _shareCardAsImage() async {
     // Delegate the sharing flow to the centralized ShareService. This honors
     // `ShareService.testShareHook` in tests (which allows fast short-circuiting)
     // and keeps sharing logic consistent across the app.
     setState(() => _isSharing = true);
     try {
-      await ShareService.shareCardAsImageStatic(context, _currentCard);
+      await _shareService.shareCardAsImage(context, _currentCard);
     } finally {
       if (mounted) {
         setState(() => _isSharing = false);
@@ -336,6 +334,12 @@ class _CardDetailPageState extends State<CardDetailPage>
                 overflow: TextOverflow.ellipsis,
               ),
               actions: [
+                IconButton(
+                  key: const ValueKey('copy_code_button'),
+                  icon: Icon(Icons.copy, color: theme.colorScheme.onSurface),
+                  tooltip: l10n.copyCode,
+                  onPressed: _copyCode,
+                ),
                 IconButton(
                   icon:
                       _isSharing

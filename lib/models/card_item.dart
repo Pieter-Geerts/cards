@@ -6,6 +6,75 @@ import 'code_renderer.dart';
 
 enum CardType { qrCode, barcode }
 
+/// The concrete symbology used to encode a card's value.
+///
+/// Keeping this separate from [CardType] is important: two 1D barcodes can
+/// have different encoding rules and cannot safely be rendered interchangeably.
+enum CodeFormat {
+  qrCode,
+  ean13,
+  ean8,
+  upcA,
+  upcE,
+  code128,
+  code39,
+  code93,
+  unknown,
+}
+
+extension CodeFormatExtension on CodeFormat {
+  CardType get cardType =>
+      this == CodeFormat.qrCode ? CardType.qrCode : CardType.barcode;
+
+  bool get requiresNumericData => switch (this) {
+    CodeFormat.ean13 ||
+    CodeFormat.ean8 ||
+    CodeFormat.upcA ||
+    CodeFormat.upcE => true,
+    _ => false,
+  };
+
+  bool get isUserSelectable => this != CodeFormat.unknown;
+
+  String get displayName {
+    switch (this) {
+      case CodeFormat.qrCode:
+        return 'QR Code';
+      case CodeFormat.ean13:
+        return 'EAN-13';
+      case CodeFormat.ean8:
+        return 'EAN-8';
+      case CodeFormat.upcA:
+        return 'UPC-A';
+      case CodeFormat.upcE:
+        return 'UPC-E';
+      case CodeFormat.code128:
+        return 'Code 128';
+      case CodeFormat.code39:
+        return 'Code 39';
+      case CodeFormat.code93:
+        return 'Code 93';
+      case CodeFormat.unknown:
+        return 'Barcode';
+    }
+  }
+
+  static CodeFormat fromLegacyValue(String? value, {CardType? cardType}) {
+    if (value == null || value.isEmpty) {
+      return cardType == CardType.barcode
+          ? CodeFormat.code128
+          : CodeFormat.qrCode;
+    }
+    try {
+      return CodeFormat.values.byName(value);
+    } catch (_) {
+      return cardType == CardType.barcode
+          ? CodeFormat.code128
+          : CodeFormat.qrCode;
+    }
+  }
+}
+
 // Sentinel value to differentiate between "not passed" and "explicitly set to null"
 const _unset = Object();
 
@@ -53,6 +122,7 @@ class CardItem {
   final String description;
   final String name;
   final CardType cardType;
+  final CodeFormat codeFormat;
   final DateTime createdAt;
   final DateTime? expiresAt;
   final int sortOrder;
@@ -64,20 +134,32 @@ class CardItem {
     required this.description,
     required this.name,
     this.cardType = CardType.qrCode,
+    CodeFormat? codeFormat,
     DateTime? createdAt,
     this.expiresAt,
     required this.sortOrder,
     this.logoPath,
-  }) : createdAt = createdAt ?? DateTime.now();
+  }) : codeFormat =
+           codeFormat ??
+           (cardType == CardType.qrCode
+               ? CodeFormat.qrCode
+               : CodeFormat.code128),
+       createdAt = createdAt ?? DateTime.now();
 
   CardItem.temp({
     required this.title,
     required this.description,
     required this.name,
     this.cardType = CardType.qrCode,
+    CodeFormat? codeFormat,
     int? expiresInDays,
     this.logoPath,
   }) : id = null,
+       codeFormat =
+           codeFormat ??
+           (cardType == CardType.qrCode
+               ? CodeFormat.qrCode
+               : CodeFormat.code128),
        createdAt = DateTime.now(),
        expiresAt =
            expiresInDays != null
@@ -116,7 +198,7 @@ class CardItem {
   }
 
   /// Gets the appropriate code renderer for this card
-  CodeRenderer get codeRenderer => CodeRendererFactory.getRenderer(cardType);
+  CodeRenderer get codeRenderer => CodeRendererFactory.getRenderer(codeFormat);
 
   /// Renders the code widget for display
   Widget renderCode({double? size, double? width, double? height}) {
@@ -141,6 +223,7 @@ class CardItem {
       'description': description,
       'name': name,
       'cardType': cardType.name,
+      'codeFormat': codeFormat.name,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'expiresAt': expiresAt?.millisecondsSinceEpoch,
       'sortOrder': sortOrder,
@@ -168,6 +251,10 @@ class CardItem {
       description: map['description'] as String,
       name: map['name'] as String,
       cardType: parsedCardType,
+      codeFormat: CodeFormatExtension.fromLegacyValue(
+        map['codeFormat'] as String?,
+        cardType: parsedCardType,
+      ),
       createdAt:
           map['createdAt'] != null
               ? DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int)
@@ -187,17 +274,28 @@ class CardItem {
     String? description,
     String? name,
     CardType? cardType,
+    CodeFormat? codeFormat,
     DateTime? createdAt,
     dynamic expiresAt = _unset,
     int? sortOrder,
     dynamic logoPath = _unset,
   }) {
+    final nextCardType = cardType ?? this.cardType;
+    final nextCodeFormat =
+        codeFormat ??
+        (cardType != null && cardType != this.cardType
+            ? (cardType == CardType.qrCode
+                ? CodeFormat.qrCode
+                : CodeFormat.code128)
+            : this.codeFormat);
+
     return CardItem(
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
       name: name ?? this.name,
-      cardType: cardType ?? this.cardType,
+      cardType: nextCardType,
+      codeFormat: nextCodeFormat,
       createdAt: createdAt ?? this.createdAt,
       expiresAt:
           identical(expiresAt, _unset)

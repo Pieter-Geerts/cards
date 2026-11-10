@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../models/card_item.dart';
-import '../pages/add_card_entry_page.dart' show AddCardMode;
-import '../pages/add_card_form_page.dart';
+import '../pages/add_card_entry_page.dart';
 import '../services/error_handling_service.dart';
 import '../services/performance_monitoring_service.dart';
-import '../widgets/add_card_bottom_sheet.dart';
 
 /// Unified entry point for all add card operations
 /// Provides consistent performance monitoring and error handling
@@ -18,30 +16,18 @@ class AddCardFlowManager {
     AddCardFlowMode mode = AddCardFlowMode.selection,
     String? prefilledCode,
     CardType? prefilledType,
-    bool useBottomSheet = false,
   }) async {
     PerformanceMonitoringService.instance.startTimer(
       '${_performanceKey}_total',
     );
 
     try {
-      CardItem? result;
-
-      if (useBottomSheet) {
-        result = await _showBottomSheetFlow(
-          context,
-          mode,
-          prefilledCode,
-          prefilledType,
-        );
-      } else {
-        result = await _showPageFlow(
-          context,
-          mode,
-          prefilledCode,
-          prefilledType,
-        );
-      }
+      final result = await _showPageFlow(
+        context,
+        mode,
+        prefilledCode,
+        prefilledType,
+      );
 
       PerformanceMonitoringService.instance.stopTimer(
         '${_performanceKey}_total',
@@ -70,46 +56,11 @@ class AddCardFlowManager {
         e,
         stackTrace,
         context: 'add_card_flow',
-        additionalData: {
-          'mode': mode.toString(),
-          'useBottomSheet': useBottomSheet.toString(),
-        },
+        additionalData: {'mode': mode.toString()},
       );
 
       return null;
     }
-  }
-
-  /// Show bottom sheet based add card flow
-  static Future<CardItem?> _showBottomSheetFlow(
-    BuildContext context,
-    AddCardFlowMode mode,
-    String? prefilledCode,
-    CardType? prefilledType,
-  ) async {
-    PerformanceMonitoringService.instance.startTimer(
-      '${_performanceKey}_bottom_sheet',
-    );
-
-    CardItem? result;
-
-    final completer = await showModalBottomSheet<CardItem?>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder:
-          (context) => AddCardBottomSheet(
-            onCardCreated: (card) {
-              result = card;
-              Navigator.of(context).pop(card);
-            },
-          ),
-    );
-
-    PerformanceMonitoringService.instance.stopTimer(
-      '${_performanceKey}_bottom_sheet',
-    );
-    return result ?? completer;
   }
 
   /// Show page based add card flow
@@ -123,7 +74,12 @@ class AddCardFlowManager {
 
     final result = await Navigator.of(context).push<CardItem>(
       MaterialPageRoute(
-        builder: (context) => AddCardFormPage(mode: _convertToPageMode(mode)),
+        builder:
+            (context) => AddCardEntryPage(
+              initialMode: _convertToEntryMode(mode),
+              prefilledCode: prefilledCode,
+              prefilledType: prefilledType,
+            ),
       ),
     );
 
@@ -131,18 +87,13 @@ class AddCardFlowManager {
     return result;
   }
 
-  /// Convert unified mode to page-specific mode
-  static AddCardMode _convertToPageMode(AddCardFlowMode mode) {
-    switch (mode) {
-      case AddCardFlowMode.scan:
-        return AddCardMode.scan;
-      case AddCardFlowMode.manual:
-        return AddCardMode.manual;
-      case AddCardFlowMode.import:
-        return AddCardMode.gallery; // Map import to gallery
-      case AddCardFlowMode.selection:
-        return AddCardMode.scan; // Default fallback
-    }
+  static AddCardEntryMode _convertToEntryMode(AddCardFlowMode mode) {
+    return switch (mode) {
+      AddCardFlowMode.selection => AddCardEntryMode.selection,
+      AddCardFlowMode.scan => AddCardEntryMode.scan,
+      AddCardFlowMode.manual => AddCardEntryMode.manual,
+      AddCardFlowMode.import => AddCardEntryMode.import,
+    };
   }
 
   /// Get performance statistics for add card flows
@@ -150,9 +101,6 @@ class AddCardFlowManager {
     final service = PerformanceMonitoringService.instance;
     return {
       'total_stats': service.getMetricStats('${_performanceKey}_total'),
-      'bottom_sheet_stats': service.getMetricStats(
-        '${_performanceKey}_bottom_sheet',
-      ),
       'page_stats': service.getMetricStats('${_performanceKey}_page'),
       'success_rate': _calculateSuccessRate(),
     };

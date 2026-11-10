@@ -34,7 +34,9 @@ class CardExpiryService {
       // Get all cards from repository
       final cardsResult = await _cardRepository.getCards();
 
-      return cardsResult.fold((failure) => Left(failure), (cards) async {
+      return await cardsResult.fold((failure) async => Left(failure), (
+        cards,
+      ) async {
         // Filter expired cards
         final expiredCards = _getExpiredCards(cards, asOf);
 

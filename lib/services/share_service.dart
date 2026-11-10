@@ -2,11 +2,9 @@ import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../models/card_item.dart';
@@ -15,13 +13,18 @@ typedef TempDirGetter = Future<Directory> Function();
 typedef ShareFilesFunction =
     Future<void> Function(List<XFile> files, {String? text});
 
+/// Application-level contract for sharing a card.
+abstract interface class CardShareService {
+  Future<void> shareCardAsImage(BuildContext context, CardItem card);
+}
+
 /// A small service responsible for rendering a card (title + code) as a PNG
 /// image and delegating to the platform share sheet.
 ///
 /// It's dependency-injectable: you may provide custom implementations for
 /// temporary directory retrieval and the share function to improve testability
 /// and follow dependency inversion (SOLID).
-class ShareService {
+class ShareService implements CardShareService {
   final TempDirGetter _getTempDir;
   final ShareFilesFunction _shareFiles;
   final Widget Function(BuildContext context, CardItem card)? _codeBuilder;
@@ -45,6 +48,7 @@ class ShareService {
        _codeBuilder = codeBuilder;
 
   /// Share a [card] as an image. Requires a [BuildContext] that has an Overlay.
+  @override
   Future<void> shareCardAsImage(BuildContext context, CardItem card) async {
     // If a test hook is present, delegate to it for fast testing.
     if (testShareHook != null) {
@@ -52,7 +56,6 @@ class ShareService {
       return;
     }
     final boundaryKey = GlobalKey();
-    final isQr = card.isQrCode;
 
     final imageWidget = Material(
       type: MaterialType.transparency,
@@ -82,26 +85,8 @@ class ShareService {
                 // render the real QR or barcode widgets.
                 if (_codeBuilder != null)
                   _codeBuilder(context, card)
-                else if (isQr)
-                  QrImageView(
-                    data: card.name,
-                    size: 320,
-                    backgroundColor: Theme.of(context).colorScheme.surface,
-                    eyeStyle: const QrEyeStyle(color: Colors.black),
-                    dataModuleStyle: const QrDataModuleStyle(
-                      color: Colors.black,
-                    ),
-                  )
                 else
-                  BarcodeWidget(
-                    barcode: Barcode.code128(),
-                    data: card.name,
-                    width: 320,
-                    height: 120,
-                    backgroundColor: Theme.of(context).colorScheme.surface,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    drawText: false,
-                  ),
+                  card.renderForSharing(size: 320),
               ],
             ),
           ),
