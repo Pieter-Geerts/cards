@@ -317,26 +317,26 @@ packages:
     dependency: transitive
     description:
       name: fl_camera
-      sha256: "4084a18d628f88133a4c4baadd048082310af9b525b827143978480a23c45802"
+      sha256: cf1fc3d07ac9ca97ea5f6d8c2c74d0383e1d126cf4f5b6c8237dfbe4996b24de
       url: "https://pub.dev"
     source: hosted
-    version: "4.3.1"
+    version: "5.0.0"
   fl_channel:
     dependency: transitive
     description:
       name: fl_channel
-      sha256: cf2b501ee15374d3a23a5042a84161ef0a69fbde6dac6d1116dc6205ec1da4ec
+      sha256: "2dc6b7246f2903806bc6a22679a33ad86bcdcef80fb4cbc1f99ee3c3c0a87062"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "2.0.0"
   fl_mlkit_scanning:
     dependency: "direct main"
     description:
       name: fl_mlkit_scanning
-      sha256: "64b984fca2bfa65a3a60bc438ed2603a47cd5c142eed2861c81d18ed1efba5d4"
+      sha256: "4b9d3713f4d7174ac4bd3dfea0b9060afbc09862e769c65d91e3a73523c63bc6"
       url: "https://pub.dev"
     source: hosted
-    version: "5.2.2"
+    version: "6.0.0"
   flutter:
     dependency: "direct main"
     description: flutter
