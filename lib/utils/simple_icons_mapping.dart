@@ -13,7 +13,6 @@ class SimpleIconsMapping {
     SimpleIcons.carrefour: 'simple_icon:carrefour',
     SimpleIcons.aldinord: 'simple_icon:aldinord',
     SimpleIcons.lidl: 'simple_icon:lidl',
-    SimpleIcons.walmart: 'simple_icon:walmart',
     SimpleIcons.target: 'simple_icon:target',
     SimpleIcons.tesco: 'simple_icon:tesco',
     SimpleIcons.albertheijn: 'simple_icon:albertheijn',
@@ -28,7 +27,6 @@ class SimpleIconsMapping {
     SimpleIcons.zara: 'simple_icon:zara',
 
     // Online Retail
-    SimpleIcons.amazon: 'simple_icon:amazon',
     SimpleIcons.ebay: 'simple_icon:ebay',
     SimpleIcons.etsy: 'simple_icon:etsy',
     SimpleIcons.shopify: 'simple_icon:shopify',
@@ -51,7 +49,6 @@ class SimpleIconsMapping {
     SimpleIcons.youtube: 'simple_icon:youtube',
     SimpleIcons.github: 'simple_icon:github',
     SimpleIcons.discord: 'simple_icon:discord',
-    SimpleIcons.slack: 'simple_icon:slack',
     SimpleIcons.zoom: 'simple_icon:zoom',
     SimpleIcons.dropbox: 'simple_icon:dropbox',
 

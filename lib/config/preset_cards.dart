@@ -14,7 +14,7 @@ const List<PresetCard> kPresetCards = [
     logoIcon: SimpleIcons.albertheijn,
   ),
   //PresetCard(title: 'HEMA Klantenpas', logoIcon: SimpleIcons.hem),
-  PresetCard(title: 'Walmart', logoIcon: SimpleIcons.walmart),
+  PresetCard(title: 'Walmart', logoIcon: Icons.store),
   PresetCard(title: 'Aldi', logoIcon: SimpleIcons.aldinord),
   PresetCard(title: 'Lidl', logoIcon: SimpleIcons.lidl),
   PresetCard(title: 'Carrefour', logoIcon: SimpleIcons.carrefour),

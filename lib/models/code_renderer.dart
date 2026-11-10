@@ -15,31 +15,42 @@ abstract class CodeRenderer {
 }
 
 class CodeRendererFactory {
-  static final Map<CardType, CodeRenderer> _renderers = {
-    CardType.qrCode: QRCodeRenderer(),
-    CardType.barcode: BarcodeRenderer(),
+  static final Map<CodeFormat, CodeRenderer> _renderers = {
+    CodeFormat.qrCode: QRCodeRenderer(),
+    CodeFormat.ean13: BarcodeRenderer(CodeFormat.ean13),
+    CodeFormat.ean8: BarcodeRenderer(CodeFormat.ean8),
+    CodeFormat.upcA: BarcodeRenderer(CodeFormat.upcA),
+    CodeFormat.upcE: BarcodeRenderer(CodeFormat.upcE),
+    CodeFormat.code128: BarcodeRenderer(CodeFormat.code128),
+    CodeFormat.code39: BarcodeRenderer(CodeFormat.code39),
+    CodeFormat.code93: BarcodeRenderer(CodeFormat.code93),
+    CodeFormat.unknown: BarcodeRenderer(CodeFormat.unknown),
   };
 
-  /// Gets the appropriate renderer for the given card type
-  static CodeRenderer getRenderer(CardType cardType) {
-    final renderer = _renderers[cardType];
-    if (renderer == null) {
-      throw UnsupportedError('No renderer available for card type: $cardType');
-    }
-    return renderer;
+  static CodeRenderer getRenderer(Object format) {
+    final codeFormat =
+        format is CardType
+            ? (format == CardType.qrCode ? CodeFormat.qrCode : CodeFormat.ean13)
+            : format as CodeFormat;
+    return _renderers[codeFormat] ?? _renderers[CodeFormat.unknown]!;
   }
 
-  /// Registers a new renderer for a card type
-  /// This allows future extension without modifying existing code
-  static void registerRenderer(CardType cardType, CodeRenderer renderer) {
-    _renderers[cardType] = renderer;
+  static List<CardType> get supportedTypes => [
+    CardType.qrCode,
+    CardType.barcode,
+  ];
+
+  static void registerRenderer(Object format, CodeRenderer renderer) {
+    final codeFormat =
+        format is CardType
+            ? (format == CardType.qrCode ? CodeFormat.qrCode : CodeFormat.ean13)
+            : format as CodeFormat;
+    _renderers[codeFormat] = renderer;
   }
 
-  /// Gets all supported card types
-  static List<CardType> get supportedTypes => _renderers.keys.toList();
+  static List<CodeFormat> get supportedFormats => _renderers.keys.toList();
 }
 
-/// QR Code renderer implementation
 class QRCodeRenderer implements CodeRenderer {
   @override
   Widget renderCode(
@@ -81,16 +92,44 @@ class QRCodeRenderer implements CodeRenderer {
   }
 
   @override
-  bool validateData(String data) {
-    return data.isNotEmpty;
-  }
+  bool validateData(String data) => data.trim().isNotEmpty;
 
   @override
   String get displayName => 'QR Code';
 }
 
-/// Barcode renderer implementation
 class BarcodeRenderer implements CodeRenderer {
+  final CodeFormat format;
+
+  BarcodeRenderer([Object format = CodeFormat.code128])
+    : format =
+          format is CardType
+              ? (format == CardType.qrCode
+                  ? CodeFormat.qrCode
+                  : CodeFormat.ean13)
+              : format as CodeFormat;
+
+  bw.Barcode get _barcode {
+    switch (format) {
+      case CodeFormat.ean13:
+        return bw.Barcode.ean13();
+      case CodeFormat.ean8:
+        return bw.Barcode.ean8();
+      case CodeFormat.upcA:
+        return bw.Barcode.upcA();
+      case CodeFormat.upcE:
+        return bw.Barcode.upcE();
+      case CodeFormat.code39:
+        return bw.Barcode.code39();
+      case CodeFormat.code93:
+        return bw.Barcode.code93();
+      case CodeFormat.code128:
+      case CodeFormat.unknown:
+      case CodeFormat.qrCode:
+        return bw.Barcode.code128();
+    }
+  }
+
   @override
   Widget renderCode(
     String data, {
@@ -99,10 +138,10 @@ class BarcodeRenderer implements CodeRenderer {
     double? height,
   }) {
     return bw.BarcodeWidget(
-      barcode: bw.Barcode.ean13(),
+      barcode: _barcode,
       data: data,
-      width: width ?? 200,
-      height: height ?? 80,
+      width: width ?? 240,
+      height: height ?? 96,
       backgroundColor: Colors.white,
       color: Colors.black,
       drawText: false,
@@ -112,7 +151,7 @@ class BarcodeRenderer implements CodeRenderer {
   @override
   Widget renderForSharing(String data, {double? size}) {
     return bw.BarcodeWidget(
-      barcode: bw.Barcode.ean13(),
+      barcode: _barcode,
       data: data,
       width: size ?? 320,
       height: 120,
@@ -124,11 +163,47 @@ class BarcodeRenderer implements CodeRenderer {
 
   @override
   bool validateData(String data) {
-    return data.isNotEmpty &&
-        data.length >= 12 &&
-        RegExp(r'^[0-9a-zA-Z]+$').hasMatch(data);
+    final value = data.trim();
+    switch (format) {
+      case CodeFormat.ean13:
+        return _validNumericLength(value, 13) && _validEanChecksum(value);
+      case CodeFormat.ean8:
+        return _validNumericLength(value, 8) && _validEanChecksum(value);
+      case CodeFormat.upcA:
+        return _validNumericLength(value, 12) && _validEanChecksum(value);
+      case CodeFormat.upcE:
+        return RegExp(r'^\d{6,8}$').hasMatch(value);
+      case CodeFormat.code39:
+        return value.isNotEmpty &&
+            RegExp(r'^[0-9A-Z. $/+%-]+$').hasMatch(value);
+      case CodeFormat.code93:
+      case CodeFormat.code128:
+      case CodeFormat.unknown:
+        return value.length >= 3 &&
+            value.length <= 80 &&
+            RegExp(r'^[0-9A-Za-z]+$').hasMatch(value);
+      case CodeFormat.qrCode:
+        return false;
+    }
+  }
+
+  bool _validNumericLength(String value, int length) =>
+      RegExp('^\\d{$length}\$').hasMatch(value);
+
+  bool _validEanChecksum(String value) {
+    if (value.length < 2 || !RegExp(r'^\d+$').hasMatch(value)) return false;
+    var sum = 0;
+    for (var i = 0; i < value.length - 1; i++) {
+      final digit = int.parse(value[i]);
+      sum += digit * ((value.length - 1 - i).isOdd ? 3 : 1);
+    }
+    final check = (10 - (sum % 10)) % 10;
+    return check == int.parse(value[value.length - 1]);
   }
 
   @override
-  String get displayName => 'Barcode';
+  String get displayName =>
+      format == CodeFormat.code128 || format == CodeFormat.unknown
+          ? 'Barcode'
+          : format.displayName;
 }

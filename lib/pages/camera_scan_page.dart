@@ -31,27 +31,41 @@ class CameraScanTestOverrides {
   }
 }
 
-CardType cardTypeFromBarcodeFormat(BarcodeFormat format) {
+CodeFormat codeFormatFromBarcodeFormat(BarcodeFormat format) {
   switch (format) {
     case BarcodeFormat.qrCode:
-      return CardType.qrCode;
+      return CodeFormat.qrCode;
     case BarcodeFormat.ean13:
+      return CodeFormat.ean13;
     case BarcodeFormat.ean8:
+      return CodeFormat.ean8;
     case BarcodeFormat.upcA:
+      return CodeFormat.upcA;
     case BarcodeFormat.upcE:
+      return CodeFormat.upcE;
     case BarcodeFormat.code128:
+      return CodeFormat.code128;
     case BarcodeFormat.code39:
+      return CodeFormat.code39;
     case BarcodeFormat.code93:
-      return CardType.barcode;
+      return CodeFormat.code93;
     default:
-      return CardType.qrCode;
+      return CodeFormat.unknown;
   }
 }
 
-class CameraScanPage extends StatefulWidget {
-  final Function(String code, CardType type) onCodeScanned;
+CardType cardTypeFromBarcodeFormat(BarcodeFormat format) =>
+    codeFormatFromBarcodeFormat(format).cardType;
 
-  const CameraScanPage({super.key, required this.onCodeScanned});
+class CameraScanPage extends StatefulWidget {
+  final Function(String code, CardType type, CodeFormat format) onCodeScanned;
+  final VoidCallback? onManualEntry;
+
+  const CameraScanPage({
+    super.key,
+    required this.onCodeScanned,
+    this.onManualEntry,
+  });
 
   @override
   State<CameraScanPage> createState() => _CameraScanPageState();
@@ -99,13 +113,15 @@ class _CameraScanPageState extends State<CameraScanPage> {
       _isCodeScanned = true;
     });
 
-    widget.onCodeScanned(code, cardTypeFromBarcodeFormat(format));
+    final codeFormat = codeFormatFromBarcodeFormat(format);
+    widget.onCodeScanned(code, codeFormat.cardType, codeFormat);
     if (mounted) Navigator.of(context).pop();
   }
 
   void _toggleFlash() async {
     try {
       await cameraController.toggleTorch();
+      if (!mounted) return;
       // Query the actual torch state if available; otherwise toggle local state
       setState(() {
         _isFlashOn = !_isFlashOn;
@@ -116,6 +132,7 @@ class _CameraScanPageState extends State<CameraScanPage> {
         name: 'CameraScanPage',
         error: e,
       );
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Failed to toggle flash')));
@@ -194,9 +211,10 @@ class _CameraScanPageState extends State<CameraScanPage> {
             left: 20,
             right: 20,
             child: ElevatedButton(
+              key: const ValueKey('camera_manual_entry_button'),
               onPressed: () {
+                widget.onManualEntry?.call();
                 Navigator.of(context).pop();
-                // You can add manual entry navigation here if needed
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,

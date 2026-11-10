@@ -35,8 +35,9 @@ void main() {
       final barcodeCard = CardItem(
         title: 'Barcode Test Card',
         description: 'Test Barcode Card',
-        name: 'BC123',
+        name: '4006381333931',
         cardType: CardType.barcode,
+        codeFormat: CodeFormat.ean13,
         sortOrder: 1,
       );
 
@@ -59,8 +60,9 @@ void main() {
       expect(retrievedQr.name, 'QR123');
 
       expect(retrievedBarcode.cardType, CardType.barcode);
+      expect(retrievedBarcode.codeFormat, CodeFormat.ean13);
       expect(retrievedBarcode.title, 'Barcode Test Card');
-      expect(retrievedBarcode.name, 'BC123');
+      expect(retrievedBarcode.name, '4006381333931');
     });
 
     test('should handle legacy data format during migration', () async {

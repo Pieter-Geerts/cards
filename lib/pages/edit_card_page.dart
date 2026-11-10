@@ -30,6 +30,7 @@ class _EditCardPageState extends State<EditCardPage> {
   IconData? _pendingLogoIcon; // Temporary Simple Icon for editing
 
   late CardType _selectedCardType; // To hold current card type enum
+  late CodeFormat _selectedCodeFormat;
   bool _hasUnsavedChanges = false;
   Timer? _debouncer;
   bool _isSaving = false;
@@ -55,6 +56,7 @@ class _EditCardPageState extends State<EditCardPage> {
     }
 
     _selectedCardType = widget.card.cardType;
+    _selectedCodeFormat = widget.card.codeFormat;
 
     // Listen for changes to mark as unsaved
     _titleController.addListener(_onFieldChanged);
@@ -84,13 +86,15 @@ class _EditCardPageState extends State<EditCardPage> {
       bool logoChanged =
           _pendingLogoPath != widget.card.logoPath || _pendingLogoIcon != null;
       bool typeChanged = _selectedCardType != widget.card.cardType;
+      bool formatChanged = _selectedCodeFormat != widget.card.codeFormat;
 
       final newHasUnsavedChanges =
           titleChanged ||
           descChanged ||
           nameChanged ||
           logoChanged ||
-          typeChanged;
+          typeChanged ||
+          formatChanged;
 
       if (newHasUnsavedChanges != _hasUnsavedChanges) {
         setState(() {
@@ -108,7 +112,19 @@ class _EditCardPageState extends State<EditCardPage> {
     _onFieldChanged();
   }
 
+  bool _isCodeValid() {
+    return CardItem(
+      title: _titleController.text.trim(),
+      description: '',
+      name: _nameController.text.trim(),
+      cardType: _selectedCardType,
+      codeFormat: _selectedCodeFormat,
+      sortOrder: 0,
+    ).isDataValid;
+  }
+
   void _save() {
+    if (_titleController.text.trim().isEmpty || !_isCodeValid()) return;
     // Determine the final logo path to save
     String? finalLogoPath = _pendingLogoPath;
 
@@ -138,6 +154,7 @@ class _EditCardPageState extends State<EditCardPage> {
         name: _nameController.text.trim(),
         logoPath: finalLogoPath,
         cardType: _selectedCardType,
+        codeFormat: _selectedCodeFormat,
       );
 
       // Invoke onSave (best-effort) but don't rely on it for navigation.
@@ -245,6 +262,7 @@ class _EditCardPageState extends State<EditCardPage> {
       description: description ?? '',
       name: codeValue,
       cardType: cardType,
+      codeFormat: _selectedCodeFormat,
       logoPath: logoPath,
       sortOrder: 0,
     ).renderCode(
@@ -338,6 +356,7 @@ class _EditCardPageState extends State<EditCardPage> {
                   onPressed:
                       (_titleController.text.trim().isNotEmpty &&
                               _nameController.text.trim().isNotEmpty &&
+                              _isCodeValid() &&
                               _hasUnsavedChanges)
                           ? _save
                           : null,
@@ -370,6 +389,10 @@ class _EditCardPageState extends State<EditCardPage> {
                   if (newValue != null && newValue != _selectedCardType) {
                     setState(() {
                       _selectedCardType = newValue;
+                      _selectedCodeFormat =
+                          newValue == CardType.qrCode
+                              ? CodeFormat.qrCode
+                              : CodeFormat.code128;
                       _onFieldChanged(); // Update unsaved changes status
                     });
                   }
@@ -383,16 +406,16 @@ class _EditCardPageState extends State<EditCardPage> {
                           ? l10n.enterQrCodeValue
                           : l10n.enterBarcodeValue,
                   keyboardType:
-                      _selectedCardType == CardType.barcode
+                      _selectedCodeFormat.requiresNumericData
                           ? TextInputType.number
-                          : TextInputType.url,
+                          : TextInputType.text,
                   inputFormatters:
-                      _selectedCardType == CardType.barcode
+                      _selectedCodeFormat.requiresNumericData
                           ? [FilteringTextInputFormatter.digitsOnly]
                           : null,
                 ),
                 const SizedBox(height: 24),
-                if (codeValueForPreview.isNotEmpty)
+                if (codeValueForPreview.isNotEmpty && _isCodeValid())
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),

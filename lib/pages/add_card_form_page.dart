@@ -16,12 +16,14 @@ class AddCardFormPage extends StatefulWidget {
   final AddCardMode mode;
   final String? scannedCode; // Pre-filled from scanner
   final CardType? scannedType; // Auto-detected type from scanner
+  final CodeFormat? scannedFormat; // Concrete symbology from scanner
 
   const AddCardFormPage({
     super.key,
     required this.mode,
     this.scannedCode,
     this.scannedType,
+    this.scannedFormat,
   });
 
   @override
@@ -36,6 +38,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
 
   // State
   CardType _cardType = CardType.qrCode;
+  CodeFormat _codeFormat = CodeFormat.qrCode;
   String? _logoPath;
   IconData? _selectedLogoIcon;
   bool _isLoadingLogo = false;
@@ -62,6 +65,9 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
       _codeController.text = widget.scannedCode!;
       // Use provided scanned type or auto-detect card type based on scanned code format
       _cardType = widget.scannedType ?? _detectCardType(widget.scannedCode!);
+      _codeFormat =
+          widget.scannedFormat ??
+          (_cardType == CardType.qrCode ? CodeFormat.qrCode : CodeFormat.ean13);
     }
 
     // Set up logo auto-suggestion when title changes (debounced)
@@ -121,8 +127,17 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
   }
 
   bool _isFormValid() {
+    final code = _codeController.text.trim();
     return _titleController.text.trim().isNotEmpty &&
-        _codeController.text.trim().isNotEmpty;
+        code.isNotEmpty &&
+        CardItem(
+          title: _titleController.text.trim(),
+          description: '',
+          name: code,
+          cardType: _cardType,
+          codeFormat: _codeFormat,
+          sortOrder: 0,
+        ).isDataValid;
   }
 
   Future<void> _saveCard() async {
@@ -138,6 +153,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
       description: _descriptionController.text.trim(),
       name: _codeController.text.trim(),
       cardType: _cardType,
+      codeFormat: _codeFormat,
       logoPath: logoPath,
       sortOrder: DateTime.now().millisecondsSinceEpoch,
     );
@@ -216,6 +232,25 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
     );
   }
 
+  Widget? _buildCodePreview() {
+    final code = _codeController.text.trim();
+    final previewCard = CardItem(
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim(),
+      name: code,
+      cardType: _cardType,
+      codeFormat: _codeFormat,
+      sortOrder: 0,
+    );
+    if (code.isEmpty || !previewCard.isDataValid) return null;
+
+    return previewCard.renderCode(
+      size: _cardType.is2D ? 140 : null,
+      width: _cardType.is1D ? 220 : null,
+      height: _cardType.is1D ? 80 : null,
+    );
+  }
+
   Widget _buildCardPreview() {
     return Card(
       key: const ValueKey('card_preview'),
@@ -254,6 +289,7 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
                 description: _descriptionController.text,
                 logoSize: 64,
                 background: Colors.white,
+                codePreview: _buildCodePreview(),
               ),
             ),
           ],
@@ -413,7 +449,14 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
                   value: _cardType,
                   isExpanded: true,
                   onChanged: (CardType? newValue) {
-                    setState(() => _cardType = newValue!);
+                    if (newValue == null) return;
+                    setState(() {
+                      _cardType = newValue;
+                      _codeFormat =
+                          newValue == CardType.qrCode
+                              ? CodeFormat.qrCode
+                              : CodeFormat.ean13;
+                    });
                   },
                   items:
                       CardType.values.map<DropdownMenuItem<CardType>>((
@@ -443,11 +486,11 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
                   : AppLocalizations.of(context).enterBarcodeValue,
           onChanged: (_) => setState(() {}),
           keyboardType:
-              _cardType == CardType.barcode
+              _codeFormat.requiresNumericData
                   ? TextInputType.number
-                  : TextInputType.url,
+                  : TextInputType.text,
           inputFormatters:
-              _cardType == CardType.barcode
+              _codeFormat.requiresNumericData
                   ? [FilteringTextInputFormatter.digitsOnly]
                   : null,
         ),

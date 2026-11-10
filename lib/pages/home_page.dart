@@ -3,14 +3,13 @@ import 'package:flutter/material.dart';
 // DatabaseHelper is replaced by CardRepository; keep import removed
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
+import '../repositories/card_repository_factory.dart';
 import '../repositories/card_repository_interface.dart';
-import '../repositories/sqlite_card_repository.dart';
 import '../services/add_card_flow_manager.dart';
 import '../services/share_service.dart';
 import '../widgets/card_list_widget.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/home_app_bar.dart';
-import 'add_card_entry_page.dart';
 import 'card_detail_page.dart';
 import 'edit_card_page.dart';
 import 'settings_page.dart';
@@ -20,6 +19,7 @@ class HomePage extends StatefulWidget {
   final Function(CardItem) onAddCard;
   final Function(CardItem)? onUpdateCard;
   final CardRepository? cardRepository;
+  final CardShareService? shareService;
 
   const HomePage({
     super.key,
@@ -27,6 +27,7 @@ class HomePage extends StatefulWidget {
     required this.onAddCard,
     this.onUpdateCard,
     this.cardRepository,
+    this.shareService,
   });
 
   @override
@@ -40,7 +41,6 @@ class _HomePageState extends State<HomePage> {
     final newCard = await AddCardFlowManager.showAddCardFlow(
       context,
       mode: mode,
-      useBottomSheet: true,
     );
     if (newCard != null) {
       final nextOrderRes = await _cardRepository.getNextSortOrder();
@@ -58,6 +58,7 @@ class _HomePageState extends State<HomePage> {
             description: newCard.description,
             name: newCard.name,
             cardType: newCard.cardType,
+            codeFormat: newCard.codeFormat,
             createdAt: newCard.createdAt,
             sortOrder: nextOrder,
             logoPath: newCard.logoPath,
@@ -95,6 +96,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   late final CardRepository _cardRepository;
+  late final CardShareService _shareService;
   late List<CardItem> _displayedCards;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -105,7 +107,8 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _displayedCards = List.from(widget.cards);
     _applySearchFilter();
-    _cardRepository = widget.cardRepository ?? SqliteCardRepository();
+    _cardRepository = widget.cardRepository ?? CardRepositoryFactory.create();
+    _shareService = widget.shareService ?? ShareService();
     _searchController.addListener(() {
       if (_searchController.text.isEmpty && _searchQuery.isNotEmpty) {
         setState(() {
@@ -158,6 +161,70 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> _deleteCardWithUndo(CardItem deletedCard) async {
+    final cardId = deletedCard.id;
+    if (cardId == null) return;
+
+    if (mounted) {
+      setState(() {
+        _displayedCards.removeWhere((card) => card.id == cardId);
+      });
+    }
+
+    final l10n = AppLocalizations.of(context);
+    var restored = false;
+    final messenger = ScaffoldMessenger.of(context);
+    final snackBar = messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.cardDeleted),
+        action: SnackBarAction(
+          label: l10n.undo,
+          onPressed: () {
+            restored = true;
+            _restoreDeletedCard(deletedCard);
+          },
+        ),
+      ),
+    );
+
+    final closeReason = await snackBar.closed;
+    if (restored || closeReason == SnackBarClosedReason.action) return;
+
+    final deleteResult = await _cardRepository.deleteCard(cardId);
+    deleteResult.fold((failure) {
+      _restoreDeletedCard(deletedCard);
+      if (mounted) {
+        messenger.showSnackBar(SnackBar(content: Text(failure.message)));
+      }
+    }, (_) {});
+  }
+
+  void _restoreDeletedCard(CardItem card) {
+    if (!mounted || _displayedCards.any((item) => item.id == card.id)) return;
+    final matchesSearch =
+        _searchQuery.trim().isEmpty || _cardMatchesSearch(card, _searchQuery);
+    if (!matchesSearch) return;
+
+    setState(() {
+      _displayedCards.add(card);
+      _displayedCards.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    });
+  }
+
+  bool _cardMatchesSearch(CardItem card, String query) {
+    final normalizedQuery = query.trim().toLowerCase();
+    final title = card.title.toLowerCase();
+    final description = card.description.toLowerCase();
+    final name = card.name.toLowerCase();
+    final typeName = card.cardType.displayName.toLowerCase();
+    final enumName = card.cardType.name.toLowerCase();
+    return title.contains(normalizedQuery) ||
+        description.contains(normalizedQuery) ||
+        name.contains(normalizedQuery) ||
+        typeName.contains(normalizedQuery) ||
+        enumName.contains(normalizedQuery);
+  }
+
   void _onCardTap(CardItem card) async {
     final updated = await Navigator.push<CardItem>(
       context,
@@ -165,27 +232,8 @@ class _HomePageState extends State<HomePage> {
         builder:
             (context) => CardDetailPage(
               card: card,
-              onDelete: (deletedCard) async {
-                if (deletedCard.id != null) {
-                  final del = await _cardRepository.deleteCard(deletedCard.id!);
-                  del.fold(
-                    (failure) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(failure.message)),
-                        );
-                      }
-                    },
-                    (_) {
-                      setState(() {
-                        _displayedCards.removeWhere(
-                          (c) => c.id == deletedCard.id,
-                        );
-                      });
-                    },
-                  );
-                }
-              },
+              onDelete: _deleteCardWithUndo,
+              shareService: _shareService,
             ),
       ),
     );
@@ -423,78 +471,11 @@ class _HomePageState extends State<HomePage> {
                 onCardTap: _onCardTap,
                 onCardActions: (card) => _showCardActions(context, card, l10n),
                 onReorder: _onReorder,
+                canReorder: _searchQuery.isEmpty,
               ),
       floatingActionButton: FloatingActionButton(
         key: const ValueKey('add_card_fab'),
-        onPressed: () {
-          final parentContext = context;
-          Navigator.of(parentContext).push(
-            MaterialPageRoute(
-              builder:
-                  (context) => AddCardEntryPage(
-                    onCardCreated: (createdCard) async {
-                      final nextOrderRes =
-                          await _cardRepository.getNextSortOrder();
-                      nextOrderRes.fold(
-                        (failure) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(parentContext).showSnackBar(
-                              SnackBar(content: Text(failure.message)),
-                            );
-                          }
-                        },
-                        (nextOrder) async {
-                          final finalCard = CardItem(
-                            title: createdCard.title,
-                            description: createdCard.description,
-                            name: createdCard.name,
-                            cardType: createdCard.cardType,
-                            createdAt: createdCard.createdAt,
-                            sortOrder: nextOrder,
-                            logoPath: createdCard.logoPath,
-                          );
-                          final ins = await _cardRepository.insertCard(
-                            finalCard,
-                          );
-                          ins.fold(
-                            (failure) {
-                              if (mounted) {
-                                ScaffoldMessenger.of(
-                                  parentContext,
-                                ).showSnackBar(
-                                  SnackBar(content: Text(failure.message)),
-                                );
-                              }
-                            },
-                            (_) async {
-                              final cardsRes = await _cardRepository.getCards();
-                              cardsRes.fold(
-                                (failure) {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(
-                                      parentContext,
-                                    ).showSnackBar(
-                                      SnackBar(content: Text(failure.message)),
-                                    );
-                                  }
-                                },
-                                (cards) {
-                                  if (mounted) {
-                                    setState(() {
-                                      _displayedCards = cards;
-                                    });
-                                  }
-                                },
-                              );
-                            },
-                          );
-                        },
-                      );
-                    },
-                  ),
-            ),
-          );
-        },
+        onPressed: _navigateToAddCardPage,
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         elevation: 6.0,
@@ -586,7 +567,7 @@ class _HomePageState extends State<HomePage> {
                 title: Text(l10n.shareAsImageAction),
                 onTap: () async {
                   Navigator.of(modalContext).pop(); // Close modal first
-                  await ShareService.shareCardAsImageStatic(context, card);
+                  await _shareService.shareCardAsImage(context, card);
                 },
               ),
               const SizedBox(height: 16),

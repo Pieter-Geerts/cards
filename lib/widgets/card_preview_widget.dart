@@ -8,6 +8,7 @@ class CardPreviewWidget extends StatelessWidget {
   final String description;
   final double logoSize;
   final Color? background;
+  final Widget? codePreview;
 
   const CardPreviewWidget({
     super.key,
@@ -16,6 +17,7 @@ class CardPreviewWidget extends StatelessWidget {
     required this.description,
     this.logoSize = 64,
     this.background,
+    this.codePreview,
   });
 
   @override
@@ -50,6 +52,10 @@ class CardPreviewWidget extends StatelessWidget {
                 style: TextStyle(fontSize: 14, color: Colors.grey[700]),
               ),
             ),
+          if (codePreview != null) ...[
+            const SizedBox(height: 16),
+            codePreview!,
+          ],
         ],
       ),
     );

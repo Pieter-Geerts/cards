@@ -7,14 +7,69 @@ import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart
 import '../l10n/app_localizations.dart';
 import '../models/card_item.dart';
 
+class DetectedImageCode {
+  final String code;
+  final CardType type;
+  final CodeFormat format;
+
+  const DetectedImageCode({
+    required this.code,
+    required this.type,
+    required this.format,
+  });
+}
+
+class ImageScanTestOverrides {
+  static List<DetectedImageCode>? _nextResults;
+
+  static void queueResults(List<DetectedImageCode> results) {
+    _nextResults = results;
+  }
+
+  static List<DetectedImageCode>? takeNextResults() {
+    final results = _nextResults;
+    _nextResults = null;
+    return results;
+  }
+
+  static void clear() {
+    _nextResults = null;
+  }
+}
+
+CodeFormat _codeFormatFromImageBarcodeFormat(BarcodeFormat format) {
+  switch (format) {
+    case BarcodeFormat.qrCode:
+      return CodeFormat.qrCode;
+    case BarcodeFormat.ean13:
+      return CodeFormat.ean13;
+    case BarcodeFormat.ean8:
+      return CodeFormat.ean8;
+    case BarcodeFormat.upca:
+      return CodeFormat.upcA;
+    case BarcodeFormat.upce:
+      return CodeFormat.upcE;
+    case BarcodeFormat.code128:
+      return CodeFormat.code128;
+    case BarcodeFormat.code39:
+      return CodeFormat.code39;
+    case BarcodeFormat.code93:
+      return CodeFormat.code93;
+    default:
+      return CodeFormat.unknown;
+  }
+}
+
 class ImageScanPage extends StatefulWidget {
   final String imagePath;
-  final Function(String code, CardType type) onCodeEntered;
+  final Function(String code, CardType type, CodeFormat format) onCodeEntered;
+  final bool showImagePreview;
 
   const ImageScanPage({
     super.key,
     required this.imagePath,
     required this.onCodeEntered,
+    this.showImagePreview = true,
   });
 
   @override
@@ -24,14 +79,19 @@ class ImageScanPage extends StatefulWidget {
 class _ImageScanPageState extends State<ImageScanPage> {
   final TextEditingController _codeController = TextEditingController();
   CardType _selectedType = CardType.qrCode;
+  CodeFormat _selectedFormat = CodeFormat.qrCode;
   bool _isScanning = false;
+  List<DetectedImageCode> _detectedCodes = const [];
+  int _selectedCodeIndex = 0;
   late BarcodeScanner _barcodeScanner;
 
   @override
   void initState() {
     super.initState();
     _barcodeScanner = BarcodeScanner();
-    _scanImageForCode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _scanImageForCode();
+    });
   }
 
   @override
@@ -47,42 +107,42 @@ class _ImageScanPageState extends State<ImageScanPage> {
     setState(() => _isScanning = true);
 
     try {
-      final file = File(widget.imagePath);
-      final inputImage = InputImage.fromFilePath(file.path);
+      final testResults = ImageScanTestOverrides.takeNextResults();
+      final List<DetectedImageCode> detectedCodes;
+      if (testResults != null) {
+        detectedCodes = testResults;
+      } else {
+        final file = File(widget.imagePath);
+        final inputImage = InputImage.fromFilePath(file.path);
+        final barcodes = await _barcodeScanner.processImage(inputImage);
+        detectedCodes =
+            barcodes
+                .map((barcode) {
+                  final code = barcode.displayValue ?? barcode.rawValue ?? '';
+                  final format = _codeFormatFromImageBarcodeFormat(
+                    barcode.format,
+                  );
+                  return DetectedImageCode(
+                    code: code,
+                    type: format.cardType,
+                    format: format,
+                  );
+                })
+                .where((result) => result.code.isNotEmpty)
+                .toList();
+      }
 
-      final barcodes = await _barcodeScanner.processImage(inputImage);
-
-      if (barcodes.isNotEmpty && mounted) {
-        final barcode = barcodes.first;
-        final code = barcode.displayValue ?? barcode.rawValue ?? '';
-
-        if (code.isNotEmpty) {
-          // Determine the type based on barcode format
-          late CardType detectedType;
-          switch (barcode.format) {
-            case BarcodeFormat.qrCode:
-              detectedType = CardType.qrCode;
-              break;
-            default:
-              detectedType = CardType.barcode;
-          }
-
-          setState(() {
-            _codeController.text = code;
-            _selectedType = detectedType;
-          });
-
-          if (mounted) {
-            final l10n = AppLocalizations.of(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(l10n.codeScannedSuccessfully),
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          }
-        }
-      } else if (mounted) {
+      if (!mounted) return;
+      if (detectedCodes.isNotEmpty) {
+        _applyDetectedCodes(detectedCodes);
+        final l10n = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.codeScannedSuccessfully),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
         final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -113,6 +173,30 @@ class _ImageScanPageState extends State<ImageScanPage> {
     }
   }
 
+  void _applyDetectedCodes(List<DetectedImageCode> detectedCodes) {
+    setState(() {
+      _detectedCodes = detectedCodes;
+      _selectedCodeIndex = 0;
+      _selectDetectedCode(0, notify: false);
+    });
+  }
+
+  void _selectDetectedCode(int index, {bool notify = true}) {
+    final detectedCode = _detectedCodes[index];
+    void update() {
+      _selectedCodeIndex = index;
+      _codeController.text = detectedCode.code;
+      _selectedType = detectedCode.type;
+      _selectedFormat = detectedCode.format;
+    }
+
+    if (notify) {
+      setState(update);
+    } else {
+      update();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,20 +216,24 @@ class _ImageScanPageState extends State<ImageScanPage> {
         child: Column(
           children: [
             // Image display
-            Container(
-              width: double.infinity,
-              height: 300,
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
+            if (widget.showImagePreview)
+              Container(
+                width: double.infinity,
+                height: 300,
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    File(widget.imagePath),
+                    fit: BoxFit.contain,
+                  ),
+                ),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.file(File(widget.imagePath), fit: BoxFit.contain),
-              ),
-            ),
 
             // Instructions
             Padding(
@@ -183,6 +271,36 @@ class _ImageScanPageState extends State<ImageScanPage> {
                 children: [
                   const SizedBox(height: 16),
 
+                  if (_detectedCodes.length > 1) ...[
+                    DropdownButtonFormField<int>(
+                      key: const ValueKey('image_detected_code_selector'),
+                      initialValue: _selectedCodeIndex,
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context).code,
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: [
+                        for (
+                          var index = 0;
+                          index < _detectedCodes.length;
+                          index++
+                        )
+                          DropdownMenuItem(
+                            value: index,
+                            child: Text(
+                              '${_detectedCodes[index].code} '
+                              '(${_detectedCodes[index].format.displayName})',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                      ],
+                      onChanged: (index) {
+                        if (index != null) _selectDetectedCode(index);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
                   // Code type selector
                   Text(
                     AppLocalizations.of(context).cardTypeLabel,
@@ -200,7 +318,14 @@ class _ImageScanPageState extends State<ImageScanPage> {
                         value: _selectedType,
                         isExpanded: true,
                         onChanged: (CardType? newValue) {
-                          setState(() => _selectedType = newValue!);
+                          if (newValue == null) return;
+                          setState(() {
+                            _selectedType = newValue;
+                            _selectedFormat =
+                                newValue == CardType.qrCode
+                                    ? CodeFormat.qrCode
+                                    : CodeFormat.ean13;
+                          });
                         },
                         items:
                             CardType.values.map<DropdownMenuItem<CardType>>((
@@ -223,6 +348,7 @@ class _ImageScanPageState extends State<ImageScanPage> {
                   ),
                   const SizedBox(height: 8),
                   TextField(
+                    key: const ValueKey('image_code_field'),
                     controller: _codeController,
                     onChanged: (_) => setState(() {}),
                     maxLines: 3,
@@ -255,6 +381,7 @@ class _ImageScanPageState extends State<ImageScanPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
+                      key: const ValueKey('image_save_button'),
                       onPressed: _canSave() ? _saveCode : null,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -287,7 +414,7 @@ class _ImageScanPageState extends State<ImageScanPage> {
   void _saveCode() {
     final code = _codeController.text.trim();
     if (code.isNotEmpty) {
-      widget.onCodeEntered(code, _selectedType);
+      widget.onCodeEntered(code, _selectedType, _selectedFormat);
       Navigator.of(context).pop();
     }
   }

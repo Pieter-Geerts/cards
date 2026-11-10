@@ -9,14 +9,62 @@ import 'image_scan_page.dart';
 
 class AddCardEntryPage extends StatefulWidget {
   final ValueChanged<CardItem>? onCardCreated;
+  final AddCardEntryMode initialMode;
+  final String? prefilledCode;
+  final CardType? prefilledType;
 
-  const AddCardEntryPage({super.key, this.onCardCreated});
+  const AddCardEntryPage({
+    super.key,
+    this.onCardCreated,
+    this.initialMode = AddCardEntryMode.selection,
+    this.prefilledCode,
+    this.prefilledType,
+  });
 
   @override
   State<AddCardEntryPage> createState() => _AddCardEntryPageState();
 }
 
 class _AddCardEntryPageState extends State<AddCardEntryPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final prefilledCode = widget.prefilledCode;
+      if (prefilledCode != null && prefilledCode.isNotEmpty) {
+        final type = widget.prefilledType ?? _detectCardType(prefilledCode);
+        _navigateToFormWithCode(
+          context,
+          prefilledCode,
+          type,
+          type == CardType.qrCode ? CodeFormat.qrCode : CodeFormat.ean13,
+        );
+        return;
+      }
+      switch (widget.initialMode) {
+        case AddCardEntryMode.selection:
+          break;
+        case AddCardEntryMode.scan:
+          _navigateToCameraScan(context);
+          break;
+        case AddCardEntryMode.manual:
+          _navigateToManualForm(context);
+          break;
+        case AddCardEntryMode.import:
+          _navigateToImageScan(context);
+          break;
+      }
+    });
+  }
+
+  CardType _detectCardType(String code) {
+    if (code.length > 20 || code.contains('http') || code.contains('.')) {
+      return CardType.qrCode;
+    }
+    return CardType.barcode;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -242,23 +290,29 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
     );
   }
 
-  void _navigateToCameraScan(BuildContext context) {
-    Navigator.of(context)
-        .push<(String code, CardType type)>(
-          MaterialPageRoute(
-            builder:
-                (context) => CameraScanPage(
-                  onCodeScanned: (code, type) {
-                    Navigator.of(context).pop((code, type));
-                  },
-                ),
-          ),
-        )
-        .then((result) {
-          if (result != null) {
-            _navigateToFormWithCode(context, result.$1, result.$2);
-          }
-        });
+  Future<void> _navigateToCameraScan(BuildContext context) async {
+    (String code, CardType type, CodeFormat format)? scanResult;
+    var manualEntryRequested = false;
+
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder:
+            (context) => CameraScanPage(
+              onCodeScanned: (code, type, format) {
+                scanResult = (code, type, format);
+              },
+              onManualEntry: () => manualEntryRequested = true,
+            ),
+      ),
+    );
+
+    if (!mounted) return;
+    if (manualEntryRequested) {
+      _navigateToManualForm(this.context);
+    } else if (scanResult != null) {
+      final result = scanResult!;
+      _navigateToFormWithCode(this.context, result.$1, result.$2, result.$3);
+    }
   }
 
   void _navigateToImageScan(BuildContext context) async {
@@ -269,24 +323,30 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
       final imagePath = result['imagePath'] as String;
       // Open image scan page to detect code
       if (!mounted) return;
-      // ignore: use_build_context_synchronously
-      final scanResult = await Navigator.of(
-        context,
-      ).push<(String code, CardType type)?>(
+      (String code, CardType type, CodeFormat format)? scanResult;
+      await Navigator.of(this.context).push<void>(
         MaterialPageRoute(
           builder:
               (context) => ImageScanPage(
                 imagePath: imagePath,
-                onCodeEntered: (code, type) {
-                  Navigator.of(context).pop((code, type));
+                onCodeEntered: (code, type, format) {
+                  scanResult = (code, type, format);
                 },
               ),
         ),
       );
 
       if (scanResult != null && mounted) {
-        _navigateToFormWithCode(context, scanResult.$1, scanResult.$2);
+        final result = scanResult!;
+        _navigateToFormWithCode(this.context, result.$1, result.$2, result.$3);
       }
+    }
+  }
+
+  void _completeCard(CardItem card) {
+    widget.onCardCreated?.call(card);
+    if (mounted) {
+      Navigator.of(context).pop(card);
     }
   }
 
@@ -304,7 +364,7 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
         )
         .then((createdCard) {
           if (createdCard != null) {
-            widget.onCardCreated?.call(createdCard);
+            _completeCard(createdCard);
           }
         });
   }
@@ -313,6 +373,7 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
     BuildContext context,
     String code,
     CardType type,
+    CodeFormat format,
   ) {
     // ignore: use_build_context_synchronously
     Navigator.of(context)
@@ -323,15 +384,19 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
                   mode: AddCardMode.scan,
                   scannedCode: code,
                   scannedType: type,
+                  scannedFormat: format,
                 ),
           ),
         )
         .then((createdCard) {
           if (createdCard != null) {
-            widget.onCardCreated?.call(createdCard);
+            _completeCard(createdCard);
           }
         });
   }
 }
 
 enum AddCardMode { scan, gallery, manual }
+
+/// The initial action requested by the canonical add-card flow.
+enum AddCardEntryMode { selection, scan, manual, import }

@@ -71,6 +71,35 @@ void main() {
     expect(find.text('QRCodeData123'), findsNothing);
   });
 
+  testWidgets('CardDetailPage copies the stored code', (tester) async {
+    String? clipboardText;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          if (call.method == 'Clipboard.setData') {
+            clipboardText = (call.arguments as Map)['text'] as String?;
+          }
+          return null;
+        });
+
+    final card = CardItem(
+      title: 'Copy Test Card',
+      description: '',
+      name: '4006381333931',
+      cardType: CardType.barcode,
+      codeFormat: CodeFormat.ean13,
+      sortOrder: 0,
+    );
+    await tester.pumpWidget(createCardDetailPage(card: card));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('copy_code_button')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(clipboardText, '4006381333931');
+    expect(find.byType(SnackBar), findsOneWidget);
+  });
+
   testWidgets(
     'CardDetailPage displays Barcode details in white card',
     (WidgetTester tester) async {
