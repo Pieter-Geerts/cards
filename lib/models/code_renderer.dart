@@ -99,7 +99,7 @@ class BarcodeRenderer implements CodeRenderer {
     double? height,
   }) {
     return bw.BarcodeWidget(
-      barcode: bw.Barcode.ean13(),
+      barcode: bw.Barcode.ean13(drawEndChar: true),
       data: data,
       width: width ?? 200,
       height: height ?? 80,
@@ -112,7 +112,7 @@ class BarcodeRenderer implements CodeRenderer {
   @override
   Widget renderForSharing(String data, {double? size}) {
     return bw.BarcodeWidget(
-      barcode: bw.Barcode.ean13(),
+      barcode: bw.Barcode.ean13(drawEndChar: true),
       data: data,
       width: size ?? 320,
       height: 120,
