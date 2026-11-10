@@ -18,7 +18,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: any
-  cupertino_icons: ^1.0.8
+  cupertino_icons: ">=1.0.8 <3.0.0"
   mobile_scanner: ^7.0.1
   sqflite: ^2.2.0
   path: ^1.8.3
