@@ -6,7 +6,6 @@ import FlutterMacOS
 import Foundation
 
 import file_selector_macos
-import fl_channel
 import mobile_scanner
 import path_provider_foundation
 import screen_brightness_macos
@@ -16,7 +15,6 @@ import sqflite_darwin
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FileSelectorPlugin.register(with: registry.registrar(forPlugin: "FileSelectorPlugin"))
-  FlChannelPlugin.register(with: registry.registrar(forPlugin: "FlChannelPlugin"))
   MobileScannerPlugin.register(with: registry.registrar(forPlugin: "MobileScannerPlugin"))
   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))
   ScreenBrightnessMacosPlugin.register(with: registry.registrar(forPlugin: "ScreenBrightnessMacosPlugin"))
