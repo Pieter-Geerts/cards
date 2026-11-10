@@ -427,18 +427,18 @@ packages:
     dependency: "direct main"
     description:
       name: google_mlkit_barcode_scanning
-      sha256: b38505df2d3fdf7830979d60fee55039c2f442d189b2e06fcb2fe494ba65d0db
+      sha256: dcee692d8ce374d23da35a4183597c7b9ed5e78f08c7298f3b9f41c1f223af8f
       url: "https://pub.dev"
     source: hosted
-    version: "0.14.1"
+    version: "1.0.1"
   google_mlkit_commons:
     dependency: transitive
     description:
       name: google_mlkit_commons
-      sha256: "8f40fbac10685cad4715d11e6a0d86837d9ad7168684dfcad29610282a88e67a"
+      sha256: ed1e143c24b43acce8c4af8c5f0b06eb47fd4ccdc2b92aff5dffadadd7028a78
       url: "https://pub.dev"
     source: hosted
-    version: "0.11.0"
+    version: "1.0.1"
   graphs:
     dependency: transitive
     description:
