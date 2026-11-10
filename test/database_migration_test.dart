@@ -222,10 +222,12 @@ void main() {
       expect(retrievedCards.length, 3);
 
       // Verify types are preserved
-      final qrCards =
-          retrievedCards.where((c) => c.cardType == CardType.qrCode).toList();
-      final barcodeCards =
-          retrievedCards.where((c) => c.cardType == CardType.barcode).toList();
+      final qrCards = retrievedCards
+          .where((c) => c.cardType == CardType.qrCode)
+          .toList();
+      final barcodeCards = retrievedCards
+          .where((c) => c.cardType == CardType.barcode)
+          .toList();
 
       expect(qrCards.length, 2);
       expect(barcodeCards.length, 1);

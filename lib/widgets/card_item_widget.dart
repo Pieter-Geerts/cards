@@ -29,10 +29,9 @@ class CardItemWidget extends StatelessWidget {
         elevation: 8.0,
         borderRadius: BorderRadius.circular(20.0),
         color: Theme.of(context).cardColor,
-        shadowColor:
-            Theme.of(context).brightness == Brightness.dark
-                ? Colors.white24
-                : Colors.black26,
+        shadowColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white24
+            : Colors.black26,
         child: InkWell(
           borderRadius: BorderRadius.circular(20.0),
           onTap: onTap,
@@ -61,13 +60,12 @@ class CardItemWidget extends StatelessWidget {
                     children: [
                       Text(
                         card.title,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 24,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 24,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -75,14 +73,13 @@ class CardItemWidget extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text(
                           card.description,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyLarge?.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withAlpha(204),
-                            fontSize: 16,
-                          ),
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withAlpha(204),
+                                fontSize: 16,
+                              ),
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -95,21 +92,20 @@ class CardItemWidget extends StatelessWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color:
-                                Theme.of(context).colorScheme.tertiaryContainer,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.tertiaryContainer,
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
                             _expiresLabel(context, card.expiresAt!),
-                            style: Theme.of(
-                              context,
-                            ).textTheme.labelMedium?.copyWith(
-                              color:
-                                  Theme.of(
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(
+                                  color: Theme.of(
                                     context,
                                   ).colorScheme.onTertiaryContainer,
-                              fontWeight: FontWeight.w600,
-                            ),
+                                  fontWeight: FontWeight.w600,
+                                ),
                           ),
                         ),
                       ],

@@ -100,10 +100,9 @@ class ErrorHandlingService {
     final now = DateTime.now();
     final last24Hours = now.subtract(const Duration(hours: 24));
 
-    final recentErrors =
-        _errorHistory
-            .where((error) => error.timestamp.isAfter(last24Hours))
-            .toList();
+    final recentErrors = _errorHistory
+        .where((error) => error.timestamp.isAfter(last24Hours))
+        .toList();
 
     final errorsByContext = <String, int>{};
     for (final error in recentErrors) {

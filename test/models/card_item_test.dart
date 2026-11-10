@@ -150,8 +150,9 @@ void main() {
         'name': 'SAVED123',
         'cardType': 'barcode', // new enum format
         'createdAt': DateTime.now().millisecondsSinceEpoch,
-        'expiresAt':
-            DateTime.now().add(const Duration(days: 2)).millisecondsSinceEpoch,
+        'expiresAt': DateTime.now()
+            .add(const Duration(days: 2))
+            .millisecondsSinceEpoch,
         'sortOrder': 1,
         'logoPath': '/path/to/saved.png',
       };

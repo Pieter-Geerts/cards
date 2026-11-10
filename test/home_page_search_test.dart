@@ -42,7 +42,9 @@ void main() {
     ];
 
     await tester.pumpWidget(
-      TestableWidget(child: HomePage(cards: cards, onAddCard: (_) {})),
+      TestableWidget(
+        child: HomePage(cards: cards, onAddCard: (_) {}),
+      ),
     );
     await tester.pumpAndSettle();
 

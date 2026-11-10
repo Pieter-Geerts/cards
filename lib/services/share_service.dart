@@ -129,10 +129,9 @@ class ShareService implements CardShareService {
           if (byteData != null) {
             final pngBytes = byteData.buffer.asUint8List();
             final tempDir = await _getTempDir();
-            final file =
-                await File(
-                  '${tempDir.path}/card_${card.id ?? card.name}.png',
-                ).create();
+            final file = await File(
+              '${tempDir.path}/card_${card.id ?? card.name}.png',
+            ).create();
             await file.writeAsBytes(pngBytes);
             await _shareFiles([XFile(file.path)], text: card.title);
           }

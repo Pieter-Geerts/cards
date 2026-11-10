@@ -207,21 +207,20 @@ class _EditCardPageState extends State<EditCardPage> {
       final l10n = AppLocalizations.of(context);
       final shouldPop = await showDialog<bool>(
         context: context,
-        builder:
-            (context) => AlertDialog(
-              title: Text(l10n.unsavedChangesTitle),
-              content: Text(l10n.unsavedChangesMessage),
-              actions: <Widget>[
-                TextButton(
-                  child: Text(l10n.stayButton),
-                  onPressed: () => Navigator.of(context).pop(false),
-                ),
-                TextButton(
-                  child: Text(l10n.discardButton),
-                  onPressed: () => Navigator.of(context).pop(true),
-                ),
-              ],
+        builder: (context) => AlertDialog(
+          title: Text(l10n.unsavedChangesTitle),
+          content: Text(l10n.unsavedChangesMessage),
+          actions: <Widget>[
+            TextButton(
+              child: Text(l10n.stayButton),
+              onPressed: () => Navigator.of(context).pop(false),
             ),
+            TextButton(
+              child: Text(l10n.discardButton),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        ),
       );
       return shouldPop ?? false;
     }
@@ -232,21 +231,20 @@ class _EditCardPageState extends State<EditCardPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder:
-          (context) => LogoSelectionSheet(
-            currentLogo: _pendingLogoIcon,
-            cardTitle: _titleController.text,
-            onLogoSelected: (selectedLogo) {
-              setState(() {
-                _pendingLogoIcon = selectedLogo;
-                // Clear the path if we're using an icon
-                if (selectedLogo != null) {
-                  _pendingLogoPath = null;
-                }
-                _onFieldChanged();
-              });
-            },
-          ),
+      builder: (context) => LogoSelectionSheet(
+        currentLogo: _pendingLogoIcon,
+        cardTitle: _titleController.text,
+        onLogoSelected: (selectedLogo) {
+          setState(() {
+            _pendingLogoIcon = selectedLogo;
+            // Clear the path if we're using an icon
+            if (selectedLogo != null) {
+              _pendingLogoPath = null;
+            }
+            _onFieldChanged();
+          });
+        },
+      ),
     );
   }
 
@@ -286,15 +284,14 @@ class _EditCardPageState extends State<EditCardPage> {
         const SizedBox(height: 6),
         DropdownButtonFormField<CardType>(
           value: value,
-          items:
-              CardType.values
-                  .map(
-                    (type) => DropdownMenuItem(
-                      value: type,
-                      child: Text(type.getLocalizedDisplayName(context)),
-                    ),
-                  )
-                  .toList(),
+          items: CardType.values
+              .map(
+                (type) => DropdownMenuItem(
+                  value: type,
+                  child: Text(type.getLocalizedDisplayName(context)),
+                ),
+              )
+              .toList(),
           onChanged: onChanged,
           decoration: InputDecoration(
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -333,35 +330,35 @@ class _EditCardPageState extends State<EditCardPage> {
           actions: [
             _isSaving
                 ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: SizedBox(
-                    width: 48,
-                    height: kToolbarHeight,
-                    child: Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Theme.of(context).colorScheme.onPrimary,
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: SizedBox(
+                      width: 48,
+                      height: kToolbarHeight,
+                      child: Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Theme.of(context).colorScheme.onPrimary,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                )
+                  )
                 : IconButton(
-                  icon: const Icon(Icons.save),
-                  onPressed:
-                      (_titleController.text.trim().isNotEmpty &&
-                              _nameController.text.trim().isNotEmpty &&
-                              _isCodeValid() &&
-                              _hasUnsavedChanges)
-                          ? _save
-                          : null,
-                  tooltip: l10n.save,
-                ),
+                    icon: const Icon(Icons.save),
+                    onPressed:
+                        (_titleController.text.trim().isNotEmpty &&
+                            _nameController.text.trim().isNotEmpty &&
+                            _isCodeValid() &&
+                            _hasUnsavedChanges)
+                        ? _save
+                        : null,
+                    tooltip: l10n.save,
+                  ),
           ],
         ),
         body: Padding(
@@ -389,10 +386,9 @@ class _EditCardPageState extends State<EditCardPage> {
                   if (newValue != null && newValue != _selectedCardType) {
                     setState(() {
                       _selectedCardType = newValue;
-                      _selectedCodeFormat =
-                          newValue == CardType.qrCode
-                              ? CodeFormat.qrCode
-                              : CodeFormat.code128;
+                      _selectedCodeFormat = newValue == CardType.qrCode
+                          ? CodeFormat.qrCode
+                          : CodeFormat.code128;
                       _onFieldChanged(); // Update unsaved changes status
                     });
                   }
@@ -401,18 +397,15 @@ class _EditCardPageState extends State<EditCardPage> {
                 LabeledField(
                   label: l10n.codeValueLabel,
                   controller: _nameController,
-                  hint:
-                      _selectedCardType == CardType.qrCode
-                          ? l10n.enterQrCodeValue
-                          : l10n.enterBarcodeValue,
-                  keyboardType:
-                      _selectedCodeFormat.requiresNumericData
-                          ? TextInputType.number
-                          : TextInputType.text,
-                  inputFormatters:
-                      _selectedCodeFormat.requiresNumericData
-                          ? [FilteringTextInputFormatter.digitsOnly]
-                          : null,
+                  hint: _selectedCardType == CardType.qrCode
+                      ? l10n.enterQrCodeValue
+                      : l10n.enterBarcodeValue,
+                  keyboardType: _selectedCodeFormat.requiresNumericData
+                      ? TextInputType.number
+                      : TextInputType.text,
+                  inputFormatters: _selectedCodeFormat.requiresNumericData
+                      ? [FilteringTextInputFormatter.digitsOnly]
+                      : null,
                 ),
                 const SizedBox(height: 24),
                 if (codeValueForPreview.isNotEmpty && _isCodeValid())
@@ -471,8 +464,9 @@ class _EditCardPageState extends State<EditCardPage> {
                                   label: Text(l10n.removeLogoButton),
                                   onPressed: _removeLogo,
                                   style: TextButton.styleFrom(
-                                    foregroundColor:
-                                        Theme.of(context).colorScheme.error,
+                                    foregroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.error,
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -498,10 +492,9 @@ class _EditCardPageState extends State<EditCardPage> {
                               width: 100,
                               height: 100,
                               decoration: BoxDecoration(
-                                color:
-                                    Theme.of(
-                                      context,
-                                    ).colorScheme.surfaceContainerHighest,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHighest,
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: Theme.of(context).colorScheme.outline,

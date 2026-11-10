@@ -143,10 +143,9 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
   Future<void> _saveCard() async {
     if (!_isFormValid()) return;
 
-    final logoPath =
-        _selectedLogoIcon != null && _logoPath == null
-            ? SimpleIconsMapping.getIdentifier(_selectedLogoIcon!)
-            : _logoPath;
+    final logoPath = _selectedLogoIcon != null && _logoPath == null
+        ? SimpleIconsMapping.getIdentifier(_selectedLogoIcon!)
+        : _logoPath;
 
     final newCard = CardItem(
       title: _titleController.text.trim(),
@@ -281,10 +280,9 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
             const SizedBox(height: 16),
             Center(
               child: CardPreviewWidget(
-                logoPath:
-                    _selectedLogoIcon != null && _logoPath == null
-                        ? SimpleIconsMapping.getIdentifier(_selectedLogoIcon!)
-                        : _logoPath,
+                logoPath: _selectedLogoIcon != null && _logoPath == null
+                    ? SimpleIconsMapping.getIdentifier(_selectedLogoIcon!)
+                    : _logoPath,
                 title: _titleController.text,
                 description: _descriptionController.text,
                 logoSize: 64,
@@ -386,11 +384,10 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
                     AppLocalizations.of(context).removeLogo,
                     style: const TextStyle(color: Colors.red),
                   ),
-                  onPressed:
-                      () => setState(() {
-                        _selectedLogoIcon = null;
-                        _logoPath = null;
-                      }),
+                  onPressed: () => setState(() {
+                    _selectedLogoIcon = null;
+                    _logoPath = null;
+                  }),
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: Colors.red.shade300),
                   ),
@@ -452,21 +449,19 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
                     if (newValue == null) return;
                     setState(() {
                       _cardType = newValue;
-                      _codeFormat =
-                          newValue == CardType.qrCode
-                              ? CodeFormat.qrCode
-                              : CodeFormat.ean13;
+                      _codeFormat = newValue == CardType.qrCode
+                          ? CodeFormat.qrCode
+                          : CodeFormat.ean13;
                     });
                   },
-                  items:
-                      CardType.values.map<DropdownMenuItem<CardType>>((
-                        CardType value,
-                      ) {
-                        return DropdownMenuItem<CardType>(
-                          value: value,
-                          child: Text(value.displayName),
-                        );
-                      }).toList(),
+                  items: CardType.values.map<DropdownMenuItem<CardType>>((
+                    CardType value,
+                  ) {
+                    return DropdownMenuItem<CardType>(
+                      value: value,
+                      child: Text(value.displayName),
+                    );
+                  }).toList(),
                 ),
               ),
             ),
@@ -480,19 +475,16 @@ class _AddCardFormPageState extends State<AddCardFormPage> {
               '${AppLocalizations.of(context).code} / ${AppLocalizations.of(context).barcode} *',
           fieldKey: const ValueKey('code_field'),
           controller: _codeController,
-          hint:
-              _cardType == CardType.qrCode
-                  ? AppLocalizations.of(context).enterQrCodeValue
-                  : AppLocalizations.of(context).enterBarcodeValue,
+          hint: _cardType == CardType.qrCode
+              ? AppLocalizations.of(context).enterQrCodeValue
+              : AppLocalizations.of(context).enterBarcodeValue,
           onChanged: (_) => setState(() {}),
-          keyboardType:
-              _codeFormat.requiresNumericData
-                  ? TextInputType.number
-                  : TextInputType.text,
-          inputFormatters:
-              _codeFormat.requiresNumericData
-                  ? [FilteringTextInputFormatter.digitsOnly]
-                  : null,
+          keyboardType: _codeFormat.requiresNumericData
+              ? TextInputType.number
+              : TextInputType.text,
+          inputFormatters: _codeFormat.requiresNumericData
+              ? [FilteringTextInputFormatter.digitsOnly]
+              : null,
         ),
       ],
     );

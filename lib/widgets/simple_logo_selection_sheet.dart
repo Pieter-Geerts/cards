@@ -267,10 +267,9 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color:
-                      _selectedLogo == _suggestedLogo
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.outline,
+                  color: _selectedLogo == _suggestedLogo
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.outline,
                   width: _selectedLogo == _suggestedLogo ? 2 : 1,
                 ),
                 borderRadius: BorderRadius.circular(12),
@@ -339,10 +338,9 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
-                color:
-                    isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.outline,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.outline,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(12),
@@ -351,10 +349,9 @@ class _LogoSelectionSheetState extends State<LogoSelectionSheet>
               child: Icon(
                 logo,
                 size: 32,
-                color:
-                    isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.onSurface,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),

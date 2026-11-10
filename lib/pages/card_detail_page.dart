@@ -145,21 +145,20 @@ class _CardDetailPageState extends State<CardDetailPage>
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(l10n.deleteCard),
-            content: Text(l10n.deleteConfirmation),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                child: Text(l10n.delete),
-              ),
-            ],
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.deleteCard),
+        content: Text(l10n.deleteConfirmation),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
           ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
     );
 
     // Early return if widget is unmounted
@@ -212,78 +211,75 @@ class _CardDetailPageState extends State<CardDetailPage>
   void _showFullscreenCode() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder:
-            (context) => Theme(
-              data: Theme.of(context), // Use existing theme
-              child: Scaffold(
-                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                appBar: AppBar(
-                  backgroundColor:
-                      Theme.of(context).appBarTheme.backgroundColor,
-                  elevation: 0,
-                  leading: BackButton(
+        builder: (context) => Theme(
+          data: Theme.of(context), // Use existing theme
+          child: Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+              elevation: 0,
+              leading: BackButton(
+                color: Theme.of(context).appBarTheme.iconTheme?.color,
+              ),
+              title: Text(
+                _currentCard.title,
+                style: TextStyle(
+                  color: Theme.of(context).appBarTheme.titleTextStyle?.color,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              actions: [
+                IconButton(
+                  onPressed: () => _handleShare(),
+                  icon: Icon(
+                    Icons.share,
                     color: Theme.of(context).appBarTheme.iconTheme?.color,
                   ),
-                  title: Text(
-                    _currentCard.title,
-                    style: TextStyle(
-                      color:
-                          Theme.of(context).appBarTheme.titleTextStyle?.color,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  actions: [
-                    IconButton(
-                      onPressed: () => _handleShare(),
-                      icon: Icon(
-                        Icons.share,
-                        color: Theme.of(context).appBarTheme.iconTheme?.color,
-                      ),
-                    ),
-                  ],
                 ),
-                body: Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(32),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: _buildCodeWidget(
-                            MediaQuery.of(context).size.width * 0.7,
-                          ),
-                        ),
-                        if (_currentCard.isBarcode) ...[
-                          const SizedBox(height: 24),
-                          Text(
-                            _currentCard.name,
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              color: Theme.of(context).colorScheme.onSurface,
-                              letterSpacing: 1.5,
-                            ),
-                            textAlign: TextAlign.center,
+              ],
+            ),
+            body: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
                           ),
                         ],
-                      ],
+                      ),
+                      child: _buildCodeWidget(
+                        MediaQuery.of(context).size.width * 0.7,
+                      ),
                     ),
-                  ),
+                    if (_currentCard.isBarcode) ...[
+                      const SizedBox(height: 24),
+                      Text(
+                        _currentCard.name,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          letterSpacing: 1.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ),
+          ),
+        ),
       ),
     );
   }
@@ -341,22 +337,21 @@ class _CardDetailPageState extends State<CardDetailPage>
                   onPressed: _copyCode,
                 ),
                 IconButton(
-                  icon:
-                      _isSharing
-                          ? SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(
-                                theme.colorScheme.onBackground,
-                              ),
+                  icon: _isSharing
+                      ? SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation(
+                              theme.colorScheme.onBackground,
                             ),
-                          )
-                          : Icon(
-                            Icons.share,
-                            color: theme.colorScheme.onBackground,
                           ),
+                        )
+                      : Icon(
+                          Icons.share,
+                          color: theme.colorScheme.onBackground,
+                        ),
                   tooltip: l10n.shareAsImage,
                   onPressed: _isSharing ? null : () => _handleShare(),
                 ),
@@ -467,12 +462,11 @@ class _CardDetailPageState extends State<CardDetailPage>
                                 curve: Curves.easeInOut,
                                 alignment: Alignment.topCenter,
                                 child: ConstrainedBox(
-                                  constraints:
-                                      _descExpanded
-                                          ? const BoxConstraints()
-                                          : BoxConstraints(
-                                            maxHeight: _descriptionMaxHeight,
-                                          ),
+                                  constraints: _descExpanded
+                                      ? const BoxConstraints()
+                                      : BoxConstraints(
+                                          maxHeight: _descriptionMaxHeight,
+                                        ),
                                   child: ClipRect(
                                     child: Text(
                                       _currentCard.description,
@@ -506,10 +500,12 @@ class _CardDetailPageState extends State<CardDetailPage>
   }
 
   Widget _buildCodeWidget(double availableWidth) {
-    final size =
-        _currentCard.is2D ? availableWidth * _codeCard2DWidthMultiplier : null;
-    final width =
-        _currentCard.is1D ? availableWidth * _codeCard1DWidthMultiplier : null;
+    final size = _currentCard.is2D
+        ? availableWidth * _codeCard2DWidthMultiplier
+        : null;
+    final width = _currentCard.is1D
+        ? availableWidth * _codeCard1DWidthMultiplier
+        : null;
     // Increase 1D barcode height so scanners can read it more reliably.
     final height = _currentCard.is1D ? _codeCard1DHeight : null;
 

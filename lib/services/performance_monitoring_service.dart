@@ -86,10 +86,9 @@ class PerformanceMonitoringService {
     final count = values.length;
     final sum = values.reduce((a, b) => a + b);
     final avg = sum / count;
-    final median =
-        count % 2 == 0
-            ? (values[count ~/ 2 - 1] + values[count ~/ 2]) / 2
-            : values[count ~/ 2].toDouble();
+    final median = count % 2 == 0
+        ? (values[count ~/ 2 - 1] + values[count ~/ 2]) / 2
+        : values[count ~/ 2].toDouble();
 
     return {
       'count': count,

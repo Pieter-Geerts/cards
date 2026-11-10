@@ -99,12 +99,11 @@ class _LogoSelectionPageState extends State<LogoSelectionPage>
       _filteredLogos.value = _availableLogos.value;
     } else {
       // Use compute for heavy filtering operations
-      _filteredLogos.value =
-          _availableLogos.value.where((logo) {
-            // Simple text-based filtering - can be enhanced with fuzzy search
-            final logoName = logo.toString().toLowerCase();
-            return logoName.contains(query);
-          }).toList();
+      _filteredLogos.value = _availableLogos.value.where((logo) {
+        // Simple text-based filtering - can be enhanced with fuzzy search
+        final logoName = logo.toString().toLowerCase();
+        return logoName.contains(query);
+      }).toList();
     }
   }
 
@@ -138,8 +137,9 @@ class _LogoSelectionPageState extends State<LogoSelectionPage>
         Icons.local_grocery_store,
       ];
 
-      _availableLogos.value =
-          availableLogos.isNotEmpty ? availableLogos : fallbackIfEmpty;
+      _availableLogos.value = availableLogos.isNotEmpty
+          ? availableLogos
+          : fallbackIfEmpty;
       _filteredLogos.value = _availableLogos.value;
 
       // Preload next batch for smoother scrolling if we have logos
@@ -198,10 +198,9 @@ class _LogoSelectionPageState extends State<LogoSelectionPage>
                 child: Text(
                   localizations.done,
                   style: TextStyle(
-                    color:
-                        selectedLogo != null
-                            ? _colorScheme.primary
-                            : _colorScheme.onSurfaceVariant,
+                    color: selectedLogo != null
+                        ? _colorScheme.primary
+                        : _colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -333,10 +332,9 @@ class _LogoSelectionPageState extends State<LogoSelectionPage>
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color:
-                                  isSelected
-                                      ? _colorScheme.primary
-                                      : _colorScheme.outline,
+                              color: isSelected
+                                  ? _colorScheme.primary
+                                  : _colorScheme.outline,
                               width: isSelected ? 2 : 1,
                             ),
                             borderRadius: BorderRadius.circular(12),

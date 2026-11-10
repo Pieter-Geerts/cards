@@ -91,23 +91,21 @@ void main() {
       service.addShopToWhitelist('amazon');
       logos = await service.getAllAvailableLogos();
       // Now we should see amazon or still nike, but at least both allowed
-      final ids =
-          logos
-              .map((e) => SimpleIconsMapping.getIdentifier(e))
-              .whereType<String>()
-              .map((s) => s.substring('simple_icon:'.length))
-              .toSet();
+      final ids = logos
+          .map((e) => SimpleIconsMapping.getIdentifier(e))
+          .whereType<String>()
+          .map((s) => s.substring('simple_icon:'.length))
+          .toSet();
       expect(ids.contains('amazon') || ids.contains('nike'), isTrue);
 
       // Remove nike
       service.removeShopFromWhitelist('nike');
       logos = await service.getAllAvailableLogos();
-      final ids2 =
-          logos
-              .map((e) => SimpleIconsMapping.getIdentifier(e))
-              .whereType<String>()
-              .map((s) => s.substring('simple_icon:'.length))
-              .toSet();
+      final ids2 = logos
+          .map((e) => SimpleIconsMapping.getIdentifier(e))
+          .whereType<String>()
+          .map((s) => s.substring('simple_icon:'.length))
+          .toSet();
       expect(ids2.contains('nike'), isFalse);
     });
   });

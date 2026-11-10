@@ -140,20 +140,19 @@ class _HomePageState extends State<HomePage> {
     final query = _searchQuery.trim().toLowerCase();
     List<CardItem> filteredCards = List.from(widget.cards);
     if (query.isNotEmpty) {
-      filteredCards =
-          filteredCards.where((card) {
-            final title = card.title.toLowerCase();
-            final description = card.description.toLowerCase();
-            final name = card.name.toLowerCase();
-            final typeName = card.cardType.displayName.toLowerCase();
-            final enumName = card.cardType.name.toLowerCase();
+      filteredCards = filteredCards.where((card) {
+        final title = card.title.toLowerCase();
+        final description = card.description.toLowerCase();
+        final name = card.name.toLowerCase();
+        final typeName = card.cardType.displayName.toLowerCase();
+        final enumName = card.cardType.name.toLowerCase();
 
-            return title.contains(query) ||
-                description.contains(query) ||
-                name.contains(query) ||
-                typeName.contains(query) ||
-                enumName.contains(query);
-          }).toList();
+        return title.contains(query) ||
+            description.contains(query) ||
+            name.contains(query) ||
+            typeName.contains(query) ||
+            enumName.contains(query);
+      }).toList();
     }
 
     setState(() {
@@ -229,12 +228,11 @@ class _HomePageState extends State<HomePage> {
     final updated = await Navigator.push<CardItem>(
       context,
       MaterialPageRoute(
-        builder:
-            (context) => CardDetailPage(
-              card: card,
-              onDelete: _deleteCardWithUndo,
-              shareService: _shareService,
-            ),
+        builder: (context) => CardDetailPage(
+          card: card,
+          onDelete: _deleteCardWithUndo,
+          shareService: _shareService,
+        ),
       ),
     );
     if (updated != null && updated.id != null) {
@@ -435,23 +433,22 @@ class _HomePageState extends State<HomePage> {
     // Display a TextField in the AppBar when search mode is active so the
     // user can type queries directly. The HomeAppBar accepts an optional
     // titleWidget which we populate here.
-    final titleWidget =
-        _isSearchActive
-            ? TextField(
-              controller: _searchController,
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: l10n.search,
-                border: InputBorder.none,
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value.trim();
-                  _applySearchFilter();
-                });
-              },
-            )
-            : null;
+    final titleWidget = _isSearchActive
+        ? TextField(
+            controller: _searchController,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: l10n.search,
+              border: InputBorder.none,
+            ),
+            onChanged: (value) {
+              setState(() {
+                _searchQuery = value.trim();
+                _applySearchFilter();
+              });
+            },
+          )
+        : null;
 
     return Scaffold(
       appBar: HomeAppBar(
@@ -459,20 +456,18 @@ class _HomePageState extends State<HomePage> {
         actions: _buildAppBarActions(l10n),
         titleWidget: titleWidget,
       ),
-      body:
-          _displayedCards.isEmpty
-              ? EmptyStateWidget(
-                onAddCard: () => _navigateToAddCardPage(),
-                onScan:
-                    () => _navigateToAddCardPage(mode: AddCardFlowMode.scan),
-              )
-              : CardListWidget(
-                cards: _displayedCards,
-                onCardTap: _onCardTap,
-                onCardActions: (card) => _showCardActions(context, card, l10n),
-                onReorder: _onReorder,
-                canReorder: _searchQuery.isEmpty,
-              ),
+      body: _displayedCards.isEmpty
+          ? EmptyStateWidget(
+              onAddCard: () => _navigateToAddCardPage(),
+              onScan: () => _navigateToAddCardPage(mode: AddCardFlowMode.scan),
+            )
+          : CardListWidget(
+              cards: _displayedCards,
+              onCardTap: _onCardTap,
+              onCardActions: (card) => _showCardActions(context, card, l10n),
+              onReorder: _onReorder,
+              canReorder: _searchQuery.isEmpty,
+            ),
       floatingActionButton: FloatingActionButton(
         key: const ValueKey('add_card_fab'),
         onPressed: _navigateToAddCardPage,

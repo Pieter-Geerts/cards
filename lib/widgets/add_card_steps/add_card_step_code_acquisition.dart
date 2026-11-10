@@ -156,12 +156,11 @@ class AddCardStepCodeAcquisition extends StatelessWidget {
                               const SizedBox(width: 12),
                               Text(
                                 AppLocalizations.of(context).manualEntryFull,
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.titleMedium?.copyWith(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                               ),
                             ],
                           ),
@@ -170,15 +169,14 @@ class AddCardStepCodeAcquisition extends StatelessWidget {
                           // Card type dropdown
                           DropdownButton<CardType>(
                             value: cardType,
-                            items:
-                                CardType.values.map((type) {
-                                  return DropdownMenuItem<CardType>(
-                                    value: type,
-                                    child: Text(
-                                      type.getLocalizedDisplayName(context),
-                                    ),
-                                  );
-                                }).toList(),
+                            items: CardType.values.map((type) {
+                              return DropdownMenuItem<CardType>(
+                                value: type,
+                                child: Text(
+                                  type.getLocalizedDisplayName(context),
+                                ),
+                              );
+                            }).toList(),
                             onChanged: (CardType? value) {
                               if (value != null) onCardTypeChanged(value);
                             },
@@ -188,12 +186,11 @@ class AddCardStepCodeAcquisition extends StatelessWidget {
                           // Enhanced code input
                           Text(
                             AppLocalizations.of(context).code,
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
                           ),
                           const SizedBox(height: 12),
                           Container(
@@ -209,28 +206,27 @@ class AddCardStepCodeAcquisition extends StatelessWidget {
                             ),
                             child: TextField(
                               controller: codeController,
-                              style: Theme.of(
-                                context,
-                              ).textTheme.bodyLarge?.copyWith(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                               decoration: InputDecoration(
-                                hintText:
-                                    cardType == CardType.qrCode
-                                        ? AppLocalizations.of(
-                                          context,
-                                        ).enterQrCodeValue
-                                        : AppLocalizations.of(
-                                          context,
-                                        ).enterBarcodeValue,
-                                hintStyle: Theme.of(
-                                  context,
-                                ).textTheme.bodyMedium?.copyWith(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w400,
-                                  color: Theme.of(context).hintColor,
-                                ),
+                                hintText: cardType == CardType.qrCode
+                                    ? AppLocalizations.of(
+                                        context,
+                                      ).enterQrCodeValue
+                                    : AppLocalizations.of(
+                                        context,
+                                      ).enterBarcodeValue,
+                                hintStyle: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w400,
+                                      color: Theme.of(context).hintColor,
+                                    ),
                                 filled: true,
                                 fillColor:
                                     Theme.of(
@@ -242,9 +238,9 @@ class AddCardStepCodeAcquisition extends StatelessWidget {
                                   borderSide: BorderSide(
                                     color:
                                         Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? Colors.grey.shade600
-                                            : Colors.grey.shade200,
+                                            Brightness.dark
+                                        ? Colors.grey.shade600
+                                        : Colors.grey.shade200,
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
@@ -269,10 +265,9 @@ class AddCardStepCodeAcquisition extends StatelessWidget {
                                     Icons.paste_outlined,
                                     color: Theme.of(context).iconTheme.color,
                                   ),
-                                  tooltip:
-                                      AppLocalizations.of(
-                                        context,
-                                      ).pasteFromClipboard,
+                                  tooltip: AppLocalizations.of(
+                                    context,
+                                  ).pasteFromClipboard,
                                   onPressed: () async {
                                     try {
                                       final clipboardData =
@@ -323,32 +318,34 @@ class AddCardStepCodeAcquisition extends StatelessWidget {
                                   children: [
                                     Icon(
                                       Icons.qr_code,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
                                         codeText,
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.bodyMedium?.copyWith(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                     IconButton(
                                       icon: Icon(
                                         Icons.copy_outlined,
-                                        color:
-                                            Theme.of(context).iconTheme.color,
+                                        color: Theme.of(
+                                          context,
+                                        ).iconTheme.color,
                                       ),
-                                      tooltip:
-                                          AppLocalizations.of(
-                                            context,
-                                          ).codeCopiedToClipboard,
+                                      tooltip: AppLocalizations.of(
+                                        context,
+                                      ).codeCopiedToClipboard,
                                       onPressed: () async {
                                         final messenger = ScaffoldMessenger.of(
                                           context,

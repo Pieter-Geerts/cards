@@ -72,21 +72,18 @@ class AppNavigator {
       context: context!,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder:
-          (context) => Container(
-            height: MediaQuery.of(context).size.height * 0.9,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
-              ),
-            ),
-            child: LogoSelectionPage(
-              cardTitle: cardTitle,
-              currentLogo: currentLogo,
-              cardId: cardId,
-            ),
-          ),
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: LogoSelectionPage(
+          cardTitle: cardTitle,
+          currentLogo: currentLogo,
+          cardId: cardId,
+        ),
+      ),
     );
   }
 

@@ -109,18 +109,19 @@ class _OptimizedCardPreviewState extends State<OptimizedCardPreview> {
     );
 
     final padding = widget.isCompact ? _compactPadding : _normalPadding;
-    final titleStyle =
-        widget.isCompact ? _titleStyleCompact : _titleStyleNormal;
-    final descriptionStyle =
-        widget.isCompact ? _descriptionStyleCompact : _descriptionStyleNormal;
+    final titleStyle = widget.isCompact
+        ? _titleStyleCompact
+        : _titleStyleNormal;
+    final descriptionStyle = widget.isCompact
+        ? _descriptionStyleCompact
+        : _descriptionStyleNormal;
 
     Widget cardContent = Container(
       padding: padding,
       decoration: cardDecoration,
-      child:
-          widget.isCompact
-              ? _buildCompactLayout(titleStyle, descriptionStyle)
-              : _buildNormalLayout(titleStyle, descriptionStyle),
+      child: widget.isCompact
+          ? _buildCompactLayout(titleStyle, descriptionStyle)
+          : _buildNormalLayout(titleStyle, descriptionStyle),
     );
 
     if (widget.onTap != null) {
@@ -238,8 +239,9 @@ class _OptimizedCardListState extends State<OptimizedCardList> {
   Widget build(BuildContext context) {
     PerformanceMonitoringService.instance.startTimer('card_list_build');
 
-    final itemHeight =
-        widget.isCompact ? _compactItemHeight : _normalItemHeight;
+    final itemHeight = widget.isCompact
+        ? _compactItemHeight
+        : _normalItemHeight;
 
     final listView = ListView.builder(
       itemCount: widget.cards.length,
@@ -254,8 +256,9 @@ class _OptimizedCardListState extends State<OptimizedCardList> {
             title: card.title,
             description: card.description,
             isCompact: widget.isCompact,
-            onTap:
-                widget.onCardTap != null ? () => widget.onCardTap!(card) : null,
+            onTap: widget.onCardTap != null
+                ? () => widget.onCardTap!(card)
+                : null,
           ),
         );
       },

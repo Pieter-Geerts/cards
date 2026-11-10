@@ -218,10 +218,9 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
     required VoidCallback onTap,
   }) {
     return Container(
-      key:
-          title.contains('Import')
-              ? const ValueKey('import_from_image_option')
-              : null,
+      key: title.contains('Import')
+          ? const ValueKey('import_from_image_option')
+          : null,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
@@ -296,13 +295,12 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
 
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
-        builder:
-            (context) => CameraScanPage(
-              onCodeScanned: (code, type, format) {
-                scanResult = (code, type, format);
-              },
-              onManualEntry: () => manualEntryRequested = true,
-            ),
+        builder: (context) => CameraScanPage(
+          onCodeScanned: (code, type, format) {
+            scanResult = (code, type, format);
+          },
+          onManualEntry: () => manualEntryRequested = true,
+        ),
       ),
     );
 
@@ -326,13 +324,12 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
       (String code, CardType type, CodeFormat format)? scanResult;
       await Navigator.of(this.context).push<void>(
         MaterialPageRoute(
-          builder:
-              (context) => ImageScanPage(
-                imagePath: imagePath,
-                onCodeEntered: (code, type, format) {
-                  scanResult = (code, type, format);
-                },
-              ),
+          builder: (context) => ImageScanPage(
+            imagePath: imagePath,
+            onCodeEntered: (code, type, format) {
+              scanResult = (code, type, format);
+            },
+          ),
         ),
       );
 
@@ -355,11 +352,10 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
     Navigator.of(context)
         .push<CardItem?>(
           MaterialPageRoute(
-            builder:
-                (context) => const AddCardFormPage(
-                  mode: AddCardMode.manual,
-                  scannedCode: null,
-                ),
+            builder: (context) => const AddCardFormPage(
+              mode: AddCardMode.manual,
+              scannedCode: null,
+            ),
           ),
         )
         .then((createdCard) {
@@ -379,13 +375,12 @@ class _AddCardEntryPageState extends State<AddCardEntryPage> {
     Navigator.of(context)
         .push<CardItem?>(
           MaterialPageRoute(
-            builder:
-                (context) => AddCardFormPage(
-                  mode: AddCardMode.scan,
-                  scannedCode: code,
-                  scannedType: type,
-                  scannedFormat: format,
-                ),
+            builder: (context) => AddCardFormPage(
+              mode: AddCardMode.scan,
+              scannedCode: code,
+              scannedType: type,
+              scannedFormat: format,
+            ),
           ),
         )
         .then((createdCard) {
