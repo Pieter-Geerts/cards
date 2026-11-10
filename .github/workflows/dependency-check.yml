@@ -5,10 +5,20 @@ on:
     # Run every Monday at 9:00 AM UTC
     - cron: "0 9 * * 1"
   workflow_dispatch: # Allow manual triggering
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: dependency-check
+  cancel-in-progress: true
+
 jobs:
   check-dependencies:
     name: Check for dependency updates
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -26,18 +36,8 @@ jobs:
           channel: "stable"
           cache: true
 
-      - name: Create secrets.dart
-        run: |
-          cp lib/secrets_template.dart lib/secrets.dart
-
-      - name: Create assets directory
-        run: mkdir -p assets/icons
-
       - name: Get dependencies
         run: flutter pub get
-
-      - name: Generate localization files
-        run: flutter gen-l10n
 
       - name: Check for outdated dependencies
         id: outdated
@@ -73,10 +73,10 @@ jobs:
             echo "✅ **All dependencies are up to date!**" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Run security audit
+      - name: Report dependency tree
         run: |
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Security Audit" >> $GITHUB_STEP_SUMMARY
+          echo "### Dependency Tree" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           dart pub deps --style=compact 2>&1 | head -20 >> $GITHUB_STEP_SUMMARY || true
           echo '```' >> $GITHUB_STEP_SUMMARY
